@@ -2,6 +2,7 @@
   "name": "ganfan",
   "version": "0.1.0",
   "private": true,
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -14,17 +15,18 @@
     "eas:update:production": "eas update --channel production --message \"production update\""
   },
   "dependencies": {
+    "@supabase/supabase-js": "latest",
     "expo": "latest",
     "expo-router": "latest",
     "expo-updates": "latest",
     "react": "latest",
     "react-native": "latest",
-    "zustand": "latest",
-    "@supabase/supabase-js": "latest"
+    "zustand": "latest"
   },
   "devDependencies": {
-    "typescript": "latest",
+    "@types/react": "^19.2.14",
+    "eslint": "latest",
     "jest": "latest",
-    "eslint": "latest"
+    "typescript": "latest"
   }
 }
