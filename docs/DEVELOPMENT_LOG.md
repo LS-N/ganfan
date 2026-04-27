@@ -5,6 +5,7 @@ This document is the reusable development log template for the Ganfan project. I
 ## How This Log Is Used
 
 - The 09:00 and 17:00 Codex automations must append one entry to this file every time they run.
+- Every entry must start with a local timestamp in the heading: `YYYY-MM-DD HH:mm - Session name`.
 - Each entry should be factual and short: goal, work done, result, problems, fixes, and next step.
 - If no code changed, the automation still records the repository state and the reason no code commit was made.
 - If checks fail, the automation records the failing command and should not push unsafe code.
