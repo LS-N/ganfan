@@ -24,9 +24,11 @@
     "zustand": "latest"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
     "eslint": "latest",
     "jest": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "typescript-eslint": "^8.59.0"
   }
 }
