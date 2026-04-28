@@ -22,6 +22,13 @@ jobs:
       - name: Setup EAS
         run: npm install -g eas-cli
 
+      - name: Verify EAS auth
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          test -n "$EXPO_TOKEN"
+          eas whoami --non-interactive
+
       - name: Publish preview update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
