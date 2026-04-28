@@ -38,6 +38,18 @@ This document is the reusable development log template for the Ganfan project. I
 
 ## Log Entries
 
+## 2026-04-28 14:56 - GitHub EAS token blocker
+
+- Goal: Continue GitHub Actions EAS preview update verification after adding the GitHub secret.
+- Work done: Re-triggered `dev` workflow, confirmed CI succeeds, inspected EAS Preview Update job metadata, and added a clearer workflow error when `EXPO_TOKEN` is unavailable.
+- Result: CI automation is confirmed. Local EAS preview update is confirmed. GitHub Actions EAS preview update remains blocked before publish because the workflow cannot access a valid `EXPO_TOKEN`.
+- Problems: The EAS Preview Update job fails at the `Verify EAS auth` step. Workflow logs cannot be downloaded through the current API credentials because GitHub requires repository admin rights for log download.
+- Fixes: Added an explicit token-availability check and actionable error message to `.github/workflows/eas-preview-update.yml`. Removed a temporary failed log download artifact.
+- Checks: Pending workflow/documentation changes need local checks before commit.
+- Git/GitHub: Latest successful CI on `dev` proves the branch trigger and check pipeline work; EAS deployment is blocked only by auth.
+- Next step: Create a valid Expo access token and make it available to the workflow as `EXPO_TOKEN`, then push to `dev` again.
+- Reusable lesson: For deployment workflows, add an explicit non-secret auth check before the deploy command; it makes missing secret failures diagnosable without exposing credentials.
+
 ## 2026-04-28 09:41 - Expo project link and preview update validation
 
 - Goal: Complete Expo-side setup and verify the EAS preview update path.

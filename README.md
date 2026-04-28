@@ -61,6 +61,6 @@ docs/              Current project status and engineering notes
 
 - Stabilize Android emulator or connect a physical Android device for preview verification.
 - Expo project is linked as `@ls-n/ganfan`.
-- Configure `EXPO_TOKEN` in GitHub Secrets.
+- Configure a valid `EXPO_TOKEN` for GitHub Actions.
 - Verify GitHub Actions EAS preview update from `dev`.
 - Confirm MVP 0.1 prototypes and fill PRD V1 before business development.
