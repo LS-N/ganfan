@@ -60,7 +60,9 @@ docs/              Current project status and engineering notes
 ## Current Blockers Before MVP 0.1
 
 - Verify `npm start` on a local device or emulator.
+- Stabilize Android emulator or connect a physical Android device for preview verification.
 - Replace the placeholder Expo project ID in `app.json`.
+- Log in to Expo/EAS locally or provide the Expo project ID.
 - Configure `EXPO_TOKEN` in GitHub Secrets.
 - Verify GitHub CI and EAS preview update.
 - Confirm MVP 0.1 prototypes and fill PRD V1 before business development.

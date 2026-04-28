@@ -38,6 +38,18 @@ This document is the reusable development log template for the Ganfan project. I
 
 ## Log Entries
 
+## 2026-04-28 00:10 - External validation pass
+
+- Goal: Verify external readiness items before moving toward MVP 0.1 development.
+- Work done: Checked Android SDK and AVD availability, attempted Android preview through Expo, checked EAS login state, checked GitHub Actions status through GitHub API, ran Expo dependency health checks, and fixed Expo SDK dependency mismatches.
+- Result: GitHub CI is verified as successful on recent `main` pushes. `expo-doctor` now passes 18/18 checks. Local lint, typecheck, and test pass after dependency fixes.
+- Problems: Android preview did not complete because the emulator became unavailable between attempts and Expo Go download failed once with `read ECONNRESET`. EAS CLI reports `Not logged in`, so Expo Project ID and EAS Update validation cannot be completed from this machine yet.
+- Fixes: Installed Expo Router peer dependencies, aligned React Native/React/Jest dependency versions with Expo SDK expectations, added `react-dom@19.2.0`, and reran dependency checks until `expo-doctor` passed.
+- Checks: `npx expo-doctor` passed; `npm run lint` passed; `npm run typecheck` passed; `npm test` passed.
+- Git/GitHub: Local dependency files are modified and need a commit after final verification. GitHub Actions CI is reachable and recent runs are successful.
+- Next step: Log in to Expo/EAS or provide Expo project ID and `EXPO_TOKEN`; connect a stable Android device/emulator and rerun Android preview verification.
+- Reusable lesson: External readiness should be split into local-fixable issues and account/device blockers; fix dependency health locally, but record account/device blockers explicitly instead of masking them as completed.
+
 ## 2026-04-27 - Initial engineering entry setup
 
 - Goal: Prepare the Ganfan repository for continuous mobile development.

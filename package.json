@@ -17,17 +17,22 @@
   "dependencies": {
     "@supabase/supabase-js": "latest",
     "expo": "latest",
+    "expo-constants": "~55.0.15",
+    "expo-linking": "~55.0.14",
     "expo-router": "latest",
     "expo-updates": "latest",
-    "react": "latest",
-    "react-native": "latest",
+    "react": "19.2.0",
+    "react-dom": "^19.2.0",
+    "react-native": "0.83.6",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
     "zustand": "latest"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
     "eslint": "latest",
-    "jest": "latest",
+    "jest": "~29.7.0",
     "typescript": "latest",
     "typescript-eslint": "^8.59.0"
   }
