@@ -25,4 +25,5 @@ jobs:
       - name: Publish preview update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas update --channel preview --message "auto preview update from dev"
+          CI: 1
+        run: eas update --channel preview --environment preview --message "auto preview update from dev" --non-interactive
