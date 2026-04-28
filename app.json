@@ -9,9 +9,6 @@
       "ios",
       "android"
     ],
-    "updates": {
-      "url": "https://u.expo.dev/YOUR_PROJECT_ID"
-    },
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -23,8 +20,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "YOUR_PROJECT_ID"
+        "projectId": "f892040d-f19e-471a-ab53-2563d079aced"
       }
+    },
+    "owner": "ls-n",
+    "updates": {
+      "url": "https://u.expo.dev/f892040d-f19e-471a-ab53-2563d079aced"
     }
   }
 }
