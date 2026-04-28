@@ -61,3 +61,15 @@ This document is the reusable development log template for the Ganfan project. I
 - Git/GitHub: Pushed `f1d1f5b chore: complete mvp0 engineering entry` to `main`.
 - Next step: Verify Android preview on a device/emulator, configure Expo project ID and `EXPO_TOKEN`, then verify GitHub CI and EAS preview update.
 - Reusable lesson: A project needs an explicit status/control document before feature work; otherwise the team can have many docs but still no visible execution plan.
+
+## 2026-04-28 09:27 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync, record repository health, and only publish safe verified changes.
+- Work done: Inspected `git status`, branch, `origin`, recent commits, `docs/PROJECT_STATUS.md`, changed-file diffs, and existing development log entries; confirmed only documentation and dependency manifest files are modified; retried local checks with `npm.cmd` after PowerShell blocked `npm.ps1`.
+- Result: Repository is on `main` tracking `origin/main` with safe pending changes in `README.md`, `docs/PROJECT_STATUS.md`, `package.json`, `package-lock.json`, and this log; local lint, typecheck, and test checks passed.
+- Problems: PowerShell execution policy blocked `npm run lint`, `npm run typecheck`, and `npm test` through `npm.ps1`; Android preview and EAS preview update remain unverified blockers from project status.
+- Fixes: Used `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test` to complete the same checks without changing system policy; recorded current blockers instead of expanding scope.
+- Checks: `npm.cmd run lint` passed; `npm.cmd run typecheck` passed; `npm.cmd test` passed with `jest --passWithNoTests`; no secrets, `.env`, certificates, build outputs, or local caches were found in the pending changes.
+- Git/GitHub: Pending branch is `main` with remote `origin https://github.com/LS-N/ganfan.git`; recent commits are `8ecea34 docs: require timestamps in development log`, `529d209 docs: add development log workflow`, and `f1d1f5b chore: complete mvp0 engineering entry`; next action is to commit and push this verified change set.
+- Next step: Commit the current safe docs and dependency updates, then continue with Android preview verification, Expo project ID replacement, Expo/EAS login, and EAS preview validation.
+- Reusable lesson: On locked-down Windows shells, treat `npm.ps1` execution-policy failures as environment entry issues first; rerun the same package checks via `npm.cmd` and log the distinction clearly.
