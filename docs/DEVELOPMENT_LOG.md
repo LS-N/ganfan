@@ -38,6 +38,18 @@ This document is the reusable development log template for the Ganfan project. I
 
 ## Log Entries
 
+## 2026-04-28 15:45 - Move Android device validation to backlog
+
+- Goal: Unblock development while keeping Android preview validation visible.
+- Work done: Reclassified Android device/emulator preview and preview OTA receipt as backlog items instead of blocking all next work.
+- Result: The project can move into MVP 0.1 specification preparation while keeping device validation as a tracked follow-up.
+- Problems: Android device/emulator validation still requires a stable physical device or emulator session.
+- Fixes: Updated `docs/PROJECT_STATUS.md` to show MVP 0.1 specification preparation as the current stage and moved device validation to explicit backlog items.
+- Checks: Documentation-only change; no runtime checks required before review.
+- Git/GitHub: Pending documentation update.
+- Next step: Fill MVP 0.1 PRD V1 before coding business flows.
+- Reusable lesson: Do not let device-only validation disappear, but do not block product/spec work on a local hardware issue when CI and OTA publishing are already verified.
+
 ## 2026-04-28 15:39 - GitHub Actions preview update verified
 
 - Goal: Verify that pushing to `dev` triggers GitHub Actions CI and EAS preview update.

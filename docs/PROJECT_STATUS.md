@@ -2,9 +2,9 @@
 
 ## Current Stage
 
-Current stage: MVP 0.0 engineering entry.
+Current stage: MVP 0.1 specification preparation.
 
-The project should not enter full MVP 0.1 business development yet. The immediate goal is to make the app runnable, testable, updateable through EAS Update, and suitable for continuous AI-assisted development.
+The MVP 0.0 engineering baseline is ready for continued development. Full MVP 0.1 business coding should still wait for prototype confirmation and PRD V1 completion.
 
 ## Stage Plan
 
@@ -36,6 +36,10 @@ The project should not enter full MVP 0.1 business development yet. The immediat
 - [x] EAS preview update is verified locally.
 - [x] GitHub Actions EAS preview update is verified on `dev`.
 - [x] README contains current run and release commands.
+
+Deferred device validation:
+
+- [ ] Android preview and preview OTA should be verified on a physical device or stable emulator before any external tester release.
 
 ## MVP 0.1 Entry Conditions
 
@@ -71,8 +75,14 @@ Not allowed before MVP 0.1 entry:
 
 ## Immediate Next Work
 
-1. Stabilize Android emulator or connect a physical Android device, then verify Android preview.
-2. Verify a phone or emulator receives the preview OTA update.
+1. Fill `03_prd/mvp-0.1/mvp-0.1-prd-v1-coding.md` with a development-ready MVP 0.1 spec.
+2. Confirm page flow, state model, component usage, and MVP 0.1 acceptance criteria.
+3. Start MVP 0.1 implementation only after the PRD V1 spec is approved.
+
+## Backlog
+
+- Verify Android preview on a physical device or stable emulator.
+- Verify that a phone or emulator receives the preview OTA update.
 
 ## Key Commands
 
