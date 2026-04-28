@@ -38,6 +38,18 @@ This document is the reusable development log template for the Ganfan project. I
 
 ## Log Entries
 
+## 2026-04-28 09:41 - Expo project link and preview update validation
+
+- Goal: Complete Expo-side setup and verify the EAS preview update path.
+- Work done: Logged in to EAS with browser authentication, created and linked the Expo project `@ls-n/ganfan`, configured EAS Update, committed the real Expo project ID and update URL, and published a preview update locally.
+- Result: EAS project info resolves successfully. Local preview update published to the `preview` branch for Android and iOS.
+- Problems: Initial `eas init` failed because `app.json` still contained the placeholder `YOUR_PROJECT_ID`; the first non-interactive update command required an explicit environment.
+- Fixes: Removed the invalid placeholder before running `eas init`, ran `eas update:configure`, and published with `--environment preview`.
+- Checks: `npm run lint` passed; `npm run typecheck` passed; `npm test` passed; `npx expo-doctor` passed; local EAS preview update published successfully.
+- Git/GitHub: Pushed `25339cc chore: link expo project for updates`. Preview update group ID: `218240fd-80dd-4d1c-a245-ab60b7d6b73b`; dashboard: `https://expo.dev/accounts/ls-n/projects/ganfan/updates/218240fd-80dd-4d1c-a245-ab60b7d6b73b`.
+- Next step: Configure GitHub `EXPO_TOKEN`, push to `dev`, and verify the GitHub Actions EAS preview update workflow.
+- Reusable lesson: Do not leave fake UUID placeholders in Expo config; EAS treats them as linked projects and fails with UUID errors. Remove placeholders, run `eas init`, then use `eas update:configure`.
+
 ## 2026-04-28 00:10 - External validation pass
 
 - Goal: Verify external readiness items before moving toward MVP 0.1 development.

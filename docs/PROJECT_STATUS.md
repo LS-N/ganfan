@@ -33,7 +33,8 @@ The project should not enter full MVP 0.1 business development yet. The immediat
 - [x] `npm start` starts the Expo Metro Bundler locally.
 - [ ] Android preview is verified on a device or emulator.
 - [x] CI is verified on GitHub.
-- [ ] EAS preview update is verified.
+- [x] EAS preview update is verified locally.
+- [ ] GitHub Actions EAS preview update is verified on `dev`.
 - [x] README contains current run and release commands.
 
 ## MVP 0.1 Entry Conditions
@@ -71,10 +72,8 @@ Not allowed before MVP 0.1 entry:
 ## Immediate Next Work
 
 1. Stabilize Android emulator or connect a physical Android device, then verify Android preview.
-2. Log in to Expo/EAS locally or provide an Expo project ID.
-3. Replace the Expo project ID placeholder in `app.json`.
-4. Configure GitHub Secrets for EAS Update.
-5. Verify EAS preview update.
+2. Configure GitHub Secrets for EAS Update.
+3. Push to `dev` and verify GitHub Actions EAS preview update.
 
 ## Key Commands
 
@@ -89,7 +88,6 @@ npm run eas:update:preview
 
 ## Manual Configuration Still Needed
 
-- Replace placeholder Expo project ID in `app.json`.
-- Local EAS CLI currently reports `Not logged in`.
+- Expo project is linked as `@ls-n/ganfan`.
 - Configure `EXPO_TOKEN` in GitHub Secrets before EAS update automation can work.
 - Configure Supabase and OpenAI secrets only when the project reaches the relevant MVP stage.
