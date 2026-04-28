@@ -38,6 +38,18 @@ This document is the reusable development log template for the Ganfan project. I
 
 ## Log Entries
 
+## 2026-04-28 15:39 - GitHub Actions preview update verified
+
+- Goal: Verify that pushing to `dev` triggers GitHub Actions CI and EAS preview update.
+- Work done: Confirmed `EXPO_TOKEN` was available under the expected secret name, pushed current `main` to `dev`, waited for both workflows, and checked recent EAS update groups.
+- Result: CI completed successfully and EAS Preview Update completed successfully from GitHub Actions.
+- Problems: Earlier failures were caused by the secret being saved under the wrong name and then by the workflow not receiving a usable `EXPO_TOKEN`.
+- Fixes: Added the correctly named `EXPO_TOKEN` secret, kept an explicit auth check in the workflow, and triggered `dev` again.
+- Checks: GitHub Actions CI success: `https://github.com/LS-N/ganfan/actions/runs/25040054009`; EAS Preview Update success: `https://github.com/LS-N/ganfan/actions/runs/25040053988`.
+- Git/GitHub: `dev` published preview update group `e4268eb5-da01-4fc0-891a-1e0235be73f6` with message `auto preview update from dev`.
+- Next step: Verify an Android device or emulator can open the app and receive the preview OTA update.
+- Reusable lesson: Secret names are part of the deployment contract. Standardize names like `EXPO_TOKEN`, add a workflow auth preflight, and verify the secret is available before running a deployment command.
+
 ## 2026-04-28 14:56 - GitHub EAS token blocker
 
 - Goal: Continue GitHub Actions EAS preview update verification after adding the GitHub secret.

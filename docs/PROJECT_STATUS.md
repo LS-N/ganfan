@@ -34,7 +34,7 @@ The project should not enter full MVP 0.1 business development yet. The immediat
 - [ ] Android preview is verified on a device or emulator.
 - [x] CI is verified on GitHub.
 - [x] EAS preview update is verified locally.
-- [ ] GitHub Actions EAS preview update is verified on `dev` after `EXPO_TOKEN` is available.
+- [x] GitHub Actions EAS preview update is verified on `dev`.
 - [x] README contains current run and release commands.
 
 ## MVP 0.1 Entry Conditions
@@ -72,8 +72,7 @@ Not allowed before MVP 0.1 entry:
 ## Immediate Next Work
 
 1. Stabilize Android emulator or connect a physical Android device, then verify Android preview.
-2. Configure a valid `EXPO_TOKEN` for GitHub Actions.
-3. Push to `dev` and verify GitHub Actions EAS preview update.
+2. Verify a phone or emulator receives the preview OTA update.
 
 ## Key Commands
 
@@ -89,5 +88,5 @@ npm run eas:update:preview
 ## Manual Configuration Still Needed
 
 - Expo project is linked as `@ls-n/ganfan`.
-- GitHub Actions EAS preview update currently fails at auth because `EXPO_TOKEN` is not available or not valid in the workflow context.
+- GitHub Actions EAS preview update is configured with `EXPO_TOKEN` and verified from `dev`.
 - Configure Supabase and OpenAI secrets only when the project reaches the relevant MVP stage.
