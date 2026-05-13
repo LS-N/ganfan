@@ -13,13 +13,13 @@ The repository previously contained conflicting execution entry points:
 The complete implementation plan is now the authority:
 
 ```text
-05_ai-coding/ganfan-full-implementation-plan.md
+docs/06-long-term-blueprint.md
 ```
 
 The current phase entry is:
 
 ```text
-05_ai-coding/current-phase.md
+docs/01-current-phase.md
 ```
 
 ## Unique Workspace

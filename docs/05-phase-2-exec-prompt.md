@@ -10,11 +10,11 @@
 
 必须先阅读：
 1. AGENTS.md
-2. 05_ai-coding/00-final-product-development-spec.md
-3. 05_ai-coding/02-phase-1-v1-product-closed-loop.md
-4. 05_ai-coding/03-phase-2-real-data-and-ai.md
-5. 05_ai-coding/99-archive-index.md
-6. 04_prototype/product-v1/meal-agent-product-prototype.html
+2. docs/02-master-spec.md
+3. docs/03-phase-1-closed-loop.md
+4. docs/04-phase-2-real-data.md
+5. docs/07-archive-index.md
+6. docs/prototype/meal-agent-product-prototype.html
 
 执行规则：
 - 先看现有代码实现方式，再输出简短执行计划。

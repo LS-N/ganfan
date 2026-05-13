@@ -20,7 +20,7 @@ C:\Users\a\.codex\worktrees\*
 当前唯一产品和工程总纲：
 
 ```text
-05_ai-coding/ganfan-full-implementation-plan.md
+docs/06-long-term-blueprint.md
 ```
 
 任何阶段拆解、任务 prompt、代码实现和验收报告都必须服从该文件。

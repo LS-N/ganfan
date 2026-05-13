@@ -6,8 +6,8 @@
 
 后续 AI Agent、开发者、评审者应优先阅读：
 
-1. `05_ai-coding/00-final-product-development-spec.md`
-2. 当前阶段文档，例如 `05_ai-coding/02-phase-1-v1-product-closed-loop.md`
+1. `docs/02-master-spec.md`
+2. 当前阶段文档，例如 `docs/03-phase-1-closed-loop.md`
 3. 相关原型与归档索引
 
 旧任务拆解、全栈长方案、原型备份、阶段草案只作为参考资料，不再直接作为开发指令。

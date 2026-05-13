@@ -6,7 +6,7 @@
 
 本文档内容随后同步进入：
 
-`03_prd/mvp-0.1/mvp-0.1-prd-v1-coding.md`
+`_archive/mvp-0.1/prd/mvp-0.1-prd-v1-coding.md`
 
 ## 确认状态
 

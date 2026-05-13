@@ -1,60 +1,41 @@
 # 干饭
 
-干饭是一款 AI 饮食决策 App，目标是帮助用户记录饮食、判断当天饮食状态，并给出下一餐可执行建议。
+《干饭》是一款 AI 饮食决策 App，目标是帮助用户记录饮食、判断当天饮食状态，并给出下一餐可执行建议。
 
 ## 当前状态
 
-当前仓库处于工作区治理和总纲对齐阶段。
+当前仓库已完成入口文档和工作区重组：
 
-唯一主路径：
+- 唯一正式工作区：`F:\ganfan`
+- 当前工程形态：根目录 Expo App（`app/` + `src/`）
+- 当前阶段：Phase 1 产品闭环与 Phase 2 真实数据/AI 服务准备
+- 当前文档入口：[docs/00-INDEX.md](docs/00-INDEX.md)
+- AI Agent 契约：[AGENTS.md](AGENTS.md)
 
-```text
-F:\ganfan
-```
+## 新人和 Agent 入口
 
-权威总纲：
+进入仓库后按顺序阅读：
 
-```text
-05_ai-coding/ganfan-full-implementation-plan.md
-```
+1. [docs/00-INDEX.md](docs/00-INDEX.md)
+2. [docs/01-current-phase.md](docs/01-current-phase.md)
+3. [AGENTS.md](AGENTS.md)
+4. 当前任务文件或用户最新指令
 
-当前阶段入口：
+旧 MVP 0.0 / MVP 0.1 文档、旧 prompt、原型历史备份已统一放入 `_archive/`。除非用户要求考古，不要把 `_archive/` 内容当作当前执行口径。
 
-```text
-05_ai-coding/current-phase.md
-```
-
-## 开发入口
-
-新 Agent 或开发者进入仓库后，按顺序阅读：
-
-1. `05_ai-coding/current-phase.md`
-2. `05_ai-coding/ganfan-full-implementation-plan.md`
-3. `AGENTS.md`
-4. 当前任务文件
-
-不要以 `.claude/worktrees/*` 作为开发目录。那些目录是工具工作树，只可参考。
-
-## 当前工程形态
-
-短期工程仍在根目录：
+## 项目结构
 
 ```text
-app/               Expo Router entry files
-src/               App code: components, screens, services, stores, styles, types
+app/                 Expo Router 路由入口
+src/                 App 源码：components / screens / services / stores / styles / types
+docs/                当前有效文档、产品说明、原型入口、验收材料
+_archive/            历史文档与旧原型备份，只供参考
+.github/workflows/   CI / EAS 工作流
 ```
 
-总纲目标可能演进为：
+暂不迁移到 `apps/mobile/ + services/ai/ + supabase/`。如需迁移，必须单独确认。
 
-```text
-apps/mobile/
-services/ai/
-supabase/
-```
-
-是否迁移到完整 monorepo，需要单独确认后执行。
-
-## Commands
+## 常用命令
 
 ```powershell
 npm install
@@ -70,21 +51,9 @@ Preview OTA update:
 npm run eas:update:preview
 ```
 
-## Project Map
-
-```text
-app/               Current Expo Router entry files
-src/               Current app code
-01_product/        Product north star and roadmap
-02_architecture/   Architecture notes
-03_prd/            PRDs
-04_prototype/      Product prototypes and archived prototype snapshots
-05_ai-coding/      Active AI development docs and total implementation plan
-06_delivery/       Release and acceptance docs
-docs/              Project status and engineering notes
-```
-
 ## 注意
 
-当前仓库存在未提交的 Phase 1/Phase 2 代码和旧文档改动。提交前必须按阶段拆分，不要 `git add .`。
-
+- 不要在 `F:\ganfan\.claude\worktrees\*` 或 `C:\Users\a\.codex\worktrees\*` 开发正式代码。
+- 不要提交 `.env` 或真实密钥。
+- 不要跳过测试和验收清单。
+- 新增原生依赖、迁移 monorepo、接真实 AI secret、创建 FastAPI 服务或 Supabase migrations 前必须得到明确批准。
