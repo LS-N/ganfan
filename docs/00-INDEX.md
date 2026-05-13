@@ -11,6 +11,11 @@
 - `docs/01-ai-working-manual.md`：AI 开发流程、文档使用顺序、禁止事项、交付检查。
 - `AGENTS.md`：仓库根级强约束，保持精简，指向本工作手册。
 
+## 当前工作与追踪
+
+- `docs/CURRENT_WORK.md`：当前阶段、当前 Sprint、当前任务、阻塞项和下一步。
+- `docs/TASK_LOG.md`：所有 Agent 开始/结束开发记录。任何开发都必须先登记、结束时补记录。
+
 ## 默认原型
 
 - `docs/prototype/README.md`：原型目录说明。

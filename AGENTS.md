@@ -31,10 +31,12 @@ C:\Users\a\.codex\worktrees\*
 
 1. `docs/00-INDEX.md`
 2. `docs/01-ai-working-manual.md`
-3. `docs/02-master-blueprint.md`
-4. 当前阶段的 `docs/phases/phase-*.md`
-5. 当前阶段的 `docs/acceptance/phase-*.md`
-6. 当前任务文件或用户最新指令
+3. `docs/CURRENT_WORK.md`
+4. `docs/TASK_LOG.md`
+5. `docs/02-master-blueprint.md`
+6. 当前阶段的 `docs/phases/phase-*.md`
+7. 当前阶段的 `docs/acceptance/phase-*.md`
+8. 当前任务文件或用户最新指令
 
 阶段开发文档和验收文档必须从 `docs/02-master-blueprint.md` 拆解，不得脱离蓝图另起任务。
 
@@ -103,14 +105,26 @@ supabase/
 
 1. 阅读 `docs/00-INDEX.md`。
 2. 阅读 `docs/01-ai-working-manual.md`。
-3. 阅读 `docs/02-master-blueprint.md`。
-4. 阅读当前阶段开发文档和验收文档。
-5. 先看现有代码实现方式。
-6. 以产品经理视角评估需求，给出最有用的功能和架构建议。
-7. 与用户确认需求。
-8. 得到用户明确修改代码的指令后再修改代码或文档。
-9. 运行检查。
-10. 提交变更说明。
+3. 阅读 `docs/CURRENT_WORK.md` 和 `docs/TASK_LOG.md`。
+4. 阅读 `docs/02-master-blueprint.md`。
+5. 阅读当前阶段开发文档和验收文档。
+6. 在 `docs/TASK_LOG.md` 新增“开始记录”：时间、Agent、阶段、Sprint、任务编号、目标、预计触碰范围。
+7. 更新 `docs/CURRENT_WORK.md` 的当前任务指针。
+8. 先看现有代码实现方式。
+9. 以产品经理视角评估需求，给出最有用的功能和架构建议。
+10. 与用户确认需求。
+11. 得到用户明确修改代码的指令后再修改代码或文档。
+12. 运行检查。
+13. 在 `docs/TASK_LOG.md` 补“结束记录”：时间、完成内容、变更文件、验证结果、遗留问题。
+14. 更新 `docs/CURRENT_WORK.md` 的状态和下一步。
+15. 提交变更说明。
+
+## 任务追踪铁律
+
+- 任何 Agent 开始开发前，必须先更新 `docs/TASK_LOG.md` 的开始记录。
+- 任何 Agent 结束开发前，必须补齐 `docs/TASK_LOG.md` 的结束记录。
+- 任何 Agent 变更当前阶段、Sprint、任务编号或阻塞状态，必须同步更新 `docs/CURRENT_WORK.md`。
+- 如果只做评估、不改文件，也要在最终回复里说明没有新增任务追踪记录的原因。
 
 ## 质量要求
 
