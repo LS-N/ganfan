@@ -6,29 +6,27 @@
 
 | 字段 | 内容 |
 |---|---|
-| 更新时间 | 2026-05-13 22:03:48 +08:00 |
+| 更新时间 | 2026-05-13 22:37:47 +08:00 |
 | 当前负责人 | Codex |
-| 当前阶段 | 开发准备 / 文档治理 |
-| 当前 Sprint | 无，尚未进入蓝图 Sprint 开发 |
-| 当前任务编号 | 文档治理：建立当前工作指针和任务追踪机制 |
+| 当前阶段 | Phase 0 工程底座与基础组件库 |
+| 当前 Sprint | Sprint 0 |
+| 当前任务编号 | Phase 0 补齐 |
 | 状态 | 已完成 |
 | 总蓝图 | `docs/02-master-blueprint.md` |
-| 阶段开发文档 | 待用户确认从 `docs/phases/phase-0-foundation.md` 或 `docs/phases/phase-1-mvp-1-record-awareness.md` 开始 |
-| 阶段验收文档 | 待用户确认后匹配对应 `docs/acceptance/phase-*.md` |
+| 阶段开发文档 | `docs/phases/phase-0-foundation.md` |
+| 阶段验收文档 | `docs/acceptance/phase-0-acceptance.md` |
 
 ## 当前阻塞项
 
-- 尚未确认下一步正式进入哪个阶段：Phase 0 工程底座，还是基于现有代码对齐 Phase 1 / MVP 1.0。
-- 涉及原生依赖、Supabase migrations、FastAPI、真实 AI secret 前仍需用户明确批准。
+- Phase 0 补齐已完成；后续如进入 Phase 1，涉及原生依赖、Supabase migrations、FastAPI、真实 AI secret 前仍需用户明确批准。
 - 当前存在一个未跟踪文件：`_archive/docs-restructure-20260512/image.png`，未判断是否需要保留、提交或删除。
 
 ## 下一步建议
 
-1. 用户确认下一位 Agent 从哪个阶段开始：建议先确认是否从 Phase 0 工程底座补齐，或直接对齐现有代码进入 Phase 1 / MVP 1.0。
-2. Agent 开始前在 `docs/TASK_LOG.md` 新增开始记录。
-3. Agent 按 `docs/02-master-blueprint.md`、对应阶段开发文档和验收文档执行。
-4. Agent 结束时补齐 `docs/TASK_LOG.md` 结束记录，并更新本文件。
+1. 可以进入 Phase 1 / MVP 1.0 的需求确认与 Sprint 1 设计评估。
+2. Phase 1 开始前仍需按 SOP 新增 `docs/TASK_LOG.md` START 记录，并更新本文件。
+3. Phase 1 不得在未获批准时新增原生依赖、创建 Supabase migrations、创建 FastAPI 服务或接入真实 AI secret。
 
 ## 最近一次交接摘要
 
-已完成文档治理：总蓝图、AI 工作手册、阶段开发文档、阶段验收文档、当前工作指针和任务追踪机制已建立。后续开发不得绕过 `docs/02-master-blueprint.md`；任何 Agent 开始和结束都必须更新 `docs/TASK_LOG.md` 与本文件。
+已按 `docs/audits/phase-0-1-gap-audit.md` 的 Phase 0 差异清单完成补齐：扩展主题 token，新增 `src/theme` 统一导出入口，补齐 Input、Tag、ErrorState，收敛 Button/Card/Empty/Loading 组件 API，收窄 `.env.example` 为移动端 public env，并完成 lint/typecheck/test/web 启动验收。未进入 Phase 1，未新增原生依赖，未接 Supabase、FastAPI、真实 AI secret，未创建 migration。

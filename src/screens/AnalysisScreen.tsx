@@ -1,9 +1,9 @@
 import React, { useEffect } from "react"
 import { router, useLocalSearchParams } from "expo-router"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
-import { PrimaryButton } from "../components"
+import { ErrorState, LoadingState, PrimaryButton, Tag } from "../components"
 import { getLevelLabel, useBodyPuzzleStore } from "../stores/bodyPuzzleStore"
-import { colors, radius, spacing } from "../styles/tokens"
+import { colors, radius, spacing, typography } from "../theme"
 
 export function AnalysisScreen() {
   const params = useLocalSearchParams<{ mock?: string }>()
@@ -25,9 +25,12 @@ export function AnalysisScreen() {
   if (!activeMealId) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.title}>还没有餐食</Text>
-        <Text style={styles.description}>请先创建一条模拟餐食记录。</Text>
-        <PrimaryButton title="去拍图记录" onPress={() => router.replace("/record")} />
+        <ErrorState
+          title="还没有餐食"
+          description="请先创建一条模拟餐食记录。"
+          actionText="去拍图记录"
+          onAction={() => router.replace("/record")}
+        />
       </View>
     )
   }
@@ -35,14 +38,18 @@ export function AnalysisScreen() {
   if (meal?.status === "analysis_failed") {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.spinner}>⚠</Text>
-        <Text style={styles.title}>AI 分析失败</Text>
-        <Text style={styles.description}>模拟分析暂时失败。你可以重试、换一张图，或用 mock 结果继续。</Text>
-        <PrimaryButton title="重新分析" onPress={() => analyzeActiveMeal()} />
-        <PrimaryButton title="重新选择照片" onPress={() => router.replace("/record")} />
-        <Pressable style={styles.recoverButton} onPress={() => analyzeActiveMeal("low_confidence")}>
-          <Text style={styles.recoverText}>用模拟结果继续</Text>
-        </Pressable>
+        <ErrorState
+          title="AI 分析失败"
+          description="模拟分析暂时失败。你可以重试、换一张图，或用 mock 结果继续。"
+          actionText="重新分析"
+          onAction={() => analyzeActiveMeal()}
+          secondaryActionText="重新选择照片"
+          onSecondaryAction={() => router.replace("/record")}
+        >
+          <Pressable style={styles.recoverButton} onPress={() => analyzeActiveMeal("low_confidence")}>
+            <Text style={styles.recoverText}>用模拟结果继续</Text>
+          </Pressable>
+        </ErrorState>
       </View>
     )
   }
@@ -50,8 +57,7 @@ export function AnalysisScreen() {
   if (!analysis) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.spinner}>🔍</Text>
-        <Text style={styles.loadingTitle}>识别餐图结构</Text>
+        <LoadingState text="识别餐图结构" />
         <Text style={styles.description}>正在用模拟数据快速分析这张餐图</Text>
         <View style={styles.stepTrack}>
           <View style={styles.stepDone} />
@@ -66,10 +72,10 @@ export function AnalysisScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.badgeRow}>
-        <Text style={styles.sourceBadge}>模拟数据</Text>
+        <Tag>模拟数据</Tag>
         <View style={styles.badgeGroup}>
-          {analysis.confidence === "low" && <Text style={styles.lowBadge}>低置信</Text>}
-          <Text style={[styles.riskBadge, riskLevel === "medium" && styles.riskBadgeWarning]}>{riskLevel === "medium" ? "⚡ 中等" : "✓ 低风险"}</Text>
+          {analysis.confidence === "low" && <Tag tone="danger">低置信</Tag>}
+          <Tag tone={riskLevel === "medium" ? "warning" : "success"}>{riskLevel === "medium" ? "⚡ 中等" : "✓ 低风险"}</Tag>
         </View>
       </View>
 
@@ -131,8 +137,8 @@ export function AnalysisScreen() {
       </View>
 
       <View style={styles.tagRow}>
-        <Text style={styles.tag}>主食偏多</Text>
-        <Text style={styles.tag}>少蔬菜</Text>
+        <Tag tone="warning">主食偏多</Tag>
+        <Tag tone="warning">少蔬菜</Tag>
       </View>
 
       <Text style={styles.note}>吃完记得回来打分 🙂</Text>
@@ -177,26 +183,10 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     backgroundColor: colors.background
   },
-  spinner: {
-    fontSize: 32,
-    textAlign: "center"
-  },
-  title: {
-    color: colors.textPrimary,
-    fontSize: 26,
-    fontWeight: "700",
-    textAlign: "center"
-  },
-  loadingTitle: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: "800",
-    textAlign: "center"
-  },
   description: {
     color: colors.textSecondary,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: typography.size.lg,
+    lineHeight: typography.lineHeight.md,
     textAlign: "center"
   },
   stepTrack: {
@@ -225,64 +215,33 @@ const styles = StyleSheet.create({
   },
   recoverText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: "800"
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.bold
   },
   badgeRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center"
   },
-  sourceBadge: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    color: colors.textMuted,
-    fontSize: 10
-  },
   badgeGroup: {
     flexDirection: "row",
     gap: spacing.sm,
     alignItems: "center"
-  },
-  lowBadge: {
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    color: colors.danger,
-    fontSize: 12,
-    fontWeight: "800",
-    backgroundColor: colors.dangerSurface
-  },
-  riskBadge: {
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    color: colors.success,
-    fontSize: 12,
-    fontWeight: "700",
-    backgroundColor: colors.successSurface
-  },
-  riskBadgeWarning: {
-    color: colors.warning,
-    backgroundColor: colors.warningSurface
   },
   titleBlock: {
     marginTop: spacing.xs
   },
   dishTitle: {
     color: colors.textPrimary,
-    fontSize: 24,
-    fontWeight: "700",
-    lineHeight: 30
+    fontSize: typography.size.titleLg,
+    fontWeight: typography.weight.semibold,
+    lineHeight: typography.lineHeight.titleSm
   },
   keyLine: {
     marginTop: spacing.sm,
     color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 20
+    fontSize: typography.size.md,
+    lineHeight: typography.lineHeight.sm
   },
   riskTrack: {
     height: 4,
@@ -306,15 +265,15 @@ const styles = StyleSheet.create({
   },
   adviceText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 21
+    fontSize: typography.size.md,
+    lineHeight: typography.lineHeight.md
   },
   lowNote: {
     marginTop: spacing.sm,
     color: colors.danger,
-    fontSize: 12,
+    fontSize: typography.size.sm,
     lineHeight: 18,
-    fontWeight: "700"
+    fontWeight: typography.weight.semibold
   },
   card: {
     borderWidth: 1,
@@ -325,8 +284,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: "800",
+    fontSize: typography.size.xl,
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.sm
   },
   infoRow: {
@@ -338,23 +297,23 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     color: colors.textSecondary,
-    fontSize: 13
+    fontSize: typography.size.md
   },
   infoValue: {
     color: colors.textPrimary,
-    fontSize: 13,
-    fontWeight: "700"
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.semibold
   },
   cardText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 21
+    fontSize: typography.size.md,
+    lineHeight: typography.lineHeight.md
   },
   focusItem: {
     marginTop: spacing.sm,
     color: colors.brand,
-    fontSize: 13,
-    fontWeight: "700"
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.semibold
   },
   correctionActions: {
     gap: spacing.sm,
@@ -369,8 +328,8 @@ const styles = StyleSheet.create({
   },
   correctionText: {
     color: colors.textPrimary,
-    fontSize: 13,
-    fontWeight: "800"
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.bold
   },
   correctionList: {
     borderTopWidth: 1,
@@ -380,7 +339,7 @@ const styles = StyleSheet.create({
   },
   correctionItem: {
     color: colors.textSecondary,
-    fontSize: 12,
+    fontSize: typography.size.sm,
     lineHeight: 18
   },
   tagRow: {
@@ -388,18 +347,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: spacing.sm
   },
-  tag: {
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    color: colors.warning,
-    fontSize: 12,
-    fontWeight: "700",
-    backgroundColor: colors.warningSurface
-  },
   note: {
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: typography.size.md,
     textAlign: "center"
   }
 })

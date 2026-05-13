@@ -3,7 +3,7 @@ import { router } from "expo-router"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { PrimaryButton } from "../components"
 import { getMealTypeLabel, useBodyPuzzleStore } from "../stores/bodyPuzzleStore"
-import { colors, radius, spacing } from "../styles/tokens"
+import { colors, radius, size, spacing, typography } from "../theme"
 import type { MealType } from "../types/meal"
 
 type LoginMode = "role" | "new" | "returning"
@@ -259,7 +259,7 @@ function guessMealType(): MealType {
 const styles = StyleSheet.create({
   loginShell: {
     flex: 1,
-    maxWidth: 430,
+    maxWidth: size.mobileMaxWidth,
     width: "100%",
     alignSelf: "center",
     backgroundColor: colors.brandSurface
@@ -276,19 +276,19 @@ const styles = StyleSheet.create({
   },
   loginTitle: {
     color: colors.textPrimary,
-    fontSize: 28,
-    fontWeight: "800"
+    fontSize: typography.size.displaySm,
+    fontWeight: typography.weight.bold
   },
   loginSub: {
     marginTop: spacing.md,
     color: colors.textSecondary,
-    fontSize: 16
+    fontSize: typography.size.xl
   },
   loginText: {
     marginTop: spacing.sm,
     color: colors.textMuted,
-    fontSize: 13,
-    lineHeight: 21,
+    fontSize: typography.size.md,
+    lineHeight: typography.lineHeight.md,
     textAlign: "center"
   },
   loginPanel: {
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: spacing.xl,
-    backgroundColor: "#FFFFFF"
+    backgroundColor: colors.surfaceRaised
   },
   primaryRole: {
     borderRadius: 22,
@@ -304,14 +304,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand
   },
   primaryRoleTitle: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "900"
+    color: colors.textInverse,
+    fontSize: typography.size.titleSm,
+    fontWeight: typography.weight.black
   },
   primaryRoleText: {
     marginTop: spacing.sm,
-    color: "rgba(255,255,255,.78)",
-    fontSize: 12,
+    color: colors.overlayLight,
+    fontSize: typography.size.sm,
     lineHeight: 19
   },
   secondaryRole: {
@@ -323,30 +323,30 @@ const styles = StyleSheet.create({
   },
   secondaryRoleTitle: {
     color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: "900"
+    fontSize: typography.size.titleSm,
+    fontWeight: typography.weight.black
   },
   secondaryRoleText: {
     marginTop: spacing.sm,
     color: colors.textSecondary,
-    fontSize: 12,
+    fontSize: typography.size.sm,
     lineHeight: 19
   },
   prototypeHint: {
     marginTop: spacing.sm,
     color: colors.textMuted,
-    fontSize: 11,
+    fontSize: typography.size.xs,
     lineHeight: 18,
     textAlign: "center"
   },
   authTitle: {
     color: colors.textPrimary,
-    fontSize: 20,
-    fontWeight: "900"
+    fontSize: typography.size.titleMd,
+    fontWeight: typography.weight.black
   },
   authDesc: {
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: typography.size.md,
     lineHeight: 20
   },
   wechatButton: {
@@ -357,9 +357,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.textPrimary
   },
   wechatButtonText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "900"
+    color: colors.textInverse,
+    fontSize: typography.size.lg,
+    fontWeight: typography.weight.black
   },
   phoneButton: {
     minHeight: 54,
@@ -370,8 +370,8 @@ const styles = StyleSheet.create({
   },
   phoneButtonText: {
     color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: "900"
+    fontSize: typography.size.lg,
+    fontWeight: typography.weight.black
   },
   disabledButton: {
     opacity: 0.45
@@ -387,8 +387,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: 6,
-    color: "#FFFFFF",
-    fontSize: 12,
+    color: colors.textInverse,
+    fontSize: typography.size.sm,
     lineHeight: 16,
     textAlign: "center"
   },
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   agreementText: {
     flex: 1,
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: typography.size.sm,
     lineHeight: 18
   },
   returnButton: {
@@ -408,17 +408,17 @@ const styles = StyleSheet.create({
   },
   returnButtonText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: "700"
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.semibold
   },
   container: {
     flexGrow: 1,
     gap: spacing.lg,
-    maxWidth: 430,
+    maxWidth: size.mobileMaxWidth,
     width: "100%",
     alignSelf: "center",
     padding: spacing.lg,
-    paddingBottom: 90,
+    paddingBottom: size.bottomChrome,
     backgroundColor: colors.background
   },
   todayCard: {
@@ -428,14 +428,14 @@ const styles = StyleSheet.create({
   },
   kicker: {
     color: colors.textSecondary,
-    fontSize: 12,
+    fontSize: typography.size.sm,
     marginBottom: spacing.xs
   },
   todayTitle: {
     color: colors.textPrimary,
-    fontSize: 30,
-    fontWeight: "700",
-    lineHeight: 38
+    fontSize: typography.size.displayMd,
+    fontWeight: typography.weight.semibold,
+    lineHeight: typography.lineHeight.titleLg
   },
   unlockBox: {
     marginTop: spacing.lg,
@@ -451,13 +451,13 @@ const styles = StyleSheet.create({
   unlockText: {
     flex: 1,
     color: colors.success,
-    fontSize: 12,
-    fontWeight: "700"
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold
   },
   unlockCount: {
     color: colors.success,
-    fontSize: 11,
-    fontWeight: "700"
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.semibold
   },
   progressTrack: {
     height: 4,
@@ -486,12 +486,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    backgroundColor: "rgba(255,255,255,.92)"
+    backgroundColor: colors.surfaceRaised
   },
   backfillText: {
     color: colors.brand,
-    fontSize: 12,
-    fontWeight: "900"
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.black
   },
   plateCircle: {
     width: 104,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
     borderRadius: 52,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF"
+    backgroundColor: colors.surfaceRaised
   },
   plateIcon: {
     fontSize: 42
@@ -509,9 +509,9 @@ const styles = StyleSheet.create({
   recordText: {
     position: "absolute",
     bottom: spacing.lg,
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "800",
+    color: colors.textInverse,
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.bold,
     textShadowColor: "rgba(0,0,0,.18)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 6
@@ -523,8 +523,8 @@ const styles = StyleSheet.create({
   },
   thinkButtonText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: "700"
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.semibold
   },
   pendingCard: {
     borderRadius: radius.xl,
@@ -545,15 +545,15 @@ const styles = StyleSheet.create({
   },
   greenLabel: {
     color: colors.success,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs
   },
   cardTitle: {
     color: colors.textPrimary,
-    fontSize: 30,
-    fontWeight: "700",
-    lineHeight: 38
+    fontSize: typography.size.displayMd,
+    fontWeight: typography.weight.semibold,
+    lineHeight: typography.lineHeight.titleLg
   },
   statusPill: {
     alignSelf: "flex-start",
@@ -561,9 +561,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     color: colors.brand,
-    fontSize: 11,
-    fontWeight: "900",
-    backgroundColor: "#FFFFFF"
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.black,
+    backgroundColor: colors.surfaceRaised
   },
   donePill: {
     alignSelf: "flex-start",
@@ -571,15 +571,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     color: colors.success,
-    fontSize: 11,
-    fontWeight: "900",
-    backgroundColor: "#FFFFFF"
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.black,
+    backgroundColor: colors.surfaceRaised
   },
   cardDesc: {
     marginTop: spacing.md,
     color: colors.textSecondary,
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: typography.size.base,
+    lineHeight: typography.lineHeight.md,
     textAlign: "center"
   },
   eatingVisual: {
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginVertical: spacing.lg,
-    backgroundColor: "#FFFFFF"
+    backgroundColor: colors.surfaceRaised
   },
   eatingIcon: {
     fontSize: 42
@@ -608,9 +608,9 @@ const styles = StyleSheet.create({
   },
   plusOne: {
     marginTop: spacing.sm,
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "700"
+    color: colors.textInverse,
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.semibold
   },
   ghostButton: {
     alignItems: "center",
@@ -624,8 +624,8 @@ const styles = StyleSheet.create({
   },
   ghostButtonText: {
     color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: "700"
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.semibold
   },
   mirrorCard: {
     borderRadius: radius.lg,
@@ -633,9 +633,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand
   },
   mirrorText: {
-    color: "#FFFFFF",
-    fontSize: 17,
+    color: colors.textInverse,
+    fontSize: typography.size.xl,
     lineHeight: 27,
-    fontWeight: "700"
+    fontWeight: typography.weight.semibold
   },
 })

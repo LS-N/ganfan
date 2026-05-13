@@ -1,7 +1,7 @@
 import { router, Slot, usePathname } from "expo-router"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useBodyPuzzleStore } from "../src/stores/bodyPuzzleStore"
-import { colors, spacing } from "../src/styles/tokens"
+import { colors, opacity, radius, size, spacing, typography } from "../src/theme"
 
 const titles: Record<string, string> = {
   "/": "干饭",
@@ -106,12 +106,12 @@ const styles = StyleSheet.create({
   },
   nav: {
     width: "100%",
-    maxWidth: 430,
+    maxWidth: size.mobileMaxWidth,
     minHeight: 70,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
     backgroundColor: colors.surface
@@ -123,35 +123,35 @@ const styles = StyleSheet.create({
     minWidth: 170,
     flexDirection: "row",
     alignItems: "center",
-    gap: 14
+    gap: spacing.md
   },
   avatar: {
     width: 42,
     height: 42,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 21,
+    borderRadius: radius.pill,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.brandSurface
   },
   avatarText: {
-    fontSize: 23
+    fontSize: typography.size.titleLg
   },
   homeStat: {
     flexDirection: "row",
     alignItems: "baseline",
-    gap: 6
+    gap: spacing.xs
   },
   homeStatText: {
     color: colors.textPrimary,
-    fontSize: 21,
-    fontWeight: "900"
+    fontSize: typography.size.titleMd,
+    fontWeight: typography.weight.black
   },
   homeStatMuted: {
     color: colors.textMuted,
-    fontSize: 21,
-    fontWeight: "900"
+    fontSize: typography.size.titleMd,
+    fontWeight: typography.weight.black
   },
   backButton: {
     minWidth: 88,
@@ -159,18 +159,18 @@ const styles = StyleSheet.create({
   },
   backText: {
     color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: "700"
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.semibold
   },
   navTitle: {
     flex: 1,
     color: colors.textPrimary,
-    fontSize: 19,
-    fontWeight: "800",
+    fontSize: typography.size.titleMd,
+    fontWeight: typography.weight.bold,
     textAlign: "center"
   },
   invisibleTitle: {
-    opacity: 0
+    opacity: opacity.invisible
   },
   navRight: {
     width: 88,
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   tabbar: {
     width: "100%",
-    maxWidth: 430,
+    maxWidth: size.mobileMaxWidth,
     minHeight: 64,
     flexDirection: "row",
     backgroundColor: colors.surface
@@ -203,17 +203,17 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 2
+    gap: spacing.xxs
   },
   tabIcon: {
     color: colors.textSecondary,
-    fontSize: 20,
+    fontSize: typography.size.titleMd,
     lineHeight: 24
   },
   tabLabel: {
     color: colors.textSecondary,
-    fontSize: 10,
-    fontWeight: "600"
+    fontSize: typography.size.xxs,
+    fontWeight: typography.weight.medium
   },
   tabActive: {
     color: colors.brand
