@@ -1,4 +1,4 @@
-import type { Analysis, AnalysisCorrection, BodyPuzzleReport, DrawCard, Feedback, MealRecord, MealSource, MealStatus, MealType, Profile } from "../types/meal"
+import type { Analysis, AnalysisCorrection, BodyPuzzleReport, DailyCheckin, DrawCard, Feedback, MealImage, MealRecord, MealSource, MealStatus, MealType, Profile, WeightLog } from "../types/meal"
 
 export type CreateMealInput = {
   userId: string
@@ -11,10 +11,24 @@ export type CreateMealInput = {
   drawCardId?: string
 }
 
+export type SaveMealImageInput = {
+  mealId: string
+  imageType: MealImage["imageType"]
+  localUri?: string
+  storageUrl?: string
+}
+
 export type SaveFeedbackInput = Pick<Feedback, "fullness" | "comfort" | "sleepiness" | "bloating" | "energy" | "priceSatisfaction" | "note"> & {
   mealId: string
   comfortTags?: Feedback["comfortTags"]
   tasteFeedback?: Feedback["tasteFeedback"]
+}
+
+export type SaveDailyCheckinInput = Pick<DailyCheckin, "energy" | "digestion" | "satiety"> & {
+  userId: string
+  date: string
+  mealIds: string[]
+  isNextDay?: boolean
 }
 
 export type MealRepository = {
@@ -30,6 +44,11 @@ export type ProfileRepository = {
   saveProfile(profile: Profile): Promise<Profile>
 }
 
+export type WeightRepository = {
+  saveWeightLog(input: Omit<WeightLog, "id" | "recordedAt"> & { recordedAt?: string }): Promise<WeightLog>
+  listWeightLogs(userId?: string): Promise<WeightLog[]>
+}
+
 export type AnalysisRepository = {
   saveAnalysis(input: Analysis): Promise<Analysis>
   saveCorrection(input: AnalysisCorrection & { mealId: string; analysisId?: string }): Promise<AnalysisCorrection>
@@ -40,6 +59,17 @@ export type AnalysisRepository = {
 export type FeedbackRepository = {
   saveFeedback(input: SaveFeedbackInput): Promise<Feedback>
   listFeedbacks(userId?: string): Promise<Feedback[]>
+}
+
+export type DailyCheckinRepository = {
+  saveDailyCheckin(input: SaveDailyCheckinInput): Promise<DailyCheckin>
+  listDailyCheckins(userId?: string): Promise<DailyCheckin[]>
+  getDailyCheckin(date: string, userId?: string): Promise<DailyCheckin | undefined>
+}
+
+export type MealImageRepository = {
+  saveMealImage(input: SaveMealImageInput): Promise<MealImage>
+  listMealImages(mealId: string): Promise<MealImage[]>
 }
 
 export type ReportRepository = {

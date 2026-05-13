@@ -13,7 +13,7 @@ export function DrawCardScreen() {
   const markCardDecision = useBodyPuzzleStore((state) => state.markCardDecision)
 
   useEffect(() => {
-    if (!report && feedbackCount >= 3) {
+    if (!report && feedbackCount >= 7) {
       generateReport()
     }
   }, [feedbackCount, generateReport, report])
@@ -21,8 +21,8 @@ export function DrawCardScreen() {
   if (!report) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.title}>还不能抽卡</Text>
-        <Text style={styles.description}>{feedbackCount < 3 ? "餐前抽卡必须来自你的已记录规律。至少完成 3 餐反馈后再试。" : "正在准备你的餐前卡片。"}</Text>
+        <Text style={styles.title}>还不能生成推荐卡</Text>
+        <Text style={styles.description}>{feedbackCount < 7 ? "推荐卡必须来自你的已记录规律。至少完成 7 餐反馈后再试。" : "正在准备你的餐前卡片。"}</Text>
         <PrimaryButton title="去看报告" onPress={() => router.replace("/report")} />
       </View>
     )
@@ -30,8 +30,8 @@ export function DrawCardScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>餐前抽卡</Text>
-      <Text style={styles.description}>这不是完整餐单托管，只是基于已记录规律给下一餐一个轻提示。</Text>
+      <Text style={styles.title}>下一餐推荐卡</Text>
+      <Text style={styles.description}>基于 Phase 1 已记录反馈给下一餐一个轻提示，不做周计划托管。</Text>
 
       {report.drawCardRules.map((card) => (
         <CardRule key={card.id} card={card} onAccept={() => markCardDecision(card.id, true)} onSkip={() => markCardDecision(card.id, false)} />

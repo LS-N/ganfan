@@ -80,6 +80,20 @@
 - 需要用户批准：新增原生依赖、Supabase migrations、FastAPI 服务、真实 AI secret、EAS 原生打包配置变化均需单独确认；在确认前不执行这些事项。
 - 开始前状态：Phase 0 已通过最近 commit `af833cb chore: complete phase 0 foundation` 完成；当前仅有既有未跟踪文件 `_archive/docs-restructure-20260512/image.png`；Phase 1 仍需先复核审计差异并与用户确认补齐计划。
 
+## 2026-05-13 23:11:13 +08:00 - Codex - END
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 1-6 基础闭环补齐
+- 任务编号：Phase 1 / MVP 1.0 补齐
+- 完成内容：按真实产品方向补齐 Phase 1 基础闭环：新增 `expo-sqlite`、`expo-camera`、`expo-image-manipulator`、`expo-notifications`、`@react-native-community/netinfo`；新增 SQLite 本地优先 schema、本地 repository、sync_queue；默认无 Supabase 配置时仍写本机数据库；补 DailyCheckin、WeightLog、MealImage 类型；记录页接入真实相机和图片压缩；反馈后进入每日回访；首页加入待回访状态和离线横幅；档案页补体重记录；身体洞察/推荐卡收敛为 7 餐解锁且不进入 Phase 2；新增 Supabase Phase 1 migrations/RLS/seed；新增 FastAPI AI service 边界和后端 `.env.example`，当前 provider 为 mock，未写入真实 secret。
+- 修改文件：`.env.example`、`app.json`、`app/_layout.tsx`、`app/checkin.tsx`、`package.json`、`package-lock.json`、`src/db/`、`src/screens/`、`src/services/`、`src/stores/bodyPuzzleStore.ts`、`src/types/meal.ts`、`supabase/`、`services/ai/`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 验证：`npm run lint` 通过；`npm run typecheck` 通过；`npm test` 通过（7 suites / 12 tests）；`npm run web -- --port 8100 --non-interactive` 启动后 Metro 在 `http://localhost:8081` 完成 Web bundle，`Invoke-WebRequest http://localhost:8081` 返回 200；浏览器自动化插件打开本地预览超时，未完成可视化截图。
+- Android/iOS 影响：新增 Camera、SQLite、Notifications、NetInfo、Image Manipulator 原生能力和权限配置，Android/iOS 均受影响；需要真机验证权限、相机、通知和 SQLite 持久化。
+- 热更新影响：JS/TS 页面和业务逻辑可 OTA；但新增原生依赖和权限配置不能仅靠热更新完成，已安装旧包的设备需要重新打包安装。
+- 是否需要重新打包：需要。新增原生依赖和权限配置后必须执行 EAS preview/development build 或本地原生构建。
+- 遗留问题：未在真实 Supabase 项目执行 migrations；FastAPI provider 仍是 mock，未接 Anthropic/OpenAI secret；未做 Android/iOS 真机 24 小时稳定性验收；浏览器自动化截图未完成；既有未跟踪 `_archive/docs-restructure-20260512/image.png` 未处理。
+- 下一步：执行 Supabase migrations 和 Storage bucket 配置；启动 FastAPI 服务并替换真实 AI provider；真机验证 Phase 1 全链路；执行 EAS preview build。
+
 ## 2026-05-13 22:02:52 +08:00 - Codex - START
 
 - 阶段：开发准备 / 文档治理

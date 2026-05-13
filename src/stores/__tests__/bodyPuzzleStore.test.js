@@ -1,7 +1,9 @@
+/* global process */
 const { useBodyPuzzleStore } = require("../bodyPuzzleStore")
 
 describe("bodyPuzzleStore", () => {
   beforeEach(() => {
+    process.env.EXPO_PUBLIC_SERVICE_MODE = "mock"
     useBodyPuzzleStore.getState().resetMockData()
   })
 

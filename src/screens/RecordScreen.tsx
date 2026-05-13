@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { router, useLocalSearchParams } from "expo-router"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import { CameraView, useCameraPermissions } from "expo-camera"
 import { PrimaryButton } from "../components"
+import { prepareMealImage } from "../services/imageService"
 import { useBodyPuzzleStore } from "../stores/bodyPuzzleStore"
 import { colors, radius, spacing } from "../styles/tokens"
 import type { MealType } from "../types/meal"
@@ -17,9 +19,12 @@ export function RecordScreen() {
   const params = useLocalSearchParams<{ mode?: string }>()
   const createMockMeal = useBodyPuzzleStore((state) => state.createMockMeal)
   const startActiveMeal = useBodyPuzzleStore((state) => state.startActiveMeal)
+  const cameraRef = useRef<CameraView>(null)
+  const [permission, requestPermission] = useCameraPermissions()
   const [captureMode, setCaptureMode] = useState<"camera" | "gallery">("camera")
   const [mealType, setMealType] = useState<MealType>("lunch")
   const [recordMode, setRecordMode] = useState<"mode" | "shoot" | "selected">(params.mode === "shoot" ? "shoot" : "mode")
+  const [photoUri, setPhotoUri] = useState<string>()
 
   useEffect(() => {
     if (params.mode === "shoot") {
@@ -27,14 +32,26 @@ export function RecordScreen() {
     }
   }, [params.mode])
 
-  function submit() {
-    createMockMeal(mealType)
+  function submit(uri = photoUri) {
+    createMockMeal(mealType, uri ? "photo" : "backfill", uri)
     router.push("/analysis")
   }
 
   function submitWithMode(mode: "low" | "failed") {
     createMockMeal(mode === "low" ? "snack" : mealType)
     router.push(`/analysis?mock=${mode}`)
+  }
+
+  async function capturePhoto() {
+    if (!permission?.granted) {
+      await requestPermission()
+      return
+    }
+    const photo = await cameraRef.current?.takePictureAsync({ quality: 0.8 })
+    if (!photo?.uri) return
+    const preparedUri = await prepareMealImage(photo.uri)
+    setPhotoUri(preparedUri)
+    setRecordMode("selected")
   }
 
   function startBackfill() {
@@ -75,12 +92,12 @@ export function RecordScreen() {
         </View>
         <View style={styles.previewBox}>
           <Text style={styles.previewIcon}>🍱</Text>
-          <Text style={styles.previewTitle}>模拟餐盒图片</Text>
+          <Text style={styles.previewTitle}>{photoUri ? "已保存餐食照片" : "无照片记录"}</Text>
           <Pressable style={styles.retakePill} onPress={() => setRecordMode("shoot")}>
             <Text style={styles.retakeText}>重拍/重选</Text>
           </Pressable>
         </View>
-        <PrimaryButton title="开始分析" onPress={submit} />
+        <PrimaryButton title="开始分析" onPress={() => submit()} />
         <View style={styles.demoActions}>
           <Pressable style={styles.demoButton} onPress={() => submitWithMode("low")}>
             <Text style={styles.demoButtonText}>模拟低置信度</Text>
@@ -95,7 +112,7 @@ export function RecordScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Pressable style={styles.cameraPanel} onPress={() => setRecordMode("selected")}>
+      <View style={styles.cameraPanel}>
         <View style={styles.modeSwitch}>
           <Pressable style={[styles.modeButton, captureMode === "camera" && styles.modeButtonActive]} onPress={() => setCaptureMode("camera")}>
             <Text style={[styles.modeText, captureMode === "camera" && styles.modeTextActive]}>拍照</Text>
@@ -110,21 +127,26 @@ export function RecordScreen() {
           <Text style={styles.captureSub}>{captureMode === "camera" ? "打开摄像头拍这一餐" : "从相册选择餐食图片"}</Text>
         </View>
 
-        <View style={styles.lensBox}>
-          <View style={styles.lensCircle}>
-            <Text style={styles.lensIcon}>🍽️</Text>
-          </View>
-        </View>
+        {captureMode === "camera" && permission?.granted ? (
+          <CameraView ref={cameraRef} style={styles.cameraPreview} facing="back" />
+        ) : (
+          <Pressable style={styles.lensBox} onPress={permission?.granted ? () => setRecordMode("selected") : requestPermission}>
+            <View style={styles.lensCircle}>
+              <Text style={styles.lensIcon}>{permission?.granted ? "🍽️" : "📷"}</Text>
+            </View>
+            {!permission?.granted && <Text style={styles.permissionText}>授权相机后拍照记录</Text>}
+          </Pressable>
+        )}
 
         <View style={styles.shutterRow}>
           <View />
-          <View style={styles.shutter} />
+          <Pressable style={styles.shutter} onPress={capturePhoto} />
           <Text style={styles.galleryIcon}>▧</Text>
         </View>
         <Text style={styles.captureHint}>{captureMode === "camera" ? "拍食物" : "选择后会立即开始分析"}</Text>
-      </Pressable>
+      </View>
 
-      <PrimaryButton title="没有照片，用模拟数据试试 →" onPress={submit} />
+      <PrimaryButton title="没有照片，先手动记录 →" onPress={() => submit()} />
     </ScrollView>
   )
 }
@@ -275,6 +297,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#151515"
   },
+  cameraPreview: {
+    height: 280,
+    borderRadius: 34,
+    overflow: "hidden"
+  },
   lensCircle: {
     width: 112,
     height: 112,
@@ -285,6 +312,12 @@ const styles = StyleSheet.create({
   },
   lensIcon: {
     fontSize: 48
+  },
+  permissionText: {
+    marginTop: spacing.md,
+    color: "rgba(255,255,255,.72)",
+    fontSize: 13,
+    fontWeight: "700"
   },
   shutterRow: {
     flexDirection: "row",

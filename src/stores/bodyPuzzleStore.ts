@@ -4,9 +4,21 @@ import { buildMockBodyPuzzleReport } from "../services/mockBodyPuzzleService"
 import { updateDrawCardDecision } from "../services/mockDrawCardService"
 import { attachAnalysisToMeal, attachFeedbackToMeal, createMockFeedback, createMockMeal, startMeal } from "../services/mockMealService"
 import { createMockMealSeed, createSeedFeedbacks, mockProfile, mockUserId, nowIso } from "../services/mockSeedData"
-import { authService, getAiMealAnalysisService, getAnalysisRepository, getDrawCardRepository, getFeedbackRepository, getMealRepository, getReportRepository } from "../services"
-import { shouldUseRealServices } from "../services/serviceMode"
-import type { Analysis, ComfortTag, Feedback, Fullness, MealRecord, MealType, PriceSatisfaction, Profile, Report, TasteFeedback } from "../types/meal"
+import { scheduleFeedbackReminder } from "../services/notificationService"
+import {
+  authService,
+  getAiMealAnalysisService,
+  getAnalysisRepository,
+  getDailyCheckinRepository,
+  getDrawCardRepository,
+  getFeedbackRepository,
+  getMealRepository,
+  getProfileRepository,
+  getReportRepository,
+  getWeightRepository
+} from "../services"
+import { getServiceMode } from "../services/serviceMode"
+import type { Analysis, ComfortTag, DailyCheckin, Feedback, Fullness, MealRecord, MealType, PriceSatisfaction, Profile, Report, TasteFeedback, WeightLog } from "../types/meal"
 
 type SeedScenario = 0 | 3 | 7
 
@@ -15,16 +27,20 @@ type BodyPuzzleState = {
   meals: MealRecord[]
   analyses: Analysis[]
   feedbacks: Feedback[]
+  dailyCheckins: DailyCheckin[]
+  weightLogs: WeightLog[]
   report?: Report
   activeMealId?: string
   hydratePersistedData: () => Promise<void>
   setActiveMeal: (mealId: string) => void
   completeMockProfile: (input?: { goal?: string; avoid?: string; budget?: string; feeling?: string }) => void
-  createMockMeal: (mealType?: MealType, source?: MealRecord["source"]) => string
+  createMockMeal: (mealType?: MealType, source?: MealRecord["source"], photoUri?: string) => string
   analyzeActiveMeal: (mode?: MockAnalysisMode) => void
   startActiveMeal: () => void
   addAnalysisCorrection: (input: { field: string; aiValue: string; userValue: string }) => void
   saveFeedback: (input: { fullness: Fullness; comfortTags: ComfortTag[]; tasteFeedback: TasteFeedback[]; priceSatisfaction?: PriceSatisfaction }) => void
+  saveDailyCheckin: (input: { energy: NonNullable<DailyCheckin["energy"]>; digestion: NonNullable<DailyCheckin["digestion"]>; satiety: NonNullable<DailyCheckin["satiety"]> }) => void
+  saveWeightLog: (valueKg: number) => void
   generateReport: () => void
   markCardDecision: (cardId: string, accepted: boolean) => void
   loadSeedScenario: (scenario: SeedScenario) => void
@@ -35,13 +51,22 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
   meals: [],
   analyses: [],
   feedbacks: [],
+  dailyCheckins: [],
+  weightLogs: [],
   hydratePersistedData: async () => {
+    if (!shouldPersistProductData()) return
+    const profile = await getProfileRepository().getCurrentProfile()
     const meals = await getMealRepository().listMeals()
-    if (!meals.length) return
+    const dailyCheckins = await getDailyCheckinRepository().listDailyCheckins()
+    const weightLogs = await getWeightRepository().listWeightLogs()
+    if (!meals.length && !profile) return
     set({
+      profile,
       meals,
       analyses: meals.flatMap((meal) => (meal.analysis ? [meal.analysis] : [])),
       feedbacks: meals.flatMap((meal) => (meal.feedback ? [meal.feedback] : [])),
+      dailyCheckins,
+      weightLogs,
       activeMealId: get().activeMealId ?? meals[0]?.id
     })
   },
@@ -50,8 +75,7 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
   },
   completeMockProfile: (input) => {
     const updatedAt = nowIso()
-    set({
-      profile: {
+    const profile = {
         ...mockProfile,
         goal: mapGoal(input?.goal),
         budgetLevel: mapBudget(input?.budget),
@@ -60,17 +84,21 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
         commonFeelings: mapFeelings(input?.feeling),
         updatedAt
       }
-    })
+    set({ profile })
+    if (shouldPersistProductData()) {
+      void getProfileRepository().saveProfile(profile)
+    }
   },
-  createMockMeal: (mealType = "lunch", source = "photo") => {
+  createMockMeal: (mealType = "lunch", source = "photo", photoUri?: string) => {
     const meal = createMockMeal({
       userId: mockUserId,
       mealType,
       source,
+      photoUri,
       mealCategory: source === "backfill" ? "补记餐次" : mealType === "breakfast" ? "早餐组合" : "外卖午餐"
     })
     set((state) => ({ meals: [meal, ...state.meals], activeMealId: meal.id }))
-    if (shouldUseRealServices()) {
+    if (shouldPersistProductData()) {
       void persistCreatedMeal(meal)
     }
     return meal.id
@@ -86,7 +114,7 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
         analyses: [analysis, ...state.analyses.filter((item) => item.mealId !== meal.id)],
         meals: state.meals.map((item) => (item.id === meal.id ? attachAnalysisToMeal({ ...item, analysis }, analysis.id) : item))
       }))
-      if (shouldUseRealServices()) {
+      if (shouldPersistProductData()) {
         void persistAnalysis(meal)
       }
     } catch {
@@ -103,6 +131,7 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
     set((state) => ({
       meals: state.meals.map((meal) => (meal.id === activeMealId ? startMeal(meal) : meal))
     }))
+    void scheduleFeedbackReminder(activeMealId, 60)
   },
   addAnalysisCorrection: (input) => {
     const { activeMealId } = get()
@@ -114,7 +143,7 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
         meal.id === activeMealId ? { ...meal, corrections: [...meal.corrections, correction], updatedAt: correction.correctedAt } : meal
       )
     }))
-    if (shouldUseRealServices()) {
+    if (shouldPersistProductData()) {
       const analysisId = get().analyses.find((analysis) => analysis.mealId === activeMealId)?.id
       void getAnalysisRepository().saveCorrection({ ...correction, mealId: activeMealId, analysisId })
     }
@@ -128,15 +157,51 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
       feedbacks: [feedback, ...state.feedbacks.filter((item) => item.mealId !== activeMealId)],
       meals: state.meals.map((meal) => (meal.id === activeMealId ? attachFeedbackToMeal({ ...meal, feedback }, feedback.id) : meal))
     }))
-    if (shouldUseRealServices()) {
+    if (shouldPersistProductData()) {
       void persistFeedback(activeMealId, feedback)
+    }
+  },
+  saveDailyCheckin: (input) => {
+    const state = get()
+    const profile = state.profile ?? mockProfile
+    const date = localDateKey(new Date())
+    const mealIds = state.meals.filter((meal) => localDateKey(new Date(meal.createdAt)) === date).map((meal) => meal.id)
+    const optimistic: DailyCheckin = {
+      id: makeCheckinId(date),
+      userId: profile.id,
+      date,
+      mealIds,
+      dueAt: nowIso(),
+      isNextDay: false,
+      energy: input.energy,
+      digestion: input.digestion,
+      satiety: input.satiety,
+      answeredAt: nowIso(),
+      dismissed: false,
+      createdAt: nowIso(),
+      updatedAt: nowIso()
+    }
+    set((current) => ({ dailyCheckins: [optimistic, ...current.dailyCheckins.filter((item) => item.date !== date)] }))
+    if (shouldPersistProductData()) {
+      void getDailyCheckinRepository().saveDailyCheckin(optimistic)
+    }
+  },
+  saveWeightLog: (valueKg) => {
+    const profile = get().profile ?? mockProfile
+    const optimistic: WeightLog = { id: `weight-${Date.now()}`, userId: profile.id, valueKg, recordedAt: nowIso() }
+    set((state) => ({
+      weightLogs: [optimistic, ...state.weightLogs],
+      profile: state.profile ? { ...state.profile, weightKg: valueKg, weight: valueKg, updatedAt: optimistic.recordedAt } : state.profile
+    }))
+    if (shouldPersistProductData()) {
+      void getWeightRepository().saveWeightLog({ userId: profile.id, valueKg, recordedAt: optimistic.recordedAt })
     }
   },
   generateReport: () => {
     const { meals, feedbacks } = get()
     const report = buildMockBodyPuzzleReport(meals, feedbacks)
     set({ report })
-    if (shouldUseRealServices()) {
+    if (shouldPersistProductData()) {
       void persistReport(report)
     }
   },
@@ -153,7 +218,7 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
         }
       }
     })
-    if (shouldUseRealServices()) {
+    if (shouldPersistProductData()) {
       void getDrawCardRepository().updateDecision(cardId, accepted)
     }
   },
@@ -166,6 +231,8 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
       meals,
       analyses,
       feedbacks,
+      dailyCheckins: [],
+      weightLogs: [],
       report: scenario === 0 ? undefined : buildMockBodyPuzzleReport(meals, feedbacks),
       activeMealId: meals[0]?.id
     })
@@ -176,6 +243,8 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
       meals: [],
       analyses: [],
       feedbacks: [],
+      dailyCheckins: [],
+      weightLogs: [],
       report: undefined,
       activeMealId: undefined
     })
@@ -232,10 +301,23 @@ function mapFeelings(value?: string) {
   return ["sleepy"]
 }
 
+function shouldPersistProductData() {
+  return getServiceMode() !== "mock"
+}
+
+function localDateKey(date: Date) {
+  return date.toISOString().slice(0, 10)
+}
+
+function makeCheckinId(date: string) {
+  return `checkin-${date}`
+}
+
 async function persistCreatedMeal(localMeal: MealRecord) {
   const userId = await authService.getUserId()
   const persistedMeal = await getMealRepository().createMeal({
     userId,
+    id: localMeal.id,
     mealType: localMeal.mealType,
     source: localMeal.source,
     photoUri: localMeal.photoUri,

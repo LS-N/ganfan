@@ -40,6 +40,13 @@ export type Profile = {
   avoidFoods: string[]
 }
 
+export type WeightLog = {
+  id: string
+  userId: string
+  valueKg: number
+  recordedAt: string
+}
+
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack"
 
 export type MealStatus =
@@ -129,6 +136,31 @@ export type MealFeedback = {
 }
 
 export type Feedback = MealFeedback
+
+export type DailyCheckin = {
+  id: string
+  userId: string
+  date: string
+  mealIds: string[]
+  dueAt: string
+  isNextDay: boolean
+  energy?: "low" | "stable" | "better"
+  digestion?: "comfortable" | "bloated" | "upset"
+  satiety?: "hungry_fast" | "just_right" | "too_full"
+  answeredAt?: string
+  dismissed: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type MealImage = {
+  id: string
+  mealId: string
+  imageType: "wide" | "close" | "leftover"
+  localUri?: string
+  storageUrl?: string
+  createdAt: string
+}
 
 export type AnalysisCorrection = {
   id: string

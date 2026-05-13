@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { router } from "expo-router"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { PrimaryButton } from "../components"
@@ -12,6 +12,8 @@ export function HomeScreen() {
   const profile = useBodyPuzzleStore((state) => state.profile)
   const meals = useBodyPuzzleStore((state) => state.meals)
   const feedbacks = useBodyPuzzleStore((state) => state.feedbacks)
+  const dailyCheckins = useBodyPuzzleStore((state) => state.dailyCheckins)
+  const hydratePersistedData = useBodyPuzzleStore((state) => state.hydratePersistedData)
   const loadSeedScenario = useBodyPuzzleStore((state) => state.loadSeedScenario)
   const createMockMeal = useBodyPuzzleStore((state) => state.createMockMeal)
   const startActiveMeal = useBodyPuzzleStore((state) => state.startActiveMeal)
@@ -19,6 +21,11 @@ export function HomeScreen() {
   const [agreed, setAgreed] = useState(false)
   const recentMeal = meals[0]
   const homeStatus = getHomeStatus(recentMeal)
+  const needsCheckin = feedbacks.length > 0 && !dailyCheckins.some((item) => item.date === new Date().toISOString().slice(0, 10))
+
+  useEffect(() => {
+    void hydratePersistedData()
+  }, [hydratePersistedData])
 
   function enterReturningUser() {
     loadSeedScenario(7)
@@ -155,6 +162,18 @@ export function HomeScreen() {
             <Text style={styles.ghostButtonText}>刚刚又吃/喝了别的 →</Text>
           </Pressable>
         </View>
+      ) : needsCheckin ? (
+        <View style={styles.pendingCard}>
+          <View style={styles.cardHeaderRow}>
+            <View>
+              <Text style={styles.greenLabel}>待回访</Text>
+              <Text style={styles.cardTitle}>补一下今天的身体反馈</Text>
+            </View>
+            <Text style={styles.statusPill}>回访</Text>
+          </View>
+          <Text style={styles.cardDesc}>这一步会把今天的餐次和精力、消化、饱腹节奏关联起来。</Text>
+          <PrimaryButton title="去每日回访" onPress={() => router.push("/checkin")} />
+        </View>
       ) : homeStatus === "done" && recentMeal && feedbacks.length > 0 ? (
         <View style={styles.doneCard}>
           <View style={styles.cardHeaderRow}>
@@ -168,7 +187,7 @@ export function HomeScreen() {
             <Text style={styles.doneIcon}>🍽️</Text>
             <Text style={styles.plusOne}>+1</Text>
           </View>
-          <Text style={styles.cardDesc}>{meals.length < 7 ? `身体会记住这一餐。再记 ${7 - meals.length} 餐，身体洞察就出来了。` : "身体洞察已解锁，看看今天的提醒。"}</Text>
+          <Text style={styles.cardDesc}>{meals.length < 7 ? `身体会记住这一餐。再记 ${7 - meals.length} 餐，首批身体洞察就出来了。` : "身体洞察已解锁，看看今天的提醒。"}</Text>
           <PrimaryButton title="看看身体洞察" onPress={() => router.push("/report")} />
           <Pressable style={styles.ghostButton} onPress={() => router.push("/record")}>
             <Text style={styles.ghostButtonText}>又吃/喝了点别的？记一笔加餐</Text>
@@ -179,14 +198,14 @@ export function HomeScreen() {
           <Text style={styles.kicker}>{meals.length === 0 ? "新用户第一步" : getGreeting()}</Text>
           <Text style={styles.todayTitle}>{meals.length === 0 ? "记录第一餐，身体拼图才会开始" : `${guessMealLabel()}吃点什么好？`}</Text>
 
-          {meals.length < 3 && (
+          {meals.length < 7 && (
             <View style={styles.unlockBox}>
               <View style={styles.unlockRow}>
-                <Text style={styles.unlockText}>{meals.length === 0 ? "拍下第一餐，开始建立你的身体反馈" : `再记 ${3 - meals.length} 餐解锁第一份身体洞察`}</Text>
-                <Text style={styles.unlockCount}>{meals.length}/3</Text>
+                <Text style={styles.unlockText}>{meals.length === 0 ? "拍下第一餐，开始建立你的身体反馈" : `再记 ${7 - meals.length} 餐解锁第一份身体洞察`}</Text>
+                <Text style={styles.unlockCount}>{meals.length}/7</Text>
               </View>
               <View style={styles.progressTrack}>
-                <View style={[styles.progressBar, { width: `${Math.round((meals.length / 3) * 100)}%` }]} />
+                <View style={[styles.progressBar, { width: `${Math.round((meals.length / 7) * 100)}%` }]} />
               </View>
             </View>
           )}

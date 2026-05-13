@@ -14,10 +14,18 @@
       "policy": "appVersion"
     },
     "ios": {
-      "bundleIdentifier": "com.ganfan.app"
+      "bundleIdentifier": "com.ganfan.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "用于拍摄餐食照片，帮助记录和分析饮食。",
+        "NSPhotoLibraryUsageDescription": "用于选择餐食照片，帮助记录和分析饮食。"
+      }
     },
     "android": {
-      "package": "com.ganfan.app"
+      "package": "com.ganfan.app",
+      "permissions": [
+        "CAMERA",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "extra": {
       "eas": {
@@ -29,7 +37,20 @@
       "url": "https://u.expo.dev/f892040d-f19e-471a-ab53-2563d079aced"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "允许干饭拍摄餐食照片，用于饮食记录和分析。"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#2D6A4F"
+        }
+      ]
     ]
   }
 }

@@ -1,13 +1,16 @@
-import React from "react"
+import React, { useState } from "react"
 import { Link } from "expo-router"
-import { ScrollView, StyleSheet, Text, View } from "react-native"
-import { PrimaryButton } from "../components"
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import { Input, PrimaryButton } from "../components"
 import { useBodyPuzzleStore } from "../stores/bodyPuzzleStore"
 import { colors, radius, spacing } from "../styles/tokens"
 
 export function BodyProfileScreen() {
   const profile = useBodyPuzzleStore((state) => state.profile)
   const meals = useBodyPuzzleStore((state) => state.meals)
+  const weightLogs = useBodyPuzzleStore((state) => state.weightLogs)
+  const saveWeightLog = useBodyPuzzleStore((state) => state.saveWeightLog)
+  const [weightInput, setWeightInput] = useState(profile?.weightKg ? String(profile.weightKg) : "")
 
   if (!profile) {
     return (
@@ -36,6 +39,22 @@ export function BodyProfileScreen() {
         <Info label="体重" value={`${profile.weight} kg`} />
         <Info label="年龄" value={`${profile.age} 岁`} />
         <Info label="性别" value={profile.gender === "unknown" ? "未填" : profile.gender ?? "未填"} />
+      </Card>
+
+      <Card title="体重记录">
+        <View style={styles.weightRow}>
+          <Input label="今天体重 kg" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
+          <Pressable
+            style={styles.weightButton}
+            onPress={() => {
+              const value = Number(weightInput)
+              if (Number.isFinite(value) && value > 0) saveWeightLog(value)
+            }}
+          >
+            <Text style={styles.weightButtonText}>保存</Text>
+          </Pressable>
+        </View>
+        <Info label="最近记录" value={weightLogs[0] ? `${weightLogs[0].valueKg} kg` : "暂无"} />
       </Card>
 
       <Card title="身体档案">
@@ -178,6 +197,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     lineHeight: 19
+  },
+  weightRow: {
+    width: "100%",
+    gap: spacing.sm,
+    marginBottom: spacing.sm
+  },
+  weightButton: {
+    minHeight: 44,
+    borderRadius: radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.brand
+  },
+  weightButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800"
   },
   dataBlock: {
     borderTopWidth: 1,

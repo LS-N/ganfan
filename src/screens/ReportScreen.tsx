@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { Link } from "expo-router"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { PrimaryButton } from "../components"
@@ -16,62 +16,24 @@ export function ReportScreen() {
   const feedbacks = useBodyPuzzleStore((state) => state.feedbacks)
   const report = useBodyPuzzleStore((state) => state.report)
   const generateReport = useBodyPuzzleStore((state) => state.generateReport)
-  const loadSeedScenario = useBodyPuzzleStore((state) => state.loadSeedScenario)
   const feedbackCount = feedbacks.length
-  const [bodyTab, setBodyTab] = useState<"puzzle" | "structure">("puzzle")
 
   useEffect(() => {
-    if (feedbackCount >= 3 && !report) {
+    if (feedbackCount >= 7 && !report) {
       generateReport()
     }
   }, [feedbackCount, generateReport, report])
 
-  if (bodyTab === "structure") {
-    return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <BodyTabs active={bodyTab} onChange={setBodyTab} />
-        <View style={styles.structureHero}>
-          <Text style={styles.kicker}>身体 · MVP 4.0</Text>
-          <Text style={styles.structureTitle}>身体<Text style={styles.accent}>结构</Text></Text>
-          <Text style={styles.structureSub}>这里帮助用户看懂自己的身体结构和数据边界。它不直接生成菜单，菜单仍由计划页承接。</Text>
-        </View>
-        <View style={styles.structureCard}>
-          <Text style={styles.cardLabel}>默认目标</Text>
-          <Text style={styles.cardTitle}>越来越舒服</Text>
-          <Text style={styles.cardText}>如果没有主动目标，默认追踪睡眠质量、心情稳定和血糖平稳。采不到的数据不参与判断。</Text>
-        </View>
-        <View style={styles.structureInsight}>
-          <Text style={styles.cardLabel}>今天身体结构</Text>
-          <Text style={styles.structureInsightTitle}>睡眠不足时，高油午餐更容易困</Text>
-          <Text style={styles.cardText}>当前是原型占位数据。真实设备、血糖、睡眠和运动数据不在 Phase 1 接入。</Text>
-        </View>
-        <View style={styles.weeklyCard}>
-          <Text style={styles.cardLabel}>页面回流</Text>
-          <Text style={styles.cardText}>身体结构页只让用户理解规律。看完回到 Today 继续记录，或进入计划页查看被目标约束后的餐饮计划。</Text>
-        </View>
-      </ScrollView>
-    )
-  }
-
-  if (feedbackCount < 3) {
+  if (feedbackCount < 7) {
     return (
       <ScrollView contentContainerStyle={styles.emptyContainer}>
-        <BodyTabs active={bodyTab} onChange={setBodyTab} />
         <View style={styles.emptyContent}>
           <Text style={styles.kicker}>你的身体拼图</Text>
-          <Text style={styles.emptyTitle}>还差 <Text style={styles.accent}>{3 - feedbackCount}</Text> 餐{"\n"}第一块就出来了</Text>
+          <Text style={styles.emptyTitle}>还差 <Text style={styles.accent}>{7 - feedbackCount}</Text> 餐{"\n"}首批洞察就出来了</Text>
           <Text style={styles.emptyText}>每一餐都是一块拼图。{"\n"}吃完打个分，身体的秘密慢慢浮现。</Text>
           <Link href="/record?mode=shoot" asChild>
             <PrimaryButton title="📷 去记录这一餐" />
           </Link>
-          <View style={styles.demoRow}>
-            <Pressable style={styles.demoButton} onPress={() => loadSeedScenario(3)}>
-              <Text style={styles.demoText}>加载 3 餐演示</Text>
-            </Pressable>
-            <Pressable style={styles.demoButton} onPress={() => loadSeedScenario(7)}>
-              <Text style={styles.demoText}>加载 7 餐演示</Text>
-            </Pressable>
-          </View>
         </View>
       </ScrollView>
     )
@@ -83,7 +45,6 @@ export function ReportScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <BodyTabs active={bodyTab} onChange={setBodyTab} />
       <Text style={styles.kicker}>你的身体拼图</Text>
       <Text style={styles.title}>已拼上 <Text style={styles.accent}>{unlockedCount}</Text><Text style={styles.muted}> / 4</Text></Text>
 
@@ -125,19 +86,6 @@ export function ReportScreen() {
       </Link>
       <Text style={styles.footer}>基于你的 {feedbackCount} 餐反馈数据 · 不是通用建议</Text>
     </ScrollView>
-  )
-}
-
-function BodyTabs({ active, onChange }: { active: "puzzle" | "structure"; onChange: (tab: "puzzle" | "structure") => void }) {
-  return (
-    <View style={styles.segmented}>
-      <Pressable style={[styles.segmentButton, active === "puzzle" && styles.segmentActive]} onPress={() => onChange("puzzle")}>
-        <Text style={[styles.segmentText, active === "puzzle" && styles.segmentTextActive]}>身体拼图</Text>
-      </Pressable>
-      <Pressable style={[styles.segmentButton, active === "structure" && styles.segmentActive]} onPress={() => onChange("structure")}>
-        <Text style={[styles.segmentText, active === "structure" && styles.segmentTextActive]}>身体结构</Text>
-      </Pressable>
-    </View>
   )
 }
 

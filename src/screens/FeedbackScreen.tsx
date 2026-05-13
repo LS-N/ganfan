@@ -40,7 +40,7 @@ export function FeedbackScreen() {
       tasteFeedback: [mapTaste(answers.satisfaction)],
       priceSatisfaction: mapPrice(answers.satisfaction)
     })
-    router.push("/detail")
+    router.push("/checkin")
   }
 
   return (

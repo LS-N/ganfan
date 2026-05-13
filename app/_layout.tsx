@@ -1,5 +1,6 @@
 import { router, Slot, usePathname } from "expo-router"
 import { Pressable, StyleSheet, Text, View } from "react-native"
+import { useNetInfo } from "@react-native-community/netinfo"
 import { useBodyPuzzleStore } from "../src/stores/bodyPuzzleStore"
 import { colors, opacity, radius, size, spacing, typography } from "../src/theme"
 
@@ -8,10 +9,11 @@ const titles: Record<string, string> = {
   "/record": "记录这一餐",
   "/analysis": "识别结果",
   "/feedback": "饭后打分",
+  "/checkin": "每日回访",
   "/detail": "本餐详情",
   "/history": "我的记录",
   "/report": "身体",
-  "/draw-card": "计划",
+  "/draw-card": "推荐",
   "/profile": "MVP 1.0",
   "/body-profile": "我的档案",
   "/food-profile": "饮食偏好"
@@ -19,6 +21,7 @@ const titles: Record<string, string> = {
 
 export default function RootLayout() {
   const pathname = usePathname()
+  const netInfo = useNetInfo()
   const profile = useBodyPuzzleStore((state) => state.profile)
   const mealCount = useBodyPuzzleStore((state) => state.meals.length)
   const showChrome = Boolean(profile) || pathname !== "/"
@@ -59,6 +62,11 @@ export default function RootLayout() {
       )}
 
       <View style={styles.content}>
+        {netInfo.isConnected === false && (
+          <View style={styles.offlineBanner}>
+            <Text style={styles.offlineText}>当前离线，记录会先保存在本机，联网后同步。</Text>
+          </View>
+        )}
         <Slot />
       </View>
 
@@ -66,7 +74,7 @@ export default function RootLayout() {
         <View style={styles.tabWrap}>
           <View style={styles.tabbar}>
             <TabButton icon="🏠" label="Today" active={pathname === "/"} onPress={() => router.push("/")} />
-            <TabButton icon="📋" label="计划" active={pathname === "/draw-card"} onPress={() => router.push("/draw-card")} />
+            <TabButton icon="📋" label="推荐" active={pathname === "/draw-card"} onPress={() => router.push("/draw-card")} />
             <TabButton icon="🧩" label="身体" active={pathname === "/report"} onPress={() => router.push("/report")} />
           </View>
         </View>
@@ -184,6 +192,17 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1
+  },
+  offlineBanner: {
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.warningSurface
+  },
+  offlineText: {
+    color: colors.warning,
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.semibold
   },
   tabWrap: {
     width: "100%",
