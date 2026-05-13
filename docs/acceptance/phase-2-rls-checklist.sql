@@ -1,6 +1,6 @@
 -- Phase 2 Supabase RLS checklist.
 -- Run in Supabase SQL editor after creating the Phase 2 tables from
--- docs/04-phase-2-real-data.md.
+-- Archived early Phase 2 real-data notes. Current development must follow docs/02-master-blueprint.md.
 
 alter table profiles enable row level security;
 alter table meals enable row level security;

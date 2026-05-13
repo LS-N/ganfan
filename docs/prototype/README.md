@@ -11,6 +11,6 @@
 
 ## 使用规则
 
-- 原型用于理解页面流转、关键状态和字段，不直接替代 `docs/02-master-spec.md` 或当前 Phase 文档。
+- 原型用于理解页面流转、关键状态和字段，不直接替代 `docs/02-master-blueprint.md` 或当前阶段开发文档。
 - 历史原型备份已移到 `_archive/prototype-history/`。
 - 旧 MVP 0.1 PRD 已移到 `_archive/mvp-0.1/prd/`。

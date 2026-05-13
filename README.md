@@ -8,7 +8,7 @@
 
 - 唯一正式工作区：`F:\ganfan`
 - 当前工程形态：根目录 Expo App（`app/` + `src/`）
-- 当前阶段：Phase 1 产品闭环与 Phase 2 真实数据/AI 服务准备
+- 当前开发依据：`docs/02-master-blueprint.md`
 - 当前文档入口：[docs/00-INDEX.md](docs/00-INDEX.md)
 - AI Agent 契约：[AGENTS.md](AGENTS.md)
 
@@ -17,9 +17,11 @@
 进入仓库后按顺序阅读：
 
 1. [docs/00-INDEX.md](docs/00-INDEX.md)
-2. [docs/01-current-phase.md](docs/01-current-phase.md)
-3. [AGENTS.md](AGENTS.md)
-4. 当前任务文件或用户最新指令
+2. [docs/01-ai-working-manual.md](docs/01-ai-working-manual.md)
+3. [docs/02-master-blueprint.md](docs/02-master-blueprint.md)
+4. 对应阶段开发文档和验收文档
+5. [AGENTS.md](AGENTS.md)
+6. 当前任务文件或用户最新指令
 
 旧 MVP 0.0 / MVP 0.1 文档、旧 prompt、原型历史备份已统一放入 `_archive/`。除非用户要求考古，不要把 `_archive/` 内容当作当前执行口径。
 
@@ -29,6 +31,8 @@
 app/                 Expo Router 路由入口
 src/                 App 源码：components / screens / services / stores / styles / types
 docs/                当前有效文档、产品说明、原型入口、验收材料
+docs/phases/         按总蓝图拆出的阶段开发文档
+docs/acceptance/     按阶段拆出的验收文档
 _archive/            历史文档与旧原型备份，只供参考
 .github/workflows/   CI / EAS 工作流
 ```

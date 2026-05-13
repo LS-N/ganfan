@@ -29,7 +29,7 @@
 - AI endpoint response 经过 schema sanitizer 后才进入页面。
 - Analysis repository 不保存完整 AI raw，`raw` 写入为 `null`。
 - 文案 sanitizer 会降级绝对化、医学化、高压表达。
-- RLS 清单见 `docs/delivery/phase-2-rls-checklist.sql`。
+- RLS 清单见 `docs/acceptance/phase-2-rls-checklist.sql`。
 
 ## 已验证命令
 

@@ -30,24 +30,25 @@ C:\Users\a\.codex\worktrees\*
 必须优先阅读：
 
 1. `docs/00-INDEX.md`
-2. `docs/01-current-phase.md`
-3. `docs/02-master-spec.md`
-4. `docs/03-phase-1-closed-loop.md`
-5. 当前任务文件或用户最新指令
+2. `docs/01-ai-working-manual.md`
+3. `docs/02-master-blueprint.md`
+4. 当前阶段的 `docs/phases/phase-*.md`
+5. 当前阶段的 `docs/acceptance/phase-*.md`
+6. 当前任务文件或用户最新指令
 
-长期蓝图在 `docs/06-long-term-blueprint.md`，只能作为后续阶段参考，不得覆盖当前阶段文档。
+阶段开发文档和验收文档必须从 `docs/02-master-blueprint.md` 拆解，不得脱离蓝图另起任务。
 
 旧的 MVP 0.0 / MVP 0.1 / mock Phase 文档已移入 `_archive/`，只能作为历史参考。
 
 ## 当前阶段
 
-当前处于工作区治理完成后的 Phase 1 / Phase 2 对齐阶段。
+当前处于基于总蓝图重新拆分阶段开发文档和验收文档后的开发准备阶段。
 
 在用户明确确认前，不要继续扩展业务功能，不要迁移工程架构，不要新增原生依赖。
 
 ## 总纲目标
 
-以 `docs/02-master-spec.md` 为当前产品总纲，长期目标参考 `docs/06-long-term-blueprint.md`，覆盖：
+以 `docs/02-master-blueprint.md` 为唯一产品和工程总蓝图，覆盖：
 
 - React Native App
 - 本地优先数据层
@@ -101,14 +102,15 @@ supabase/
 ## 开发顺序
 
 1. 阅读 `docs/00-INDEX.md`。
-2. 阅读 `docs/01-current-phase.md`。
-3. 阅读当前任务相关文档。
-4. 先看现有代码实现方式。
-5. 以产品经理视角评估需求，给出最有用的功能和架构建议。
-6. 与用户确认需求。
-7. 得到用户明确修改代码的指令后再修改代码或文档。
-8. 运行检查。
-9. 提交变更说明。
+2. 阅读 `docs/01-ai-working-manual.md`。
+3. 阅读 `docs/02-master-blueprint.md`。
+4. 阅读当前阶段开发文档和验收文档。
+5. 先看现有代码实现方式。
+6. 以产品经理视角评估需求，给出最有用的功能和架构建议。
+7. 与用户确认需求。
+8. 得到用户明确修改代码的指令后再修改代码或文档。
+9. 运行检查。
+10. 提交变更说明。
 
 ## 质量要求
 

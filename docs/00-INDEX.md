@@ -1,45 +1,46 @@
 # 文档索引
 
-这是当前唯一文档入口。新 Agent 和开发者先读本文件，再按任务类型进入对应文档。
+本文件只做导航，不定义产品范围、不新增任务、不改写蓝图。开发范围以 `docs/02-master-blueprint.md` 和对应阶段开发文档为准。
 
-## 推荐阅读顺序
+## 总蓝图
 
-1. `docs/01-current-phase.md`：当前阶段、禁止事项、下一步。
-2. `AGENTS.md`：AI Agent 工作契约。
-3. `docs/02-master-spec.md`：当前产品总纲。
-4. `docs/03-phase-1-closed-loop.md`：Phase 1 产品闭环。
-5. 当前任务相关文档。
+- `docs/02-master-blueprint.md`：唯一长期产品与工程蓝图，覆盖 Sprint 0 到 MVP 5.0。
 
-## 想找什么看哪里
+## AI 工作手册
 
-| 问题 | 文档 |
-|---|---|
-| 当前阶段和边界 | `docs/01-current-phase.md` |
-| 产品总纲 | `docs/02-master-spec.md` |
-| Phase 1 闭环 | `docs/03-phase-1-closed-loop.md` |
-| Phase 2 真实数据与 AI | `docs/04-phase-2-real-data.md` |
-| Phase 2 执行 prompt | `docs/05-phase-2-exec-prompt.md` |
-| 长期全栈蓝图 | `docs/06-long-term-blueprint.md` |
-| 当前项目状态 | `docs/PROJECT_STATUS.md` |
-| 开发日志 | `docs/DEVELOPMENT_LOG.md` |
-| Phase 2 验收报告 | `docs/delivery/phase-2-acceptance-report.md` |
-| Phase 2 RLS 检查 SQL | `docs/delivery/phase-2-rls-checklist.sql` |
-| 产品北极星 | `docs/product/north-star.md` |
-| 产品路线图 | `docs/product/roadmap.md` |
-| 原型入口 | `docs/prototype/README.md` |
-| 唯一活原型 HTML | `docs/prototype/meal-agent-product-prototype.html` |
-| 归档说明 | `docs/07-archive-index.md` |
+- `docs/01-ai-working-manual.md`：AI 开发流程、文档使用顺序、禁止事项、交付检查。
+- `AGENTS.md`：仓库根级强约束，保持精简，指向本工作手册。
 
-## 阶段命名口径
+## 默认原型
 
-| 旧称 | 当前口径 | 状态 |
-|---|---|---|
-| MVP 0.0 | 历史工程入场包 | 已归档 |
-| MVP 0.1 | 历史原型/PRD 快照 | 已归档 |
-| mock Phase 1 | Phase 1 产品闭环 | 当前/近期 |
-| Phase 2 | 真实数据与 AI 服务准备 | 当前/近期 |
-| MVP 1.0 到 5.0 | 长期蓝图阶段 | 参考 `docs/06-long-term-blueprint.md` |
+- `docs/prototype/README.md`：原型目录说明。
+- `docs/prototype/meal-agent-product-prototype.html`：默认产品原型入口。
+- `docs/prototype/page-flow.md`：页面流转参考。
+- `docs/prototype/confirmed-screens.md`：已确认页面参考。
 
-## 归档规则
+## 阶段开发文档
 
-`_archive/` 下所有内容只供参考，不驱动当前开发。需要考古时可以读，但不得覆盖 `docs/` 下的当前文档。
+- `docs/phases/phase-0-foundation.md`：Sprint 0，工程底座与基础组件库。
+- `docs/phases/phase-1-mvp-1-record-awareness.md`：MVP 1.0，记录感知。
+- `docs/phases/phase-2-mvp-2-plan-recommendation.md`：MVP 2.0，计划推荐。
+- `docs/phases/phase-3-mvp-3-goal-intervention.md`：MVP 3.0，目标干预。
+- `docs/phases/phase-4-mvp-4-health-integration.md`：MVP 4.0，健康整合。
+- `docs/phases/phase-5-mvp-5-fulfillment-community.md`：MVP 5.0，用户履约。
+
+## 阶段验收文档
+
+- `docs/acceptance/phase-0-acceptance.md`
+- `docs/acceptance/phase-1-mvp-1-acceptance.md`
+- `docs/acceptance/phase-2-mvp-2-acceptance.md`
+- `docs/acceptance/phase-3-mvp-3-acceptance.md`
+- `docs/acceptance/phase-4-mvp-4-acceptance.md`
+- `docs/acceptance/phase-5-mvp-5-acceptance.md`
+
+## 历史验收资料
+
+- `docs/acceptance/phase-2-service-acceptance-report.md`：早期 Phase 2 service 验收报告，已保留为历史参考。
+- `docs/acceptance/phase-2-rls-checklist.sql`：早期 RLS 检查 SQL，后续需按 `docs/02-master-blueprint.md` 重新校准。
+
+## 归档
+
+`_archive/` 下内容只供历史参考，不驱动当前开发。
