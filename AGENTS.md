@@ -115,14 +115,18 @@ supabase/
 10. 与用户确认需求。
 11. 得到用户明确修改代码的指令后再修改代码或文档。
 12. 运行检查。
-13. 在 `docs/TASK_LOG.md` 补“结束记录”：时间、完成内容、变更文件、验证结果、遗留问题。
-14. 更新 `docs/CURRENT_WORK.md` 的状态和下一步。
-15. 提交变更说明。
+13. 打开当前阶段对应的 `docs/acceptance/phase-*.md`，逐条验收并标记 `PASS` / `PARTIAL` / `FAIL` / `N/A`。
+14. 在 `docs/TASK_LOG.md` 补“结束记录”：时间、完成内容、变更文件、验收文档、逐条验收结果、验证命令、未能验证项目、遗留问题。
+15. 更新 `docs/CURRENT_WORK.md` 的状态和下一步。
+16. 提交变更说明。
 
 ## 任务追踪铁律
 
 - 任何 Agent 开始开发前，必须先更新 `docs/TASK_LOG.md` 的开始记录。
 - 任何 Agent 结束开发前，必须补齐 `docs/TASK_LOG.md` 的结束记录。
+- 任何 Agent 结束任务前，必须读取当前阶段对应的 `docs/acceptance/phase-*.md`，逐条执行验收，并把结果写入 `docs/TASK_LOG.md` 的 END 记录。
+- 验收结果必须使用 `PASS` / `PARTIAL` / `FAIL` / `N/A`。所有 `PARTIAL`、`FAIL`、`N/A` 都必须写明原因或未验证条件。
+- 没有逐条验收记录的任务，不得标记为完成。
 - 任何 Agent 变更当前阶段、Sprint、任务编号或阻塞状态，必须同步更新 `docs/CURRENT_WORK.md`。
 - 如果只做评估、不改文件，也要在最终回复里说明没有新增任务追踪记录的原因。
 

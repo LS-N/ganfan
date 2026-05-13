@@ -22,13 +22,31 @@
 - 任务编号：
 - 完成内容：
 - 修改文件：
-- 验证：
+- 验收文档：
+- 验收结果：
+  - PASS：
+  - PARTIAL：
+  - FAIL：
+  - N/A：
+- 已运行命令：
+- 未能验证的项目：
+- 需要人工/真机/外部服务验证的项目：
 - Android/iOS 影响：
 - 热更新影响：
 - 是否需要重新打包：
 - 遗留问题：
 - 下一步：
 ```
+
+## 2026-05-13 22:40:51 +08:00 - Codex - START
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 1-6 范围评估，待用户确认具体补齐批次
+- 任务编号：Phase 1 / MVP 1.0 补齐
+- 任务目标：根据 `docs/audits/phase-0-1-gap-audit.md` 的 Phase 1 差异清单，结合 Phase 0 已完成结果，先复核现有代码实现方式并给出 Phase 1 补齐计划；用户确认后只实现 Phase 1 记录感知闭环，不进入 Phase 2。
+- 预计触碰范围：`app/`、`src/`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`，确认后可能涉及 Phase 1 数据模型、仓储、页面闭环、测试与文档；暂不迁移 monorepo。
+- 需要用户批准：新增原生依赖、Supabase migrations、FastAPI 服务、真实 AI secret、EAS 原生打包配置变化均需单独确认；在确认前不执行这些事项。
+- 开始前状态：Phase 0 已通过最近 commit `af833cb chore: complete phase 0 foundation` 完成；当前仅有既有未跟踪文件 `_archive/docs-restructure-20260512/image.png`；Phase 1 仍需先复核审计差异并与用户确认补齐计划。
 
 ## 2026-05-13 22:02:52 +08:00 - Codex - START
 
@@ -101,3 +119,37 @@
 - 是否需要重新打包：不需要。
 - 遗留问题：Expo Web 启动时提示 `expo` 与 `expo-updates` 有补丁版本建议，未在本次 Phase 0 范围内升级；`_archive/docs-restructure-20260512/image.png` 仍是既有未跟踪文件，需用户确认处理方式。
 - 下一步：Phase 0 可视为完成；可以在用户确认后进入 Phase 1 / MVP 1.0 Sprint 1，但任何原生依赖、Supabase migrations、FastAPI、真实 AI secret 仍需单独批准。
+
+## 2026-05-13 22:51:46 +08:00 - Codex - START
+
+- 阶段：开发流程治理
+- Sprint：无
+- 任务编号：SOP-acceptance-closeout-rule
+- 任务目标：把“结束前必须按阶段验收文档逐条验收并写入 TASK_LOG”的规则固化到 AGENTS.md、docs/01-ai-working-manual.md 和 docs/TASK_LOG.md 模板。
+- 预计触碰范围：AGENTS.md、docs/01-ai-working-manual.md、docs/TASK_LOG.md、docs/CURRENT_WORK.md
+- 需要用户批准：不需要；用户已明确要求更新。
+- 开始前状态：已有开始/结束追踪机制，但 END 模板和规则还没有强制逐条对照 docs/acceptance/phase-*.md。
+
+## 2026-05-13 22:52:50 +08:00 - Codex - END
+
+- 阶段：开发流程治理
+- Sprint：无
+- 任务编号：SOP-acceptance-closeout-rule
+- 完成内容：在 AGENTS.md 和 docs/01-ai-working-manual.md 中新增结束验收铁律；更新 docs/TASK_LOG.md END 模板，要求记录验收文档、PASS/PARTIAL/FAIL/N/A、已运行命令、未能验证项目和需人工/真机/外部服务验证项目；更新 docs/CURRENT_WORK.md 交接摘要。
+- 修改文件：AGENTS.md、docs/01-ai-working-manual.md、docs/TASK_LOG.md、docs/CURRENT_WORK.md
+- 验收文档：N/A，本次为开发流程治理，不属于 Phase 0-5 具体开发阶段；适用验收依据为用户指令和本次新增的追踪/验收规则。
+- 验收结果：
+  - PASS：已明确要求结束前读取当前阶段验收文档；已明确 PASS / PARTIAL / FAIL / N/A 标记规则；已明确无逐条验收不得标记完成；已更新 TASK_LOG END 模板。
+  - PARTIAL：无。
+  - FAIL：无。
+  - N/A：阶段验收文档逐条业务验收不适用于本次流程治理任务。
+- 已运行命令：git diff --check 通过（仅 LF/CRLF 工作区提示）；
+pm run typecheck 通过；
+pm run lint 通过。
+- 未能验证的项目：无。
+- 需要人工/真机/外部服务验证的项目：无。
+- Android/iOS 影响：无，文档规则变更。
+- 热更新影响：无。
+- 是否需要重新打包：不需要。
+- 遗留问题：_archive/docs-restructure-20260512/image.png 仍为既有未跟踪文件；另外当前工作区存在本次任务外的代码/package 文件修改，提交前需确认来源并避免混入本次文档治理提交。
+- 下一步：提交本次文档治理变更；后续任意 Phase 开发结束必须按对应 acceptance 文档逐条验收并写入本日志。
