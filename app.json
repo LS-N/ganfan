@@ -7,7 +7,8 @@
     "orientation": "portrait",
     "platforms": [
       "ios",
-      "android"
+      "android",
+      "web"
     ],
     "runtimeVersion": {
       "policy": "appVersion"
@@ -26,6 +27,9 @@
     "owner": "ls-n",
     "updates": {
       "url": "https://u.expo.dev/f892040d-f19e-471a-ab53-2563d079aced"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

@@ -24,8 +24,8 @@ export function PrimaryButton({ title, disabled, loading, onPress }: PrimaryButt
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
-    borderRadius: radius.md,
+    minHeight: 50,
+    borderRadius: radius.pill,
     paddingHorizontal: spacing.lg,
     alignItems: "center",
     justifyContent: "center",
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600"
   }
 })
