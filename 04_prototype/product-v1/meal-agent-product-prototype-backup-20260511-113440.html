@@ -361,46 +361,12 @@ function getUserMeals(){
   const allData = allStr ? JSON.parse(allStr) : {};
   return allData[currentUser.userId]?.meals || [];
 }
-async function compressImgForStorage(dataUrl, maxPx=480, quality=0.65){
-  if(!dataUrl||!dataUrl.startsWith('data:image')) return dataUrl;
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>{
-      const scale=Math.min(1,maxPx/Math.max(img.width,img.height));
-      const c=document.createElement('canvas');
-      c.width=Math.round(img.width*scale);
-      c.height=Math.round(img.height*scale);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      resolve(c.toDataURL('image/jpeg',quality));
-    };
-    img.onerror=()=>resolve(dataUrl);
-    img.src=dataUrl;
-  });
-}
-
-function checkStorageQuota(){
-  try{
-    const used=Object.entries(localStorage).reduce((s,[k,v])=>s+k.length+v.length,0);
-    const usedMB=(used/1024/1024).toFixed(1);
-    if(used>4*1024*1024){
-      toast(`⚠ 本地存储已用 ${usedMB}MB，接近上限。建议在「我的记录」清理旧图片。`);
-    }
-  }catch(_){}
-}
-
 function saveUserMeals(meals){
   if(!currentUser) return;
   const allStr = localStorage.getItem('user_data');
   const allData = allStr ? JSON.parse(allStr) : {};
   allData[currentUser.userId] = {meals, profile, correctionHistory: correctionHistory};
-  try{
-    localStorage.setItem('user_data', JSON.stringify(allData));
-    checkStorageQuota();
-  }catch(e){
-    if(e.name==='QuotaExceededError'||e.code===22){
-      toast('⚠ 存储空间不足，图片过多。已跳过本次保存，请清理旧记录后重试。');
-    }
-  }
+  localStorage.setItem('user_data', JSON.stringify(allData));
 }
 
 function setUserDataForCurrent(nextMeals, nextProfile){
@@ -423,7 +389,6 @@ function getCurrentUserData(){
 }
 
 let profile = {};
-let checkinAnswers = {};   // 每日回访当次作答暂存
 let correctionHistory = []; // 用户修正历史
 let pendingAnalysis = null;
 let pendingMealType = "午饭";
@@ -534,71 +499,6 @@ function openProductMapFromProfile(){
   navBackTarget='profile';
   renderProductMap();
   show('productmap');
-}
-
-function confirmClearAllData(){
-  document.querySelectorAll('[data-confirm-sheet]').forEach(e=>e.remove());
-  const overlay=document.createElement('div');
-  overlay.dataset.confirmSheet='1';
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(26,22,18,.45);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px';
-  overlay.innerHTML=`<div style="background:var(--white);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;animation:fadeUp .25s ease">
-    <p style="font-family:var(--serif);font-size:20px;margin-bottom:10px">清空饮食记录</p>
-    <p style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:24px">将删除所有已记录的餐次和反馈数据，个人资料和 AI 配置保留。此操作不可撤销。</p>
-    <div style="display:flex;gap:10px">
-      <button onclick="this.closest('[data-confirm-sheet]').remove()" style="flex:1;border:1.5px solid var(--border);border-radius:12px;background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:15px;padding:13px;cursor:pointer">取消</button>
-      <button onclick="doClearAllData()" style="flex:1;border:none;border-radius:12px;background:#c0392b;color:#fff;font-family:var(--sans);font-size:15px;padding:13px;cursor:pointer;font-weight:700">确认清空</button>
-    </div>
-  </div>`;
-  document.body.appendChild(overlay);
-}
-
-function doClearAllData(){
-  document.querySelectorAll('[data-confirm-sheet]').forEach(e=>e.remove());
-  meals=[];
-  if(currentUser) saveUserMeals([]);
-  localStorage.removeItem('card_actions');
-  localStorage.removeItem('daily_checkins');
-  checkinAnswers={};
-  pendingAnalysis=null; mealEatingStarted=false; pendingAdditionals=[];
-  wideImg=null; leftoverImg=null; drawnCard=null;
-  clearAutoCloseTimer();
-  renderHome(); show('home');
-  toast('所有饮食记录已清空');
-}
-
-function confirmDeleteAccount(){
-  document.querySelectorAll('[data-confirm-sheet]').forEach(e=>e.remove());
-  const overlay=document.createElement('div');
-  overlay.dataset.confirmSheet='1';
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(26,22,18,.45);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px';
-  overlay.innerHTML=`<div style="background:var(--white);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;animation:fadeUp .25s ease">
-    <p style="font-family:var(--serif);font-size:20px;margin-bottom:10px">注销账户</p>
-    <p style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:8px">将删除：</p>
-    <ul style="font-size:13px;color:var(--ink60);padding-left:18px;margin-bottom:24px;line-height:2">
-      <li>全部饮食记录和反馈</li>
-      <li>个人资料（姓名、年龄、体重等）</li>
-      <li>AI 配置</li>
-      <li>本地所有缓存数据</li>
-    </ul>
-    <p style="font-size:13px;color:#c0392b;margin-bottom:20px;font-weight:600">⚠️ 此操作不可撤销，数据无法恢复</p>
-    <div style="display:flex;gap:10px">
-      <button onclick="this.closest('[data-confirm-sheet]').remove()" style="flex:1;border:1.5px solid var(--border);border-radius:12px;background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:15px;padding:13px;cursor:pointer">取消</button>
-      <button onclick="doDeleteAccount()" style="flex:1;border:none;border-radius:12px;background:#c0392b;color:#fff;font-family:var(--sans);font-size:15px;padding:13px;cursor:pointer;font-weight:700">确认注销</button>
-    </div>
-  </div>`;
-  document.body.appendChild(overlay);
-}
-
-function doDeleteAccount(){
-  document.querySelectorAll('[data-confirm-sheet]').forEach(e=>e.remove());
-  localStorage.clear();
-  meals=[]; currentUser=null; profile={};
-  pendingAnalysis=null; mealEatingStarted=false; pendingAdditionals=[];
-  wideImg=null; leftoverImg=null; drawnCard=null;
-  clearAutoCloseTimer();
-  AI_CONFIG.key=''; AI_CONFIG.model=''; AI_CONFIG.endpoint='';
-  renderHome(); show('home');
-  toast('账户已注销，数据已全部清除');
 }
 function switchTab(id){
   if(id==='camera'){navBackTarget='home';renderCamera();show('camera');}
@@ -2175,7 +2075,7 @@ function renderHome(){
   const home = getHomeScene();
   const mirror = n>=3 && insight ? renderHomeMirror(insight) : '';
   const fastHint = fastingState==='fasting' ? renderHomeFastHint() : '';
-  const followUp = renderDailyCheckinCard();
+  const followUp = renderPendingFollowUpCard();
 
   s.innerHTML=`
   ${followUp}
@@ -2185,116 +2085,46 @@ function renderHome(){
   `;
 }
 
-// ── 每日身体回访（每天一次，三个维度）────────────────────────────────
-function scheduleDailyCheckin(meal){
+function renderPendingFollowUpCard(){
   try{
-    const dateKey = getTodayDateKey();
-    const checkins = JSON.parse(localStorage.getItem('daily_checkins')||'[]');
-    const existing = checkins.find(c=>c.date===dateKey);
-    // 晚饭 → 次日早 7 点触发；其他餐次 → 下午 5 点或 3 小时后（取较晚者）
-    const tomorrow7am = ()=>{ const d=new Date(); d.setDate(d.getDate()+1); d.setHours(7,0,0,0); return d.getTime(); };
-    const today5pm = ()=>{ const d=new Date(); d.setHours(17,0,0,0); return Math.max(d.getTime(), Date.now()+3*3600000); };
-    const isDinner = meal.type==='晚饭';
-    if(existing && !existing.answered){
-      if(!existing.mealIds.includes(meal.id)) existing.mealIds.push(meal.id);
-      // 只要有一顿是晚饭，触发时间就推到次日晨
-      if(isDinner){ existing.dueAt=tomorrow7am(); existing.isNextDay=true; }
-    } else if(!existing){
-      checkins.push({ date:dateKey, mealIds:[meal.id],
-        dueAt: isDinner ? tomorrow7am() : today5pm(),
-        isNextDay: isDinner,
-        answered:false, dismissed:false,
-        energy:null, digestion:null, satiety:null, answeredAt:null });
-    }
-    localStorage.setItem('daily_checkins', JSON.stringify(checkins.slice(-30)));
-  }catch(_){}
-}
-
-function renderDailyCheckinCard(){
-  try{
-    const checkins = JSON.parse(localStorage.getItem('daily_checkins')||'[]');
-    const today = getTodayDateKey();
-    const yesterday = getDateKey(Date.now()-86400000);
-    const due = checkins.find(c=>(c.date===today||c.date===yesterday)&&!c.answered&&Date.now()>=c.dueAt);
-    if(!due) return '';
-    const label = due.isNextDay||due.date===yesterday ? '昨天吃了什么，身体有什么感受？' : '今天吃得怎么样，身体有什么感受？';
-    const qs=[
-      {key:'energy',  label:'精力状态', opts:['精力充沛','还好','疲惫犯困']},
-      {key:'digestion',label:'肠胃感受', opts:['舒适顺畅','有点不适','明显不舒服']},
-      {key:'satiety', label:'两餐之间', opts:['很耐饿','有点饿','饿得很快']},
-    ];
-    const allAnswered = qs.every(q=>checkinAnswers[q.key]);
-    return `<div class="card fade" style="background:var(--amber-s);border:1px solid rgba(212,134,10,.22);margin-bottom:0;padding:16px">
-      <p style="font-size:11px;font-weight:700;color:var(--amber);letter-spacing:.06em;margin-bottom:6px">📊 每日身体回访</p>
-      <p style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:14px">${label}</p>
-      ${qs.map(q=>`
-        <div class="checkin-q" style="margin-bottom:12px">
-          <p style="font-size:11px;color:var(--ink60);font-weight:600;margin-bottom:6px">${q.label}</p>
-          <div style="display:flex;gap:6px">
-            ${q.opts.map(opt=>{
-              const sel=checkinAnswers[q.key]===opt;
-              return `<button class="checkin-opt" data-key="${q.key}" data-val="${opt}"
-                onclick="selectCheckinAnswer('${q.key}','${opt}',this)"
-                style="flex:1;border:1.5px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'var(--accent)':'var(--white)'};color:${sel?'#fff':'var(--ink60)'};border-radius:var(--rs);padding:9px 4px;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer">${opt}</button>`;
-            }).join('')}
-          </div>
-        </div>`).join('')}
-      <button id="checkin-submit" onclick="submitDailyCheckin('${due.date}')"
-        ${allAnswered?'':'disabled'}
-        style="width:100%;border:none;border-radius:12px;background:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;font-weight:700;padding:12px;cursor:pointer;margin-top:4px;opacity:${allAnswered?1:.4}">
-        提交回访
-      </button>
-      <button onclick="dismissDailyCheckin('${due.date}')" style="border:none;background:transparent;color:var(--ink30);font-size:12px;font-family:var(--sans);cursor:pointer;width:100%;margin-top:6px">跳过</button>
+    const followUps = JSON.parse(localStorage.getItem('pending_followups')||'[]');
+    const due = followUps.filter(f=>Date.now()>=f.dueAt && !f.answered);
+    if(!due.length) return '';
+    const f = due[0];
+    return `<div class="card fade" style="background:var(--amber-s);border:1px solid rgba(212,134,10,.2);margin-bottom:0;padding:16px">
+      <p style="font-size:11px;font-weight:700;color:var(--amber);letter-spacing:.06em;margin-bottom:6px">⏱ 2 小时后回访</p>
+      <p style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px">${f.dish}（${f.type}）吃完后，现在感觉怎样？</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        ${['精力充沛','有点困','还好','不舒服'].map(opt=>`
+          <button onclick="submitFollowUp('${f.mealId}','energy','${opt}')"
+            style="border:1.5px solid var(--border);background:var(--white);border-radius:var(--rs);padding:10px 4px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;color:var(--ink60)">${opt}</button>
+        `).join('')}
+      </div>
+      <button onclick="dismissFollowUp('${f.mealId}')" style="border:none;background:transparent;color:var(--ink30);font-size:12px;font-family:var(--sans);cursor:pointer;width:100%">跳过</button>
     </div>`;
   }catch(_){ return ''; }
 }
 
-function selectCheckinAnswer(key, value, btn){
-  checkinAnswers[key]=value;
-  // 原地更新按钮样式，不触发全页重渲
-  btn.closest('.checkin-q').querySelectorAll('.checkin-opt').forEach(b=>{
-    const sel=b.dataset.val===value;
-    b.style.border=`1.5px solid ${sel?'var(--accent)':'var(--border)'}`;
-    b.style.background=sel?'var(--accent)':'var(--white)';
-    b.style.color=sel?'#fff':'var(--ink60)';
-  });
-  const allAnswered=['energy','digestion','satiety'].every(k=>checkinAnswers[k]);
-  const sub=document.getElementById('checkin-submit');
-  if(sub){ sub.disabled=!allAnswered; sub.style.opacity=allAnswered?1:.4; }
-}
-
-function submitDailyCheckin(dateKey){
+function submitFollowUp(mealId, key, value){
   try{
-    const checkins=JSON.parse(localStorage.getItem('daily_checkins')||'[]');
-    const idx=checkins.findIndex(c=>c.date===dateKey);
-    if(idx>=0){
-      checkins[idx].answered=true;
-      checkins[idx].energy=checkinAnswers.energy;
-      checkins[idx].digestion=checkinAnswers.digestion;
-      checkins[idx].satiety=checkinAnswers.satiety;
-      checkins[idx].answeredAt=Date.now();
-      // 回写到当天每一条餐次记录
-      (checkins[idx].mealIds||[]).forEach(mealId=>{
-        const m=meals.find(m=>String(m.id)===String(mealId));
-        if(m){ m.dailyCheckin={ energy:checkinAnswers.energy, digestion:checkinAnswers.digestion,
-          satiety:checkinAnswers.satiety, answeredAt:Date.now() }; }
-      });
-      if(currentUser) saveUserMeals(meals);
-    }
-    localStorage.setItem('daily_checkins', JSON.stringify(checkins));
-    checkinAnswers={};
+    const followUps = JSON.parse(localStorage.getItem('pending_followups')||'[]');
+    const idx = followUps.findIndex(f=>String(f.mealId)===String(mealId));
+    if(idx>=0){ followUps[idx].answered=true; followUps[idx][key]=value; followUps[idx].answeredAt=Date.now(); }
+    localStorage.setItem('pending_followups', JSON.stringify(followUps));
+    // 同步回 meal 记录
+    const m = meals.find(m=>String(m.id)===String(mealId));
+    if(m){ m.followUp = m.followUp||{}; m.followUp[key]=value; m.followUp.answeredAt=Date.now(); if(currentUser) saveUserMeals(meals); }
   }catch(_){}
-  toast('✓ 身体感受已记录');
+  toast('✓ 已记录');
   renderHome();
 }
 
-function dismissDailyCheckin(dateKey){
+function dismissFollowUp(mealId){
   try{
-    const checkins=JSON.parse(localStorage.getItem('daily_checkins')||'[]');
-    const idx=checkins.findIndex(c=>c.date===dateKey);
-    if(idx>=0){ checkins[idx].answered=true; checkins[idx].dismissed=true; }
-    localStorage.setItem('daily_checkins', JSON.stringify(checkins));
-    checkinAnswers={};
+    const followUps = JSON.parse(localStorage.getItem('pending_followups')||'[]');
+    const idx = followUps.findIndex(f=>String(f.mealId)===String(mealId));
+    if(idx>=0){ followUps[idx].answered=true; followUps[idx].dismissed=true; }
+    localStorage.setItem('pending_followups', JSON.stringify(followUps));
   }catch(_){}
   renderHome();
 }
@@ -2305,14 +2135,6 @@ function getTimeGreeting(){
   if(h>=14&&h<18) return '下午好';
   if(h>=18&&h<22) return '晚上好';
   return '夜深了';
-}
-function getTodayDateKey(){
-  const d=new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function getDateKey(ts){
-  const d=new Date(ts);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function renderHomePlanHint(){
   const goal=getActiveGoal();
@@ -3901,45 +3723,11 @@ function rerollCard(){
 }
 
 function acceptCard(){
-  // 记录采纳行为到卡片池统计
-  if(drawnCard){
-    drawnCard._adoptedAt = Date.now();
-    recordCardAction(drawnCard, 'accepted');
-  }
+  // 带着推荐卡进入拍照
   renderCameraShoot(drawnCard);
 }
-
 function skipCard(){
-  // 记录跳过行为
-  if(drawnCard){
-    recordCardAction(drawnCard, 'skipped');
-  }
-  drawnCard = null;
   renderCameraShoot(null);
-}
-
-function recordCardAction(card, action){
-  try{
-    const history = JSON.parse(localStorage.getItem('card_actions')||'[]');
-    history.push({
-      dish: card.dish,
-      badge: card.badge||'',
-      risk: card.risk||'',
-      action,          // 'accepted' | 'skipped'
-      ts: Date.now(),
-    });
-    localStorage.setItem('card_actions', JSON.stringify(history.slice(-50)));
-  }catch(_){}
-}
-
-// 统计卡片推荐命中率（供洞察页使用）
-function getCardAcceptanceRate(){
-  try{
-    const history = JSON.parse(localStorage.getItem('card_actions')||'[]');
-    if(!history.length) return null;
-    const accepted = history.filter(h=>h.action==='accepted').length;
-    return { total: history.length, accepted, rate: Math.round(accepted/history.length*100) };
-  }catch(_){ return null; }
 }
 
 // ── CAMERA ────────────────────────────────────────────────────────────────────
@@ -4171,32 +3959,12 @@ function renderAnalysisProgress(step){
 
 function shortAIErrorMessage(error){
   const msg = String(error?.message || error || '真实 AI 分析暂时失败');
-  const status = error?.status || '';
-  if(status === 'NETWORK' || /Failed to fetch|NetworkError|Load failed|network/i.test(msg))
-    return !navigator.onLine ? '当前无网络连接，请检查网络后重试。' : '网络请求失败，请检查网络连接后重试。';
-  if(status === 'TIMEOUT' || /timeout/i.test(msg)) return '请求超时（模型响应过慢），请重试或换用更快的模型。';
   if(/API error 401|unauthorized|invalid api key/i.test(msg)) return 'Key 无效或无权限，请检查 API Key。';
   if(/API error 400|model|vision|image/i.test(msg)) return '模型或图片识别参数不匹配，请换一个支持视觉的模型。';
   if(/API error 429|rate limit|quota/i.test(msg)) return '额度或并发受限，请稍后重试或换 Key。';
   if(/API error 500|unknown error|server/i.test(msg)) return '模型服务端返回异常，请重试或换一个视觉模型。';
   return msg.slice(0,120);
 }
-
-function showOfflineBanner(){
-  if(document.getElementById('offline-banner')) return;
-  const el=document.createElement('div');
-  el.id='offline-banner';
-  el.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);max-width:420px;width:100%;background:#c0392b;color:#fff;font-size:13px;font-weight:700;text-align:center;padding:10px 16px;z-index:9999;font-family:var(--sans)';
-  el.textContent='⚠ 网络已断开，AI 分析不可用';
-  document.body.prepend(el);
-}
-function hideOfflineBanner(){
-  const el=document.getElementById('offline-banner');
-  if(el) el.remove();
-  toast('网络已恢复，可以重新分析');
-}
-window.addEventListener('offline', showOfflineBanner);
-window.addEventListener('online', hideOfflineBanner);
 
 function renderAnalysisFailure(error){
   const area=document.getElementById('analysis-area');
@@ -4760,18 +4528,6 @@ function renderFeedback(){
     <p style="font-size:14px;font-weight:600;color:var(--ink60)">拍剩余 / 空盘照片</p>
     <p style="font-size:11px;color:var(--ink30);margin-top:2px">可选 · 没拍默认用餐前估算数据</p>
   </div>
-  ${pendingAdditionals.length ? `<div class="card fade" style="background:var(--amber-s);border:1.5px solid rgba(232,166,38,.25);padding:12px 14px;margin-bottom:10px">
-    <p style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">本餐还包含</p>
-    ${pendingAdditionals.map(a=>{
-      const an=normalizeMealAnalysis(a);
-      const nn=normalizeNutritionEstimate(an.nutritionEstimate,an.foodType);
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)">
-        <p style="font-size:13px;font-weight:600;color:var(--ink)">${a.dish||'附加食物'}</p>
-        <p style="font-size:11px;color:var(--ink60)">${nn.calories.range}</p>
-      </div>`;
-    }).join('')}
-    <p style="font-size:11px;color:var(--ink30);margin-top:6px">以上将合并入本餐营养统计</p>
-  </div>` : ''}
   <div class="card fade" style="background:var(--cream);border:none;padding:14px;margin-bottom:16px">
     <div class="label" style="margin-bottom:5px">本餐实际摄入</div>
     <div id="post-meal-estimate">
@@ -4859,8 +4615,7 @@ function postMealFeedbackQuestions(analysis){
   return [
     {key:'actualIntake',label:'实际吃掉多少',opts:['全吃完','吃了3/4','吃了一半','剩很多']},
     {key:'fullness',label:'饱腹状态',opts:['撑','刚好','还饿']},
-    {key:'comfort',label:'身体即时感受',opts:['舒服','胀气','困倦','有精神']},
-    {key:'satisfaction',label:'这顿吃得开心吗',opts:['很开心','还不错','一般','有点后悔']},
+    {key:'comfort',label:'身体感受',opts:['舒服','胀气','困倦','有精神']},
     ...dynamic,
   ];
 }
@@ -4968,14 +4723,7 @@ function formatUserFoodProfileSummary(fp){
   return '\n' + lines.join('\n');
 }
 
-async function submitFeedback(){
-  // 保存前压缩图片，避免 localStorage 超限
-  const btn=document.getElementById('fb-submit');
-  if(btn){ btn.disabled=true; btn.textContent='保存中…'; }
-  const [storedWideImg, storedLeftoverImg] = await Promise.all([
-    compressImgForStorage(wideImg, 480, 0.65),
-    compressImgForStorage(leftoverImg, 480, 0.65),
-  ]);
+function submitFeedback(){
   if(scores.actualIntake){
     scores.intake = scores.actualIntake;
     scores.adjustedIntakeRatio = scores.actualIntakeRatio || intakeRatioInfo(scores.actualIntake).ratio;
@@ -5036,10 +4784,9 @@ async function submitFeedback(){
     actualIntakeAnalysis,
     feedbackMeta,
     fb:scores,
-    wideImg:storedWideImg, leftoverImg:storedLeftoverImg,
+    wideImg,leftoverImg,
     ts:feedbackSubmittedAt2,
     state:todayState,
-    fromCard: drawnCard ? {dish:drawnCard.dish, badge:drawnCard.badge||'', risk:drawnCard.risk||''} : null,
     // L3 精确时间戳
     mealStartedAt,
     mealDurationMs: mealStartedAt ? feedbackSubmittedAt2 - mealStartedAt : null,
@@ -5059,8 +4806,12 @@ async function submitFeedback(){
   if(currentUser) saveUserMeals(meals);
   // L4：每次提交后重新压缩个人规律摘要
   userFoodProfile = buildUserFoodProfile(meals);
-  // L3：写入每日回访计划（每天一次，非每餐）
-  scheduleDailyCheckin(m);
+  // L3：写入 2 小时延迟回访任务
+  try{
+    const followUps = JSON.parse(localStorage.getItem('pending_followups')||'[]');
+    followUps.push({ mealId:m.id, dish:m.dish||'这一餐', type:m.type, dueAt:Date.now()+2*3600*1000 });
+    localStorage.setItem('pending_followups', JSON.stringify(followUps.slice(-10)));
+  }catch(_){}
   justCompletedMealId=m.id;
   forceHomeRecordDefault=false;
   pendingAnalysis=null;
@@ -5209,151 +4960,24 @@ function showBodyMirrorIfReady(insight){
 }
 
 let historyView = 'calendar'; // 'calendar' | 'map'
-let historyTypeFilter = '全部'; // 餐次筛选
 
 // 菜系→省份映射表
 const CUISINE_MAP = {
-  // 川菜
-  '黄焖鸡米饭':{cuisine:'川菜',province:'四川'},
+  '黄焖鸡米饭':{cuisine:'鲁菜',province:'山东'},
   '麻辣香锅':{cuisine:'川菜',province:'四川'},
   '夫妻肺片':{cuisine:'川菜',province:'四川'},
-  '麻婆豆腐':{cuisine:'川菜',province:'四川'},
-  '回锅肉':{cuisine:'川菜',province:'四川'},
-  '水煮鱼':{cuisine:'川菜',province:'四川'},
-  '鱼香肉丝':{cuisine:'川菜',province:'四川'},
-  '宫保鸡丁':{cuisine:'川菜',province:'四川'},
-  '辣子鸡':{cuisine:'川菜',province:'四川'},
-  '红烧肉':{cuisine:'川菜',province:'四川'},
-  '担担面':{cuisine:'川菜',province:'四川'},
-  '重庆小面':{cuisine:'渝菜',province:'重庆'},
-  '重庆火锅':{cuisine:'渝菜',province:'重庆'},
-  '毛血旺':{cuisine:'川菜',province:'四川'},
-  '麻辣烫':{cuisine:'川菜',province:'四川'},
-  '串串香':{cuisine:'渝菜',province:'重庆'},
-  '钵钵鸡':{cuisine:'川菜',province:'四川'},
-  '口水鸡':{cuisine:'川菜',province:'四川'},
-  '干锅虾':{cuisine:'川菜',province:'四川'},
-  '酸菜鱼':{cuisine:'川菜',province:'四川'},
-  // 粤菜
-  '白切鸡饭':{cuisine:'粤菜',province:'广东'},
-  '白切鸡':{cuisine:'粤菜',province:'广东'},
   '鸡胸肉饭':{cuisine:'粤菜',province:'广东'},
-  '清蒸鱼':{cuisine:'粤菜',province:'广东'},
+  '白切鸡饭':{cuisine:'粤菜',province:'广东'},
+  '番茄鸡蛋面':{cuisine:'家常菜',province:'全国'},
   '清蒸鱼+米饭':{cuisine:'粤菜',province:'广东'},
   '牛肉炒饭':{cuisine:'粤菜',province:'广东'},
-  '叉烧饭':{cuisine:'粤菜',province:'广东'},
-  '烧鸭饭':{cuisine:'粤菜',province:'广东'},
-  '烤鸭饭':{cuisine:'粤菜',province:'广东'},
-  '虾饺':{cuisine:'粤菜',province:'广东'},
-  '肠粉':{cuisine:'粤菜',province:'广东'},
-  '云吞面':{cuisine:'粤菜',province:'广东'},
-  '猪脚饭':{cuisine:'粤菜',province:'广东'},
-  '煲仔饭':{cuisine:'粤菜',province:'广东'},
-  '烧腊双拼饭':{cuisine:'粤菜',province:'广东'},
-  '港式奶茶':{cuisine:'粤菜',province:'广东'},
-  '蛋挞':{cuisine:'粤菜',province:'广东'},
-  '菠萝包':{cuisine:'粤菜',province:'广东'},
-  '艇仔粥':{cuisine:'粤菜',province:'广东'},
-  '皮蛋瘦肉粥':{cuisine:'粤菜',province:'广东'},
-  '螃蟹粥':{cuisine:'粤菜',province:'广东'},
-  // 湘菜
-  '剁椒鱼头':{cuisine:'湘菜',province:'湖南'},
-  '湖南臭豆腐':{cuisine:'湘菜',province:'湖南'},
-  '米粉':{cuisine:'湘菜',province:'湖南'},
-  '长沙臭豆腐':{cuisine:'湘菜',province:'湖南'},
-  '毛氏红烧肉':{cuisine:'湘菜',province:'湖南'},
-  '辣椒炒肉':{cuisine:'湘菜',province:'湖南'},
-  '农家小炒肉':{cuisine:'湘菜',province:'湖南'},
-  // 鲁菜
-  '糖醋里脊':{cuisine:'鲁菜',province:'山东'},
-  '葱烧海参':{cuisine:'鲁菜',province:'山东'},
-  '锅包肉':{cuisine:'东北菜',province:'辽宁'},
-  '地三鲜':{cuisine:'东北菜',province:'辽宁'},
-  '东北乱炖':{cuisine:'东北菜',province:'辽宁'},
-  '小鸡炖蘑菇':{cuisine:'东北菜',province:'吉林'},
-  '猪肉炖粉条':{cuisine:'东北菜',province:'辽宁'},
-  '酸菜白肉':{cuisine:'东北菜',province:'辽宁'},
-  // 苏浙沪
   '小笼包':{cuisine:'沪菜',province:'上海'},
   '生煎包':{cuisine:'沪菜',province:'上海'},
-  '上海本帮红烧肉':{cuisine:'沪菜',province:'上海'},
-  '葱油拌面':{cuisine:'沪菜',province:'上海'},
-  '蟹粉小笼':{cuisine:'苏菜',province:'江苏'},
-  '清炖蟹粉狮子头':{cuisine:'苏菜',province:'江苏'},
-  '阳澄湖大闸蟹':{cuisine:'苏菜',province:'江苏'},
-  '西湖醋鱼':{cuisine:'浙菜',province:'浙江'},
-  '东坡肉':{cuisine:'浙菜',province:'浙江'},
-  '龙井虾仁':{cuisine:'浙菜',province:'浙江'},
-  '叫花鸡':{cuisine:'浙菜',province:'浙江'},
-  // 徽菜/闽菜
-  '臭鳜鱼':{cuisine:'徽菜',province:'安徽'},
-  '佛跳墙':{cuisine:'闽菜',province:'福建'},
-  '沙茶面':{cuisine:'闽菜',province:'福建'},
-  '海蛎煎':{cuisine:'闽菜',province:'福建'},
-  // 陕西/西北
-  '肉夹馍':{cuisine:'陕菜',province:'陕西'},
-  '羊肉泡馍':{cuisine:'陕菜',province:'陕西'},
-  '凉皮':{cuisine:'陕菜',province:'陕西'},
-  '油泼面':{cuisine:'陕菜',province:'陕西'},
-  '蒜苗炒肉':{cuisine:'陕菜',province:'陕西'},
-  '兰州拉面':{cuisine:'西北菜',province:'甘肃'},
-  '手抓羊肉':{cuisine:'西北菜',province:'新疆'},
-  '大盘鸡':{cuisine:'西北菜',province:'新疆'},
-  '新疆拌面':{cuisine:'西北菜',province:'新疆'},
-  '烤羊肉串':{cuisine:'西北菜',province:'新疆'},
-  // 北京/天津
-  '北京烤鸭':{cuisine:'京菜',province:'北京'},
-  '炸酱面':{cuisine:'京菜',province:'北京'},
-  '铜锅涮肉':{cuisine:'京菜',province:'北京'},
-  '驴打滚':{cuisine:'京菜',province:'北京'},
-  '豆汁儿':{cuisine:'京菜',province:'北京'},
-  '煎饼果子':{cuisine:'津菜',province:'天津'},
-  '狗不理包子':{cuisine:'津菜',province:'天津'},
-  // 家常/快餐
-  '番茄鸡蛋面':{cuisine:'家常菜',province:'全国'},
-  '番茄炒蛋':{cuisine:'家常菜',province:'全国'},
-  '蒸蛋':{cuisine:'家常菜',province:'全国'},
-  '红烧豆腐':{cuisine:'家常菜',province:'全国'},
-  '青椒炒肉':{cuisine:'家常菜',province:'全国'},
-  '土豆丝':{cuisine:'家常菜',province:'全国'},
-  '蒜蓉西兰花':{cuisine:'家常菜',province:'全国'},
-  '水煮青菜':{cuisine:'家常菜',province:'全国'},
-  '清炒时蔬':{cuisine:'家常菜',province:'全国'},
-  '蛋炒饭':{cuisine:'家常菜',province:'全国'},
-  '泡面':{cuisine:'家常菜',province:'全国'},
-  '方便面':{cuisine:'家常菜',province:'全国'},
-  '饺子':{cuisine:'家常菜',province:'全国'},
-  '包子':{cuisine:'家常菜',province:'全国'},
-  '馒头':{cuisine:'家常菜',province:'全国'},
-  '稀饭':{cuisine:'家常菜',province:'全国'},
-  '小米粥':{cuisine:'家常菜',province:'全国'},
-  '玉米粥':{cuisine:'家常菜',province:'全国'},
-  '白米饭':{cuisine:'家常菜',province:'全国'},
-  // 轻食
   '鸡胸肉沙拉':{cuisine:'轻食',province:'全国'},
   '轻食沙拉碗':{cuisine:'轻食',province:'全国'},
-  '希腊沙拉':{cuisine:'轻食',province:'全国'},
-  '鸡肉沙拉':{cuisine:'轻食',province:'全国'},
-  '藜麦碗':{cuisine:'轻食',province:'全国'},
-  '三文鱼沙拉':{cuisine:'轻食',province:'全国'},
-  '水果酸奶':{cuisine:'轻食',province:'全国'},
-  '燕麦碗':{cuisine:'轻食',province:'全国'},
-  '全麦三明治':{cuisine:'轻食',province:'全国'},
-  // 境外
   '泰式柠檬鸡':{cuisine:'泰国菜',province:'境外'},
-  '泰式炒河粉':{cuisine:'泰国菜',province:'境外'},
   '日式定食':{cuisine:'日料',province:'境外'},
-  '寿司':{cuisine:'日料',province:'境外'},
-  '拉面':{cuisine:'日料',province:'境外'},
-  '乌冬面':{cuisine:'日料',province:'境外'},
   '韩式拌饭':{cuisine:'韩餐',province:'境外'},
-  '韩式炸鸡':{cuisine:'韩餐',province:'境外'},
-  '部队锅':{cuisine:'韩餐',province:'境外'},
-  '汉堡':{cuisine:'西餐',province:'境外'},
-  '披萨':{cuisine:'西餐',province:'境外'},
-  '意大利面':{cuisine:'西餐',province:'境外'},
-  '牛排':{cuisine:'西餐',province:'境外'},
-  '三明治':{cuisine:'西餐',province:'境外'},
 };
 
 // 省份 SVG 路径数据（简化轮廓，足够辨认）
@@ -5397,23 +5021,11 @@ function renderHistory(){
   if(!meals.length){
     s.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--ink60)"><div style="font-size:48px;margin-bottom:12px">📋</div><p>还没有餐次记录</p></div>`;return;
   }
-  // 统计各类型餐次数量
-  const typeCounts={'全部':meals.length};
-  ['早饭','午饭','晚饭','加餐'].forEach(t=>{ const c=meals.filter(m=>m.type===t).length; if(c) typeCounts[t]=c; });
-  const unratedCount=meals.filter(m=>!m.fb).length;
-
   // 视图切换 tab
   const tabHtml=`
-  <div style="display:flex;background:var(--cream);border-radius:100px;padding:3px;margin-bottom:14px">
-    <button onclick="switchHistoryView('calendar')" style="flex:1;padding:8px;border:none;border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:${historyView==='calendar'?'var(--white)':'transparent'};color:${historyView==='calendar'?'var(--ink)':'var(--ink60)'};box-shadow:${historyView==='calendar'?'0 1px 4px rgba(0,0,0,.08)':'none'}">📅 打卡日历</button>
-    <button onclick="switchHistoryView('map')" style="flex:1;padding:8px;border:none;border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:${historyView==='map'?'var(--white)':'transparent'};color:${historyView==='map'?'var(--ink)':'var(--ink60)'};box-shadow:${historyView==='map'?'0 1px 4px rgba(0,0,0,.08)':'none'}">🗺️ 菜系地图</button>
-  </div>
-  <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none">
-    ${Object.entries(typeCounts).map(([t,c])=>{
-      const sel=historyTypeFilter===t;
-      return `<button onclick="setHistoryFilter('${t}')" style="flex-shrink:0;border:${sel?'none':'1.5px solid var(--border)'};background:${sel?'var(--accent)':'var(--white)'};color:${sel?'#fff':'var(--ink60)'};border-radius:999px;padding:5px 12px;font-family:var(--sans);font-size:12px;font-weight:${sel?700:500};cursor:pointer;white-space:nowrap">${t} ${c}</button>`;
-    }).join('')}
-    ${unratedCount?`<button onclick="setHistoryFilter('未打分')" style="flex-shrink:0;border:${historyTypeFilter==='未打分'?'none':'1.5px solid var(--accent)'};background:${historyTypeFilter==='未打分'?'var(--accent)':'var(--white)'};color:${historyTypeFilter==='未打分'?'#fff':'var(--accent)'};border-radius:999px;padding:5px 12px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">未打分 ${unratedCount}</button>`:''}
+  <div style="display:flex;background:var(--cream);border-radius:100px;padding:3px;margin-bottom:18px">
+    <button onclick="switchHistoryView('calendar')" id="hv-cal" style="flex:1;padding:8px;border:none;border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:${historyView==='calendar'?'var(--white)':'transparent'};color:${historyView==='calendar'?'var(--ink)':'var(--ink60)'};box-shadow:${historyView==='calendar'?'0 1px 4px rgba(0,0,0,.08)':'none'}">📅 打卡日历</button>
+    <button onclick="switchHistoryView('map')" id="hv-map" style="flex:1;padding:8px;border:none;border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:${historyView==='map'?'var(--white)':'transparent'};color:${historyView==='map'?'var(--ink)':'var(--ink60)'};box-shadow:${historyView==='map'?'0 1px 4px rgba(0,0,0,.08)':'none'}">🗺️ 菜系地图</button>
   </div>`;
   s.innerHTML=`${tabHtml}<div id="hv-content"></div>`;
   renderHistoryContent();
@@ -5422,17 +5034,6 @@ function renderHistory(){
 function switchHistoryView(v){
   historyView=v;
   renderHistory();
-}
-
-function setHistoryFilter(t){
-  historyTypeFilter=t;
-  renderHistory();
-}
-
-function getFilteredMeals(){
-  if(historyTypeFilter==='全部') return meals;
-  if(historyTypeFilter==='未打分') return meals.filter(m=>!m.fb);
-  return meals.filter(m=>m.type===historyTypeFilter);
 }
 
 function renderHistoryContent(){
@@ -5450,10 +5051,9 @@ function renderCalendarView(container){
   const daysInMonth=new Date(year,month+1,0).getDate();
   const today=now.getDate();
 
-  // 把 meals 按日期分组（用 ts 时间戳），应用筛选
-  const sourceMeals = getFilteredMeals();
+  // 把 meals 按日期分组（用 ts 时间戳）
   const mealsByDay={};
-  sourceMeals.forEach(m=>{
+  meals.forEach(m=>{
     const d=new Date(m.ts||Date.now());
     if(d.getFullYear()===year&&d.getMonth()===month){
       const day=d.getDate();
@@ -5465,12 +5065,12 @@ function renderCalendarView(container){
   [1,2,3,4,5].forEach((offset,i)=>{
     const day=today-4+i;
     if(day>0&&day<=daysInMonth&&!Object.keys(mealsByDay).length){
-      mealsByDay[day]=[sourceMeals[i]].filter(Boolean);
+      mealsByDay[day]=[meals[i]].filter(Boolean);
     }
   });
   // 补充 seed meals 到近几天
-  if(Object.keys(mealsByDay).length===0||sourceMeals.slice(0,5).some(m=>!m.ts||m.ts<Date.now()-7*86400000)){
-    sourceMeals.forEach((m,i)=>{
+  if(Object.keys(mealsByDay).length===0||meals.slice(0,5).some(m=>!m.ts||m.ts<Date.now()-7*86400000)){
+    meals.forEach((m,i)=>{
       const day=Math.max(1,today-4+i);
       if(!mealsByDay[day]) mealsByDay[day]=[];
       if(!mealsByDay[day].find(x=>x.id===m.id)) mealsByDay[day].push(m);
@@ -5534,7 +5134,7 @@ function renderDayMeals(day, list){
     const noFb=!m.fb;
     const feelColor=m.fb?.comfort==='有精神'||m.fb?.comfort==='舒服'?'var(--green)':m.fb?.comfort==='困倦'||m.fb?.comfort==='胀气'?'var(--red)':'var(--amber)';
     const addLabel=m.additionals?.length?` + ${m.additionals.map(a=>a.dish||'附加').join(' + ')}`:'';
-    return `<div style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="showMealDetail(${m.id})">
+    return `<div style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);${noFb?'':'cursor:pointer'}" ${noFb?'':` onclick="showMealDetail(${m.id})"`}>
       <div style="position:relative;flex-shrink:0">
         ${imgEl}
         ${noFb?`<div style="position:absolute;bottom:-4px;right:-4px;background:var(--accent);color:#fff;border-radius:999px;font-size:9px;font-weight:900;padding:2px 5px">未打分</div>`:''}
@@ -5676,110 +5276,40 @@ function backfillFeedback(mealId){
 
 function showMealDetail(id){
   const m=meals.find(x=>x.id===id);if(!m)return;
-  const a=normalizeMealAnalysis(m.analysis||{});
+  const a=m.analysis;
   const s=document.getElementById('s-history');
-
-  // 封面图
   const imgEl=m.wideImg
     ?`<img src="${m.wideImg}" style="width:calc(100% + 40px);margin:-20px -20px 0 -20px;height:200px;object-fit:cover;display:block;border-radius:14px 14px 0 0">`
-    :`<div style="width:calc(100% + 40px);margin:-20px -20px 0 -20px;height:80px;background:var(--cream);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;font-size:42px">${ava(a.risk)}</div>`;
-
-  // AI 分析内容
-  const detail=(a.detail||[]).map(d=>`<li style="font-size:13px;color:var(--ink60);padding:4px 0;list-style:none;display:flex;gap:6px"><span style="color:var(--ink30);flex-shrink:0">—</span>${d}</li>`).join('');
-  const tags=(a.tags||[]).map(t=>`<span class="chip chip-amber" style="margin-right:4px">${t}</span>`).join('');
-
-  // 附加食物 block
-  const addBlock=(m.additionals&&m.additionals.length)?`
-    <div style="margin-top:14px;background:var(--amber-s);border-radius:var(--rs);padding:10px 12px">
-      <p style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">同餐附加</p>
-      ${m.additionals.map(ad=>{
-        const an=normalizeMealAnalysis(ad);
-        const nn=normalizeNutritionEstimate(an.nutritionEstimate,an.foodType);
-        return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.05)">
-          <span style="font-size:13px;font-weight:600">${ad.dish||'附加食物'}</span>
-          <span style="font-size:11px;color:var(--ink60)">${nn.calories.range}</span>
-        </div>`;
-      }).join('')}
-    </div>`:''  ;
-
-  // AI 修正记录
-  const corrections=m.analysis?.corrections||{};
-  const corrKeys=Object.keys(corrections);
-  const corrBlock=corrKeys.length?`
-    <div style="margin-top:14px;background:var(--cream);border-radius:var(--rs);padding:10px 12px">
-      <p style="font-size:11px;font-weight:700;color:var(--ink60);margin-bottom:6px">你修正了 AI 的识别</p>
-      ${corrKeys.map(k=>{
-        const c=corrections[k];
-        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px">
-          <span style="color:var(--ink30)">${k}：</span>
-          <span style="color:var(--ink30);text-decoration:line-through">${c.ai_value}</span>
-          <span style="color:var(--ink30)">→</span>
-          <span style="font-weight:600;color:var(--ink)">${c.user_value}</span>
-        </div>`;
-      }).join('')}
-    </div>`:'' ;
-
-  // 来自推荐卡
-  const fromCardBlock=m.fromCard?`
-    <div style="margin-top:14px;background:var(--green-s);border-radius:var(--rs);padding:10px 12px;display:flex;align-items:center;gap:8px">
-      <span style="font-size:16px">🃏</span>
-      <p style="font-size:12px;color:var(--green)">来自推荐卡片：<strong>${m.fromCard.dish}</strong></p>
-    </div>`:'' ;
-
-  // 饭后照片
-  const leftoverEl=m.leftoverImg
-    ?`<div style="margin-top:14px"><p style="font-size:11px;font-weight:700;color:var(--ink60);margin-bottom:6px">饭后照片</p><img src="${m.leftoverImg}" style="width:100%;height:130px;object-fit:cover;border-radius:var(--rs)"></div>`:'';
-
-  // 反馈 block
-  const noFb=!m.fb;
-  const fbGrid=noFb?`
-    <div class="card fade" style="animation-delay:.12s;border:2px dashed var(--border)">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <p style="font-size:13px;font-weight:600;color:var(--ink60);margin-bottom:2px">这餐没有打分记录</p>
-          <p style="font-size:12px;color:var(--ink30)">${m.autoClosedAt?'30分钟内未完成，已自动存档':'手动返回未提交'}</p>
-        </div>
-        <button onclick="backfillFeedback(${m.id})" style="flex-shrink:0;border:none;background:var(--accent);color:#fff;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer">补录反馈</button>
-      </div>
-    </div>`:
-    m.fb.comfort?`
-    <div class="card fade" style="animation-delay:.12s">
-      <div class="label" style="margin-bottom:10px">饭后感受</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-        ${[['饱腹',m.fb.fullness||'—'],['身体',m.fb.comfort||'—'],['价格',m.fb.price||'—']].map(([k,v])=>`
-          <div style="background:var(--cream);border-radius:var(--rs);padding:10px 12px;text-align:center">
-            <p style="font-size:10px;color:var(--ink60);margin-bottom:3px">${k}</p>
-            <p style="font-size:14px;font-weight:700">${v}</p>
+    :`<div style="width:calc(100% + 40px);margin:-20px -20px 0 -20px;height:100px;background:var(--cream);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;font-size:52px">${ava(a.risk)}</div>`;
+  const detail=a.detail.map(d=>`<li style="font-size:13px;color:var(--ink60);padding:4px 0;list-style:none;display:flex;gap:6px"><span style="color:var(--ink30);flex-shrink:0">—</span>${d}</li>`).join('');
+  const tags=a.tags.map(t=>`<span class="chip chip-amber" style="margin-right:4px">${t}</span>`).join('');
+  const fbGrid=m.fb.fullness?`
+    <div class="card fade" style="animation-delay:.15s">
+      <div class="label">饭后感受</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${[['饱腹',m.fb.fullness],['身体',m.fb.comfort],['价格',m.fb.price||'—']].map(([k,v])=>`
+          <div style="background:var(--cream);border-radius:var(--rs);padding:10px 12px">
+            <p style="font-size:11px;color:var(--ink60);margin-bottom:3px">${k}</p>
+            <p style="font-size:14px;font-weight:600">${v}</p>
           </div>`).join('')}
       </div>
-      ${m.fb.actualIntake?`<div style="background:var(--accent-s);border-radius:var(--rs);padding:8px 12px">
-        <p style="font-size:12px;color:var(--accent)">实际摄入：<strong>${m.fb.actualIntake}</strong>（约饭前估算的 ${Math.round((m.fb.actualIntakeRatio||1)*100)}%）</p>
-      </div>`:''}
     </div>`:'';
-
-  // 时间信息
-  const tsDate=m.ts?new Date(m.ts).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-  const dur=m.mealDurationMs?Math.round(m.mealDurationMs/60000)+'分钟':'';
-
+  const leftoverEl=m.leftoverImg
+    ?`<div style="margin-top:14px"><div class="label">饭后照片</div><img src="${m.leftoverImg}" style="width:100%;height:130px;object-fit:cover;border-radius:var(--rs)"></div>`:'';
   s.innerHTML=`
     <button onclick="renderHistory()" style="background:none;border:none;color:var(--ink60);font-size:14px;cursor:pointer;margin-bottom:14px;padding:0;font-family:var(--sans)">← 返回记录本</button>
-    <div class="card fade" style="overflow:hidden;padding-top:0;${noFb?'border:2.5px solid var(--accent)':'border:2.5px solid var(--green)'}">
+    <div class="card fade" style="overflow:hidden;padding-top:0">
       ${imgEl}
       <div style="padding-top:16px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
-          <div>
-            <p style="font-weight:700;font-size:16px">${m.type} · ${tsDate}${dur?' · 吃了'+dur:''}</p>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <p style="font-weight:700;font-size:16px">${m.date} · ${m.type}</p>
           ${riskChip(a.risk)}
         </div>
-        <p style="font-family:var(--serif);font-size:20px;line-height:1.3;margin-bottom:8px">${m.dish||a.structure||'这一餐'}</p>
+        <p style="font-family:var(--serif);font-size:20px;line-height:1.3;margin-bottom:8px">${a.structure}</p>
         <div class="risk-bar risk-${a.risk}"></div>
-        ${detail?`<ul style="margin-top:10px">${detail}</ul>`:''}
-        ${a.advice?`<div class="advice-box" style="margin-top:10px"><p style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px">吃法建议</p><p class="advice-text">${a.advice}</p></div>`:''}
-        ${tags?`<div style="margin-top:10px">${tags}</div>`:''}
-        ${addBlock}
-        ${corrBlock}
-        ${fromCardBlock}
+        <ul style="margin-top:12px">${detail}</ul>
+        <div class="advice-box"><p style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">吃法建议</p><p class="advice-text">${a.advice}</p></div>
+        <div style="margin-top:10px">${tags}</div>
         ${leftoverEl}
       </div>
     </div>
@@ -6129,17 +5659,7 @@ function renderProfile(){
   const tasteStats = computeTasteStats();
   const heightTxt = profile.height ? profile.height + ' cm' : '未填';
   const weightTxt = profile.weight ? profile.weight + ' kg' : '未填';
-  const ageTxt = profile.age ? profile.age + ' 岁' : '未填';
   const genderTxt = profile.gender || '未填';
-  const healthBg = Array.isArray(profile.healthBackground) && profile.healthBackground.length
-    ? profile.healthBackground.join('、') : '无特殊情况';
-  // 体重趋势
-  const wLog = profile.weightLog||[];
-  const lastWeighTs = wLog.length ? wLog[wLog.length-1].ts : null;
-  const daysSince = lastWeighTs ? Math.floor((Date.now()-lastWeighTs)/86400000) : 999;
-  const weightTrend = wLog.length>=2
-    ? (wLog[wLog.length-1].value - wLog[wLog.length-2].value).toFixed(1) : null;
-  const trendTxt = weightTrend===null ? '' : weightTrend>0 ? `↑${weightTrend}kg` : weightTrend<0 ? `↓${Math.abs(weightTrend)}kg` : '持平';
   const s = document.getElementById('s-profile');
   s.innerHTML = `
   <div class="fade" style="display:flex;flex-direction:column;align-items:center;padding:28px 0 20px;gap:10px">
@@ -6150,22 +5670,11 @@ function renderProfile(){
     </div>
   </div>
 
-  ${daysSince>=7?`
-  <div class="fade" style="background:var(--amber-s);border:1px solid rgba(212,134,10,.2);border-radius:var(--r);padding:14px 16px;margin-bottom:0;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openProfileNumEdit('weight','体重','kg')">
-    <span style="font-size:22px">⚖️</span>
-    <div style="flex:1">
-      <p style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:2px">该称体重了</p>
-      <p style="font-size:13px;color:var(--ink60)">${lastWeighTs?`上次记录距今 ${daysSince} 天`:'还未记录过体重'}</p>
-    </div>
-    <span style="font-size:13px;color:var(--ink30)">→</span>
-  </div>`:''}
-
   <div class="card fade" style="animation-delay:.04s">
     <div class="label">基础信息</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
       ${profileEditStat('身高', heightTxt, "openProfileNumEdit('height','身高','cm')")}
-      ${profileEditStat('体重', weightTxt + (trendTxt?` <span style="font-size:11px;color:${weightTrend>0?'var(--red)':'var(--green)'}">${trendTxt}</span>`:''), "openProfileNumEdit('weight','体重','kg')")}
-      ${profileEditStat('年龄', ageTxt, "openProfileNumEdit('age','年龄','岁')")}
+      ${profileEditStat('体重', weightTxt, "openProfileNumEdit('weight','体重','kg')")}
       ${profileEditStat('性别', genderTxt, 'openProfileGenderEdit()')}
     </div>
   </div>
@@ -6175,7 +5684,6 @@ function renderProfile(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       ${profileEditStat('目标', goal, 'openGoalEditor()')}
       ${profileEditStat('饭后感受', feeling, 'openProfileFeelingEdit()')}
-      ${profileEditStat('健康背景', healthBg, 'openHealthBackgroundEdit()')}
     </div>
     <div style="margin-top:10px">${profileEditStat('反馈提醒', profile.reminderDelayMin===undefined?'未设置':profile.reminderDelayMin===null?'不提醒':profile.reminderDelayMin>=60?Math.floor(profile.reminderDelayMin/60)+'小时后打分':profile.reminderDelayMin+'分钟后打分', 'openReminderSetup()')}</div>
   </div>
@@ -6201,17 +5709,7 @@ function renderProfile(){
     </div>
   </div>
 
-  <button onclick="openProductMapFromProfile()" style="width:100%;border:none;background:transparent;color:var(--ink30);font-family:var(--sans);font-size:12px;padding:8px 0 2px;cursor:pointer">查看产品架构图 →</button>
-
-  <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
-    <p style="font-size:11px;font-weight:700;color:var(--ink30);margin-bottom:12px;letter-spacing:.06em">数据管理</p>
-    <button onclick="confirmClearAllData()" style="width:100%;border:1.5px solid var(--border);border-radius:14px;background:var(--cream);color:var(--ink60);font-family:var(--sans);font-size:14px;padding:14px;cursor:pointer;margin-bottom:10px;text-align:left">
-      🗑️ &nbsp;清空所有饮食记录
-    </button>
-    <button onclick="confirmDeleteAccount()" style="width:100%;border:1.5px solid #ffb3b3;border-radius:14px;background:#fff5f5;color:#c0392b;font-family:var(--sans);font-size:14px;padding:14px;cursor:pointer;text-align:left">
-      ⚠️ &nbsp;注销账户 &amp; 删除全部数据
-    </button>
-  </div>`;
+  <button onclick="openProductMapFromProfile()" style="width:100%;border:none;background:transparent;color:var(--ink30);font-family:var(--sans);font-size:12px;padding:8px 0 2px;cursor:pointer">查看产品架构图 →</button>`;
 }
 
 function openAIKeySheet(){
@@ -6414,41 +5912,6 @@ function openProfileGenderEdit(){
   document.body.appendChild(overlay);
 }
 
-let _hbgSel = [];
-function openHealthBackgroundEdit(){
-  _hbgSel = Array.isArray(profile.healthBackground) ? [...profile.healthBackground] : [];
-  document.querySelectorAll('[data-hbg-overlay]').forEach(e=>e.remove());
-  _renderHealthBgOverlay();
-}
-function _renderHealthBgOverlay(){
-  document.querySelectorAll('[data-hbg-overlay]').forEach(e=>e.remove());
-  const opts=['无特殊情况','血糖容易波动','肠胃比较敏感','高血压/高血脂','睡眠质量差','其他'];
-  const overlay=document.createElement('div');
-  overlay.dataset.hbgOverlay='1';
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(26,22,18,.38);z-index:700;display:flex;align-items:flex-end;padding:20px';
-  overlay.innerHTML=`<div style="background:var(--white);border-radius:24px 24px 20px 20px;padding:22px;width:100%;max-width:420px;margin:0 auto;animation:fadeUp .3s ease">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <p style="font-family:var(--serif);font-size:22px">健康背景</p>
-      <button onclick="this.closest('[data-hbg-overlay]').remove()" style="width:34px;height:34px;border:none;border-radius:50%;background:var(--cream);cursor:pointer;font-size:18px">×</button>
-    </div>
-    <p style="font-size:13px;color:var(--ink60);margin-bottom:16px">帮助系统更准确解读你的身体信号，可多选</p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
-      ${opts.map(o=>{
-        const on=_hbgSel.includes(o);
-        return `<button onclick="toggleHbg('${o}')"
-          style="border:none;background:${on?'var(--green)':'var(--cream)'};color:${on?'#fff':'var(--ink)'};border-radius:999px;padding:10px 14px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">${o}</button>`;
-      }).join('')}
-    </div>
-    <button onclick="saveProfileField('healthBackground',[..._hbgSel]);document.querySelectorAll('[data-hbg-overlay]').forEach(e=>e.remove())"
-      style="width:100%;border:none;background:var(--accent);color:#fff;border-radius:14px;padding:15px;font-family:var(--sans);font-size:16px;font-weight:700;cursor:pointer">保存</button>
-  </div>`;
-  document.body.appendChild(overlay);
-}
-function toggleHbg(opt){
-  const idx=_hbgSel.indexOf(opt);
-  if(idx>=0) _hbgSel.splice(idx,1); else _hbgSel.push(opt);
-  _renderHealthBgOverlay();
-}
 function openProfileFeelingEdit(){
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(26,22,18,.38);z-index:700;display:flex;align-items:flex-end;padding:20px';
@@ -6469,13 +5932,6 @@ function saveProfileField(key, value){
   if(value===''||value===null||value===undefined) return;
   const num = Number(value);
   profile[key] = isNaN(num)||value==='' ? value : num;
-  // 体重每次保存都追加到时序日志
-  if(key==='weight' && !isNaN(num) && num>0){
-    if(!profile.weightLog) profile.weightLog=[];
-    profile.weightLog.push({ value:parseFloat(num), ts:Date.now() });
-    profile.weightLog = profile.weightLog.slice(-52); // 保留约一年周数据
-  }
-  if(currentUser){ try{ localStorage.setItem('profile_'+currentUser, JSON.stringify(profile)); }catch(_){} }
   renderProfile();
 }
 

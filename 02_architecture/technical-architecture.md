@@ -17,6 +17,7 @@
 - 后端：Supabase 优先
 - 数据库：PostgreSQL
 - AI 服务：独立 AI Service 层
+- AI 餐食分析：见 `02_architecture/ai-meal-analysis-architecture.md`
 - 构建：EAS Build
 - 热更新：EAS Update
 - 自动化：GitHub Actions / EAS Workflows

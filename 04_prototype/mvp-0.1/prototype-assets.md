@@ -12,7 +12,7 @@
 
 ## 资产记录模板
 
-### 首页 Home
+### 欢迎 / 定位页
 
 - 原型链接：
 - 图片文件：
@@ -20,7 +20,7 @@
 - 状态：待确认 / 已确认 / 需修改
 - 备注：
 
-### 记录页 Record
+### 建档页
 
 - 原型链接：
 - 图片文件：
@@ -28,7 +28,7 @@
 - 状态：待确认 / 已确认 / 需修改
 - 备注：
 
-### 饮食详情页 Detail
+### 标准拍照页
 
 - 原型链接：
 - 图片文件：
@@ -36,7 +36,7 @@
 - 状态：待确认 / 已确认 / 需修改
 - 备注：
 
-### 历史页 History
+### AI 即时分析页
 
 - 原型链接：
 - 图片文件：
@@ -44,7 +44,31 @@
 - 状态：待确认 / 已确认 / 需修改
 - 备注：
 
-### 我的页 Profile
+### 饭后反馈页
+
+- 原型链接：
+- 图片文件：
+- 版本：
+- 状态：待确认 / 已确认 / 需修改
+- 备注：
+
+### 单餐档案页
+
+- 原型链接：
+- 图片文件：
+- 版本：
+- 状态：待确认 / 已确认 / 需修改
+- 备注：
+
+### 身体拼图报告页
+
+- 原型链接：
+- 图片文件：
+- 版本：
+- 状态：待确认 / 已确认 / 需修改
+- 备注：
+
+### 餐前抽卡雏形
 
 - 原型链接：
 - 图片文件：
@@ -55,11 +79,14 @@
 ## 资产命名规范
 
 ```text
-home-v1.png
-record-v1.png
-detail-v1.png
-history-v1.png
-profile-v1.png
+welcome-v1.png
+profile-setup-v1.png
+meal-photo-v1.png
+instant-analysis-v1.png
+post-meal-feedback-v1.png
+meal-archive-v1.png
+body-puzzle-report-v1.png
+draw-card-v1.png
 page-flow-v1.png
 state-empty-v1.png
 state-error-v1.png

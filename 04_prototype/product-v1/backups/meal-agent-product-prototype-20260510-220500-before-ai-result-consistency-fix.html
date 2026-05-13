@@ -183,9 +183,6 @@ html,body{height:100%;background:var(--cream);font-family:var(--sans);color:var(
   <!-- ── PRODUCT MAP ── -->
   <div class="page screen" id="s-productmap"></div>
 
-  <!-- ── VERSION HISTORY ── -->
-  <div class="page screen" id="s-versionhistory"></div>
-
   <div class="tabbar" id="tabbar" style="display:none">
     <button class="tab-btn active" id="tab-home" onclick="switchTab('home')"><span class="tab-icon">🏠</span>Today</button>
     <button class="tab-btn" id="tab-plan" onclick="switchTab('plan')"><span class="tab-icon">📋</span>计划</button>
@@ -219,99 +216,6 @@ const INSIGHTS = {
   nextWeek:"午饭优先选「蛋白质足 + 主食适中 + 少油」组合",
   action:"把午饭米饭减少到半碗，先吃肉和菜",
 };
-const VERSION_HISTORY = [
-  {
-    time:'2026-05-10 23:20',
-    backup:'meal-agent-product-prototype-20260510-232019-before-capture-analysis-layout-cleanup.html',
-    title:'清理拍图页和分析页布局',
-    changes:['首页记录卡删除补录按钮','分析页图片直接显示，无黑色内容框','餐次类型移到图片下方，独立一行四等分按钮'],
-    impact:'影响首页记录卡、图片分析页、餐次类型选择'
-  },
-  {
-    time:'2026-05-10 23:16',
-    backup:'meal-agent-product-prototype-20260510-231612-before-restore-capture-step.html',
-    title:'恢复首页到拍图记录中间页',
-    changes:['首页点击记录区域先进入拍图记录/选择图片页面','拍照或选择图片后再进入原图片分析页面','图片分析页面上方显示“这是”的餐次类型选择'],
-    impact:'影响首页到拍图记录、图片选择、分析页餐次选择'
-  },
-  {
-    time:'2026-05-10 23:14',
-    backup:'meal-agent-product-prototype-20260510-231404-before-home-card-inline-record-backfill.html',
-    title:'首页记录卡改为图片内操作',
-    changes:['删除首页图片下方“记录这一餐”按钮','把记录文案放进图片区域内部','图片区域右上角增加补录按钮并绑定补录流程'],
-    impact:'影响首页记录卡和补录入口'
-  },
-  {
-    time:'2026-05-10 23:10',
-    backup:'meal-agent-product-prototype-20260510-231009-before-home-direct-camera-flow.html',
-    title:'首页图片直达拍照识别',
-    changes:['点击首页图片区域直接打开拍照/选图，不再跳到记录页后再次点击','选图完成后自动进入分析页并开始识别','餐次类型移动到已选图片上方，避免重复显示'],
-    impact:'影响首页记录入口、拍照/选图路径、记录页餐次选择位置'
-  },
-  {
-    time:'2026-05-10 23:04',
-    backup:'meal-agent-product-prototype-20260510-230435-before-record-flow-camera-backfill.html',
-    title:'调整记录与补录交互路径',
-    changes:['首页主按钮默认进入直接记录，不再在首页切换补录','记录页默认使用摄像头拍照入口，并可切换为选择图片','补录入口移动到图片区域右上角'],
-    impact:'影响 1.0 首页记录入口、记录拍照页、补录入口'
-  },
-  {
-    time:'2026-05-10 22:50',
-    backup:'meal-agent-product-prototype-20260510-225016-before-remove-duplicate-version-entry.html',
-    title:'去除产品架构图重复入口',
-    changes:['产品架构图删除版本更新记录入口','版本更新记录入口只保留在默认产品路线页','统一路径职责，避免同一页面从多个位置重复出现'],
-    impact:'影响产品架构图和版本更新入口路径'
-  },
-  {
-    time:'2026-05-10 22:47',
-    backup:'meal-agent-product-prototype-20260510-224710-before-architecture-map-entry.html',
-    title:'产品地图改为产品架构图',
-    changes:['默认产品路线页新增“产品架构图”按钮入口','产品架构图移除 1.0-5.0 阶段描述，避免和默认路线页重复','我的页入口文案同步改为产品架构图'],
-    impact:'影响默认产品路线、产品架构图、我的页入口文案'
-  },
-  {
-    time:'2026-05-10 22:39',
-    backup:'meal-agent-product-prototype-20260510-223947-before-new-user-auth-ui.html',
-    title:'新增新用户登录/注册页样式',
-    changes:['MVP 1.0 拆成身份选择、新用户登录/注册、老用户登录三段','新用户登录页按参考图制作微信登录、手机号登录、协议勾选','登录完成后新用户进入 onboarding，老用户进入带历史数据首页'],
-    impact:'影响 1.0 登录注册路径和新老用户演示入口'
-  },
-  {
-    time:'2026-05-10 22:34',
-    backup:'meal-agent-product-prototype-20260510-223421-before-roadmap-default-entry.html',
-    title:'恢复产品路线为刷新默认页',
-    changes:['每次刷新默认进入产品路线页','MVP 1.0 入口先进入登录页，再选择新用户/老用户演示路径','保留用户会话数据，但不在刷新时自动跳入业务页'],
-    impact:'影响初始化路由、1.0 入口路径、版本记录'
-  },
-  {
-    time:'2026-05-10 22:25',
-    backup:'meal-agent-product-prototype-20260510-222556-before-login-paths-version-page.html',
-    title:'拆分版本记录页与 1.0 双身份入口',
-    changes:['版本更新记录改为独立页面','1.0 登录页新增新用户/老用户两条演示路径','新用户从 0 餐进入 onboarding，老用户带历史数据直接进入首页'],
-    impact:'影响登录页、1.0 新老用户演示路径、版本记录入口'
-  },
-  {
-    time:'2026-05-10 22:22',
-    backup:'meal-agent-product-prototype-20260510-222244-before-version-history-log.html',
-    title:'新增版本更新记录模块',
-    changes:['新增版本更新记录数据结构','补录最近两次关键修复，后续每次备份修改都同步记录'],
-    impact:'原型可见记录；不影响业务流程'
-  },
-  {
-    time:'2026-05-10 22:14',
-    backup:'meal-agent-product-prototype-20260510-221421-before-body-puzzle-weekly-report-fix.html',
-    title:'修复身体拼图与周报',
-    changes:['底部“身体”入口固定回到身体拼图','新用户无记录时加载演示种子数据','周报兼容无时间戳记录，并正确统计吃撑'],
-    impact:'影响 1.0 身体页、周报、新用户演示数据'
-  },
-  {
-    time:'2026-05-10 22:05',
-    backup:'meal-agent-product-prototype-20260510-220500-before-ai-result-consistency-fix.html',
-    title:'修复 AI 识别结果错配',
-    changes:['真实 AI 输出不再混入随机模拟餐食','缺失营养字段显示待确认/无法准确估算','阶段 2 补全后整块刷新分析结果'],
-    impact:'影响拍照识别、营养概览、进食建议'
-  }
-];
 let meals = [
   {id:1,date:"周一",type:"午饭",dish:"黄焖鸡米饭",cuisine:"鲁菜",province:"山东",analysis:ANALYSES[0],fb:{fullness:"刚好",comfort:"舒服",mood:"满足",price:"值"},ts:Date.now()-6*86400000,state:"随便都行"},
   {id:2,date:"周二",type:"午饭",dish:"麻辣香锅",cuisine:"川菜",province:"四川",analysis:ANALYSES[2],fb:{fullness:"撑",comfort:"困倦",mood:"后悔",price:"一般"},ts:Date.now()-5*86400000,state:"压力有点大"},
@@ -319,19 +223,6 @@ let meals = [
   {id:4,date:"周四",type:"早饭",dish:"小笼包",cuisine:"沪菜",province:"上海",analysis:ANALYSES[1],fb:{fullness:"刚好",comfort:"舒服",mood:"满足",price:"值"},ts:Date.now()-3*86400000,state:"随便都行"},
   {id:5,date:"周五",type:"晚饭",dish:"夫妻肺片",cuisine:"川菜",province:"四川",analysis:ANALYSES[0],fb:{fullness:"刚好",comfort:"舒服",mood:"满足",price:"值"},ts:Date.now()-2*86400000,state:"压力有点大"},
 ];
-const SEED_MEALS = meals.map(m=>({...m,fb:{...(m.fb||{})},analysis:m.analysis}));
-
-function demoSeedMeals(){
-  return SEED_MEALS.map(m=>({...m,fb:{...(m.fb||{})},analysis:m.analysis}));
-}
-
-const RETURNING_USER_PROFILE = {
-  goal:'下午不困',
-  avoid:'无限制',
-  budget:'15–30 元',
-  feeling:'容易困倦',
-  eatingStyle:'很在乎吃得舒服',
-};
 
 // ── 用户会话管理 ────────────────────────────────────────────────────
 let currentUser = null;
@@ -361,78 +252,18 @@ function getUserMeals(){
   const allData = allStr ? JSON.parse(allStr) : {};
   return allData[currentUser.userId]?.meals || [];
 }
-async function compressImgForStorage(dataUrl, maxPx=480, quality=0.65){
-  if(!dataUrl||!dataUrl.startsWith('data:image')) return dataUrl;
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>{
-      const scale=Math.min(1,maxPx/Math.max(img.width,img.height));
-      const c=document.createElement('canvas');
-      c.width=Math.round(img.width*scale);
-      c.height=Math.round(img.height*scale);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      resolve(c.toDataURL('image/jpeg',quality));
-    };
-    img.onerror=()=>resolve(dataUrl);
-    img.src=dataUrl;
-  });
-}
-
-function checkStorageQuota(){
-  try{
-    const used=Object.entries(localStorage).reduce((s,[k,v])=>s+k.length+v.length,0);
-    const usedMB=(used/1024/1024).toFixed(1);
-    if(used>4*1024*1024){
-      toast(`⚠ 本地存储已用 ${usedMB}MB，接近上限。建议在「我的记录」清理旧图片。`);
-    }
-  }catch(_){}
-}
-
 function saveUserMeals(meals){
   if(!currentUser) return;
   const allStr = localStorage.getItem('user_data');
   const allData = allStr ? JSON.parse(allStr) : {};
   allData[currentUser.userId] = {meals, profile, correctionHistory: correctionHistory};
-  try{
-    localStorage.setItem('user_data', JSON.stringify(allData));
-    checkStorageQuota();
-  }catch(e){
-    if(e.name==='QuotaExceededError'||e.code===22){
-      toast('⚠ 存储空间不足，图片过多。已跳过本次保存，请清理旧记录后重试。');
-    }
-  }
-}
-
-function setUserDataForCurrent(nextMeals, nextProfile){
-  if(!currentUser) return;
-  const allStr = localStorage.getItem('user_data');
-  const allData = allStr ? JSON.parse(allStr) : {};
-  allData[currentUser.userId] = {
-    meals: nextMeals,
-    profile: nextProfile,
-    correctionHistory: correctionHistory,
-  };
   localStorage.setItem('user_data', JSON.stringify(allData));
 }
 
-function getCurrentUserData(){
-  if(!currentUser) return null;
-  const allStr = localStorage.getItem('user_data');
-  const allData = allStr ? JSON.parse(allStr) : {};
-  return allData[currentUser.userId] || null;
-}
-
 let profile = {};
-let checkinAnswers = {};   // 每日回访当次作答暂存
 let correctionHistory = []; // 用户修正历史
 let pendingAnalysis = null;
 let pendingMealType = "午饭";
-let actualIntakeAnalysis = null;
-let mealStartedAt = null;        // 用户点"去吃了"的时刻
-let userFoodProfile = null;      // 压缩后的个人规律摘要，每次提交后更新
-let pendingAdditionals = [];     // 同餐附加食物（待反馈时合并入同一餐次）
-let autoCloseTimer = null;       // 30分钟未打分自动闭环定时器
-let recordingAdditional = false; // 当前是否在记录同餐附加食物
 let obStep = 0;
 const obSteps = [
   {q:"你最想通过饮食改善什么？",key:"goal",opts:["下午不困","轻松减脂","消化更好","吃得更满足"]},
@@ -446,9 +277,6 @@ let scores = {};
 let camMealType = "午饭";
 let forceHomeRecordDefault = false;
 let feedbackStartedAt = null;
-let loginMode = 'role';
-let authAgreementChecked = false;
-let recordCaptureMode = 'camera';
 const DAYS = ["周一","周二","周三","周四","周五","周六","周日"];
 
 // ── Routing ───────────────────────────────────────────────────────────────────
@@ -465,7 +293,7 @@ function show(id){
   const right = document.getElementById('nav-right');
   if(id==='roadmap'){nav.style.display='none';tabbar.style.display='none';return;}
   nav.style.display='flex';
-  const titles={login:'登录',onboard:'MVP 1.0',home:'干饭',camera:'记录这一餐',feedback:'饭后打分',history:'我的记录',insight:'身体',profile:'我的档案',productmap:'产品架构图',versionhistory:'版本更新',version:'版本占位',mvp2:'计划',mvp3:'MVP 3.0',mvp4:'MVP 4.0',mvp5:'MVP 5.0'};
+  const titles={login:'登录',onboard:'MVP 1.0',home:'干饭',camera:'记录这一餐',feedback:'饭后打分',history:'我的记录',insight:'身体',profile:'我的档案',productmap:'产品地图',version:'版本占位',mvp2:'计划',mvp3:'MVP 3.0',mvp4:'MVP 4.0',mvp5:'MVP 5.0'};
   title.textContent = titles[id]||'干饭';
   title.style.display = '';
   title.style.visibility = 'visible';
@@ -497,7 +325,7 @@ function navRightAction(id){
   if(id==='login') return ``;
   if(id==='camera') return ``;
   if(id==='onboard') return `<button onclick="leaveMvpToRoadmap()" style="border:1px solid var(--border);background:var(--white);border-radius:999px;padding:7px 10px;color:var(--ink60);font-family:var(--sans);font-size:12px;cursor:pointer;white-space:nowrap">路线</button>`;
-  if(['version','mvp3','mvp4','mvp5','versionhistory'].includes(id)) return `<button onclick="renderRoadmap();show('roadmap')" style="border:1px solid var(--border);background:var(--white);border-radius:999px;padding:7px 10px;color:var(--ink60);font-family:var(--sans);font-size:12px;cursor:pointer;white-space:nowrap">路线</button>`;
+  if(['version','mvp3','mvp4','mvp5'].includes(id)) return `<button onclick="renderRoadmap();show('roadmap')" style="border:1px solid var(--border);background:var(--white);border-radius:999px;padding:7px 10px;color:var(--ink60);font-family:var(--sans);font-size:12px;cursor:pointer;white-space:nowrap">路线</button>`;
   return '';
 }
 function renderHomeNavLeft(){
@@ -535,81 +363,15 @@ function openProductMapFromProfile(){
   renderProductMap();
   show('productmap');
 }
-
-function confirmClearAllData(){
-  document.querySelectorAll('[data-confirm-sheet]').forEach(e=>e.remove());
-  const overlay=document.createElement('div');
-  overlay.dataset.confirmSheet='1';
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(26,22,18,.45);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px';
-  overlay.innerHTML=`<div style="background:var(--white);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;animation:fadeUp .25s ease">
-    <p style="font-family:var(--serif);font-size:20px;margin-bottom:10px">清空饮食记录</p>
-    <p style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:24px">将删除所有已记录的餐次和反馈数据，个人资料和 AI 配置保留。此操作不可撤销。</p>
-    <div style="display:flex;gap:10px">
-      <button onclick="this.closest('[data-confirm-sheet]').remove()" style="flex:1;border:1.5px solid var(--border);border-radius:12px;background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:15px;padding:13px;cursor:pointer">取消</button>
-      <button onclick="doClearAllData()" style="flex:1;border:none;border-radius:12px;background:#c0392b;color:#fff;font-family:var(--sans);font-size:15px;padding:13px;cursor:pointer;font-weight:700">确认清空</button>
-    </div>
-  </div>`;
-  document.body.appendChild(overlay);
-}
-
-function doClearAllData(){
-  document.querySelectorAll('[data-confirm-sheet]').forEach(e=>e.remove());
-  meals=[];
-  if(currentUser) saveUserMeals([]);
-  localStorage.removeItem('card_actions');
-  localStorage.removeItem('daily_checkins');
-  checkinAnswers={};
-  pendingAnalysis=null; mealEatingStarted=false; pendingAdditionals=[];
-  wideImg=null; leftoverImg=null; drawnCard=null;
-  clearAutoCloseTimer();
-  renderHome(); show('home');
-  toast('所有饮食记录已清空');
-}
-
-function confirmDeleteAccount(){
-  document.querySelectorAll('[data-confirm-sheet]').forEach(e=>e.remove());
-  const overlay=document.createElement('div');
-  overlay.dataset.confirmSheet='1';
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(26,22,18,.45);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px';
-  overlay.innerHTML=`<div style="background:var(--white);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;animation:fadeUp .25s ease">
-    <p style="font-family:var(--serif);font-size:20px;margin-bottom:10px">注销账户</p>
-    <p style="font-size:14px;color:var(--ink60);line-height:1.6;margin-bottom:8px">将删除：</p>
-    <ul style="font-size:13px;color:var(--ink60);padding-left:18px;margin-bottom:24px;line-height:2">
-      <li>全部饮食记录和反馈</li>
-      <li>个人资料（姓名、年龄、体重等）</li>
-      <li>AI 配置</li>
-      <li>本地所有缓存数据</li>
-    </ul>
-    <p style="font-size:13px;color:#c0392b;margin-bottom:20px;font-weight:600">⚠️ 此操作不可撤销，数据无法恢复</p>
-    <div style="display:flex;gap:10px">
-      <button onclick="this.closest('[data-confirm-sheet]').remove()" style="flex:1;border:1.5px solid var(--border);border-radius:12px;background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:15px;padding:13px;cursor:pointer">取消</button>
-      <button onclick="doDeleteAccount()" style="flex:1;border:none;border-radius:12px;background:#c0392b;color:#fff;font-family:var(--sans);font-size:15px;padding:13px;cursor:pointer;font-weight:700">确认注销</button>
-    </div>
-  </div>`;
-  document.body.appendChild(overlay);
-}
-
-function doDeleteAccount(){
-  document.querySelectorAll('[data-confirm-sheet]').forEach(e=>e.remove());
-  localStorage.clear();
-  meals=[]; currentUser=null; profile={};
-  pendingAnalysis=null; mealEatingStarted=false; pendingAdditionals=[];
-  wideImg=null; leftoverImg=null; drawnCard=null;
-  clearAutoCloseTimer();
-  AI_CONFIG.key=''; AI_CONFIG.model=''; AI_CONFIG.endpoint='';
-  renderHome(); show('home');
-  toast('账户已注销，数据已全部清除');
-}
 function switchTab(id){
   if(id==='camera'){navBackTarget='home';renderCamera();show('camera');}
   else if(id==='home'){navBackTarget='home';renderHome();show('home');}
   else if(id==='plan'){navBackTarget='home';planTab=planTab||'meal';renderMvpTwo();show('mvp2');}
-  else if(id==='body'){navBackTarget='home';bodyTab='puzzle';renderBody();show('insight');}
+  else if(id==='body'){navBackTarget='home';bodyTab=bodyTab||'puzzle';renderBody();show('insight');}
   else if(id==='history'){navBackTarget=curScreen==='insight'?'insight':'camera';renderHistory();show('history');}
   else if(id==='insight'){bodyTab='puzzle';renderBody();show('insight');}
   else if(id==='profile'){navBackTarget='home';renderProfile();show('profile');}
   else if(id==='productmap'){navBackTarget='profile';renderProductMap();show('productmap');}
-  else if(id==='versionhistory'){navBackTarget='roadmap';renderVersionHistoryPage();show('versionhistory');}
 }
 
 function leaveMvpToRoadmap(){
@@ -644,9 +406,7 @@ function renderRoadmap(){
     ${roadmapCard('MVP 3.0','目标约束','体重、进食节奏、睡眠、控糖和心情目标进入系统，影响餐饮计划而不是独立工具。','进入原型','enterMvpThree()',true)}
     ${roadmapCard('MVP 4.0','身体结构','用户在这里看懂自己的身体结构和数据边界；它不生成菜单，只沉淀规律。','进入原型','enterMvpFour()',true)}
     ${roadmapCard('MVP 5.0','计划履约','从餐饮计划进入购买这一餐、本周食材或定制配餐，不单独生成推荐。','进入原型','enterMvpFive()',true)}
-  </div>
-  ${productArchitectureEntryCard()}
-  ${versionHistoryEntryCard()}`;
+  </div>`;
 }
 
 function renderPageConnectionMap(){
@@ -678,72 +438,6 @@ function connectionStep(name,role,desc,stage){
       <span style="display:block;font-size:12px;color:var(--ink60);line-height:1.55">${desc}</span>
     </span>
   </div>`;
-}
-
-function productArchitectureEntryCard(){
-  return `<button onclick="navBackTarget='roadmap';renderProductMap();show('productmap')" class="card fade" style="width:100%;text-align:left;cursor:pointer;margin-top:22px;border:none;background:linear-gradient(180deg,var(--green-s),var(--white));font-family:var(--sans)">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
-      <div>
-        <div class="label" style="margin-bottom:4px">产品架构图</div>
-        <p style="font-family:var(--serif);font-size:22px;line-height:1.25;color:var(--ink)">看数据对象、算法接力和能力边界</p>
-      </div>
-      <span style="width:42px;height:42px;border-radius:16px;background:var(--white);display:flex;align-items:center;justify-content:center;font-size:22px">🧭</span>
-    </div>
-    <p style="font-size:12px;color:var(--ink60);line-height:1.6;margin-bottom:12px">阶段入口和阶段描述只保留在产品路线里；这里专注看底层架构如何支撑 1.0-5.0。</p>
-    <span style="font-size:13px;color:var(--green);font-weight:900">查看产品架构图 →</span>
-  </button>`;
-}
-
-function versionHistoryEntryCard(){
-  const latest=VERSION_HISTORY[0];
-  return `<button onclick="navBackTarget='roadmap';renderVersionHistoryPage();show('versionhistory')" class="card fade" style="width:100%;text-align:left;cursor:pointer;margin-top:22px;background:var(--cream);border-style:dashed;font-family:var(--sans)">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-      <div>
-        <div class="label" style="margin-bottom:4px">版本更新记录</div>
-        <p style="font-family:var(--serif);font-size:22px;line-height:1.25;color:var(--ink)">每次备份，都留下可追溯记录</p>
-        <p style="font-size:12px;color:var(--ink60);margin-top:7px">最新：${latest.title}</p>
-      </div>
-      <span class="chip chip-amber">${VERSION_HISTORY.length} 条</span>
-    </div>
-    <span style="display:block;font-size:13px;color:var(--accent);font-weight:800;margin-top:12px">查看全部版本 →</span>
-  </button>`;
-}
-
-function renderVersionHistoryList(){
-  return `<div class="card fade" style="background:var(--cream);border-style:dashed">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
-      <div>
-        <div class="label" style="margin-bottom:4px">版本更新记录</div>
-        <p style="font-family:var(--serif);font-size:22px;line-height:1.25">每次备份，都留下可追溯记录</p>
-      </div>
-      <span class="chip chip-amber">${VERSION_HISTORY.length} 条</span>
-    </div>
-    ${VERSION_HISTORY.map((v,i)=>`<div style="padding:${i===0?'0':'14px'} 0 0;border-top:${i===0?'none':'1px solid var(--border)'};margin-top:${i===0?'0':'14px'}">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px">
-        <div>
-          <p style="font-size:15px;font-weight:900;color:var(--ink);line-height:1.35">${v.title}</p>
-          <p style="font-size:11px;color:var(--ink30);line-height:1.45;margin-top:3px">${v.time}</p>
-        </div>
-        <span style="font-size:10px;color:var(--green);background:var(--green-s);border-radius:999px;padding:5px 8px;white-space:nowrap">已备份</span>
-      </div>
-      <p style="font-size:11px;color:var(--ink30);line-height:1.5;overflow-wrap:anywhere;margin-bottom:8px">${v.backup}</p>
-      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px">
-        ${v.changes.map(c=>`<p style="font-size:12px;color:var(--ink60);line-height:1.5">• ${c}</p>`).join('')}
-      </div>
-      <p style="font-size:12px;color:var(--accent);font-weight:800;line-height:1.5">影响范围：${v.impact}</p>
-    </div>`).join('')}
-  </div>`;
-}
-
-function renderVersionHistoryPage(){
-  const s=document.getElementById('s-versionhistory');
-  s.innerHTML=`
-  <div class="fade" style="margin-bottom:18px">
-    <p style="font-size:13px;color:var(--ink60);margin-bottom:6px">版本更新记录</p>
-    <h1 style="font-family:var(--serif);font-size:30px;line-height:1.2">每次备份，都留下可追溯记录</h1>
-    <p style="font-size:14px;color:var(--ink60);line-height:1.7;margin-top:10px">这里记录原型每次备份和修改内容。后续每次修改前先备份，修改完成后同步追加一条版本记录。</p>
-  </div>
-  ${renderVersionHistoryList()}`;
 }
 
 function stagePrototypeFrame(stage,path,steps,nav){
@@ -814,10 +508,8 @@ function roadmapCard(version,title,desc,action,handler,active=false){
 
 function enterMvpOne(){
   navBackTarget='roadmap';
-  loginMode='role';
-  authAgreementChecked=false;
-  renderLogin();
-  show('login');
+  renderOnboard();
+  show('onboard');
 }
 
 function enterMvpTwo(){
@@ -2159,11 +1851,7 @@ function obSelect(val){
 function obNext(){
   if(!profile[obSteps[obStep].key]) return;
   if(obStep<obSteps.length-1){obStep++;renderOnboard();}
-  else{
-    if(currentUser) setUserDataForCurrent(meals, profile);
-    renderHome();
-    show('home');
-  }
+  else{renderHome();show('home');}
 }
 
 // ── HOME ──────────────────────────────────────────────────────────────────────
@@ -2175,128 +1863,12 @@ function renderHome(){
   const home = getHomeScene();
   const mirror = n>=3 && insight ? renderHomeMirror(insight) : '';
   const fastHint = fastingState==='fasting' ? renderHomeFastHint() : '';
-  const followUp = renderDailyCheckinCard();
 
   s.innerHTML=`
-  ${followUp}
   ${home}
   ${fastHint}
   ${mirror}
   `;
-}
-
-// ── 每日身体回访（每天一次，三个维度）────────────────────────────────
-function scheduleDailyCheckin(meal){
-  try{
-    const dateKey = getTodayDateKey();
-    const checkins = JSON.parse(localStorage.getItem('daily_checkins')||'[]');
-    const existing = checkins.find(c=>c.date===dateKey);
-    // 晚饭 → 次日早 7 点触发；其他餐次 → 下午 5 点或 3 小时后（取较晚者）
-    const tomorrow7am = ()=>{ const d=new Date(); d.setDate(d.getDate()+1); d.setHours(7,0,0,0); return d.getTime(); };
-    const today5pm = ()=>{ const d=new Date(); d.setHours(17,0,0,0); return Math.max(d.getTime(), Date.now()+3*3600000); };
-    const isDinner = meal.type==='晚饭';
-    if(existing && !existing.answered){
-      if(!existing.mealIds.includes(meal.id)) existing.mealIds.push(meal.id);
-      // 只要有一顿是晚饭，触发时间就推到次日晨
-      if(isDinner){ existing.dueAt=tomorrow7am(); existing.isNextDay=true; }
-    } else if(!existing){
-      checkins.push({ date:dateKey, mealIds:[meal.id],
-        dueAt: isDinner ? tomorrow7am() : today5pm(),
-        isNextDay: isDinner,
-        answered:false, dismissed:false,
-        energy:null, digestion:null, satiety:null, answeredAt:null });
-    }
-    localStorage.setItem('daily_checkins', JSON.stringify(checkins.slice(-30)));
-  }catch(_){}
-}
-
-function renderDailyCheckinCard(){
-  try{
-    const checkins = JSON.parse(localStorage.getItem('daily_checkins')||'[]');
-    const today = getTodayDateKey();
-    const yesterday = getDateKey(Date.now()-86400000);
-    const due = checkins.find(c=>(c.date===today||c.date===yesterday)&&!c.answered&&Date.now()>=c.dueAt);
-    if(!due) return '';
-    const label = due.isNextDay||due.date===yesterday ? '昨天吃了什么，身体有什么感受？' : '今天吃得怎么样，身体有什么感受？';
-    const qs=[
-      {key:'energy',  label:'精力状态', opts:['精力充沛','还好','疲惫犯困']},
-      {key:'digestion',label:'肠胃感受', opts:['舒适顺畅','有点不适','明显不舒服']},
-      {key:'satiety', label:'两餐之间', opts:['很耐饿','有点饿','饿得很快']},
-    ];
-    const allAnswered = qs.every(q=>checkinAnswers[q.key]);
-    return `<div class="card fade" style="background:var(--amber-s);border:1px solid rgba(212,134,10,.22);margin-bottom:0;padding:16px">
-      <p style="font-size:11px;font-weight:700;color:var(--amber);letter-spacing:.06em;margin-bottom:6px">📊 每日身体回访</p>
-      <p style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:14px">${label}</p>
-      ${qs.map(q=>`
-        <div class="checkin-q" style="margin-bottom:12px">
-          <p style="font-size:11px;color:var(--ink60);font-weight:600;margin-bottom:6px">${q.label}</p>
-          <div style="display:flex;gap:6px">
-            ${q.opts.map(opt=>{
-              const sel=checkinAnswers[q.key]===opt;
-              return `<button class="checkin-opt" data-key="${q.key}" data-val="${opt}"
-                onclick="selectCheckinAnswer('${q.key}','${opt}',this)"
-                style="flex:1;border:1.5px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'var(--accent)':'var(--white)'};color:${sel?'#fff':'var(--ink60)'};border-radius:var(--rs);padding:9px 4px;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer">${opt}</button>`;
-            }).join('')}
-          </div>
-        </div>`).join('')}
-      <button id="checkin-submit" onclick="submitDailyCheckin('${due.date}')"
-        ${allAnswered?'':'disabled'}
-        style="width:100%;border:none;border-radius:12px;background:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;font-weight:700;padding:12px;cursor:pointer;margin-top:4px;opacity:${allAnswered?1:.4}">
-        提交回访
-      </button>
-      <button onclick="dismissDailyCheckin('${due.date}')" style="border:none;background:transparent;color:var(--ink30);font-size:12px;font-family:var(--sans);cursor:pointer;width:100%;margin-top:6px">跳过</button>
-    </div>`;
-  }catch(_){ return ''; }
-}
-
-function selectCheckinAnswer(key, value, btn){
-  checkinAnswers[key]=value;
-  // 原地更新按钮样式，不触发全页重渲
-  btn.closest('.checkin-q').querySelectorAll('.checkin-opt').forEach(b=>{
-    const sel=b.dataset.val===value;
-    b.style.border=`1.5px solid ${sel?'var(--accent)':'var(--border)'}`;
-    b.style.background=sel?'var(--accent)':'var(--white)';
-    b.style.color=sel?'#fff':'var(--ink60)';
-  });
-  const allAnswered=['energy','digestion','satiety'].every(k=>checkinAnswers[k]);
-  const sub=document.getElementById('checkin-submit');
-  if(sub){ sub.disabled=!allAnswered; sub.style.opacity=allAnswered?1:.4; }
-}
-
-function submitDailyCheckin(dateKey){
-  try{
-    const checkins=JSON.parse(localStorage.getItem('daily_checkins')||'[]');
-    const idx=checkins.findIndex(c=>c.date===dateKey);
-    if(idx>=0){
-      checkins[idx].answered=true;
-      checkins[idx].energy=checkinAnswers.energy;
-      checkins[idx].digestion=checkinAnswers.digestion;
-      checkins[idx].satiety=checkinAnswers.satiety;
-      checkins[idx].answeredAt=Date.now();
-      // 回写到当天每一条餐次记录
-      (checkins[idx].mealIds||[]).forEach(mealId=>{
-        const m=meals.find(m=>String(m.id)===String(mealId));
-        if(m){ m.dailyCheckin={ energy:checkinAnswers.energy, digestion:checkinAnswers.digestion,
-          satiety:checkinAnswers.satiety, answeredAt:Date.now() }; }
-      });
-      if(currentUser) saveUserMeals(meals);
-    }
-    localStorage.setItem('daily_checkins', JSON.stringify(checkins));
-    checkinAnswers={};
-  }catch(_){}
-  toast('✓ 身体感受已记录');
-  renderHome();
-}
-
-function dismissDailyCheckin(dateKey){
-  try{
-    const checkins=JSON.parse(localStorage.getItem('daily_checkins')||'[]');
-    const idx=checkins.findIndex(c=>c.date===dateKey);
-    if(idx>=0){ checkins[idx].answered=true; checkins[idx].dismissed=true; }
-    localStorage.setItem('daily_checkins', JSON.stringify(checkins));
-    checkinAnswers={};
-  }catch(_){}
-  renderHome();
 }
 function getTimeGreeting(){
   const h=new Date().getHours();
@@ -2305,14 +1877,6 @@ function getTimeGreeting(){
   if(h>=14&&h<18) return '下午好';
   if(h>=18&&h<22) return '晚上好';
   return '夜深了';
-}
-function getTodayDateKey(){
-  const d=new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function getDateKey(ts){
-  const d=new Date(ts);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function renderHomePlanHint(){
   const goal=getActiveGoal();
@@ -2361,7 +1925,6 @@ function getHomeScene(){
 }
 
 function renderHomeBeforeMeal(scene,n){
-  const isFirstRecord = n === 0;
   const heroImage = getHomeRecordImage();
   const heroVisual = heroImage
     ? `<img src="${heroImage}" style="width:100%;height:100%;object-fit:cover;display:block">`
@@ -2370,29 +1933,33 @@ function renderHomeBeforeMeal(scene,n){
       </div>`;
   return `<div class="card fade" style="animation-delay:.08s;margin-top:8px;padding:22px;border:none;background:linear-gradient(180deg,var(--white),var(--cream))">
     <div style="margin-bottom:14px">
-      <p style="font-size:12px;color:var(--ink60);margin-bottom:4px">${isFirstRecord?'新用户第一步':getTimeGreeting()}</p>
+      <p style="font-size:12px;color:var(--ink60);margin-bottom:4px">${getTimeGreeting()}</p>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-        <p style="font-family:var(--serif);font-size:30px;line-height:1.2">${isFirstRecord?'记录第一餐，身体拼图才会开始':scene.label+'吃点什么好？'}</p>
+        <p style="font-family:var(--serif);font-size:30px;line-height:1.2">${scene.label}吃点什么好？</p>
         ${forceHomeRecordDefault?`<button onclick="restoreHomeState()" style="border:none;background:transparent;color:var(--ink60);font-family:var(--sans);font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;padding-top:6px">× 默认</button>`:''}
       </div>
     </div>
     ${n<3?`<div style="margin-bottom:14px;background:var(--green-s);border-radius:12px;padding:11px 14px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-        <p style="font-size:12px;font-weight:700;color:var(--green)">${isFirstRecord?'拍下第一餐，开始建立你的身体反馈':'再记 '+(3-n)+' 餐解锁第一份身体洞察'}</p>
+        <p style="font-size:12px;font-weight:700;color:var(--green)">再记 ${3-n} 餐解锁第一份身体洞察</p>
         <p style="font-size:11px;font-weight:600;color:var(--green)">${n}/3</p>
       </div>
       <div style="height:4px;background:rgba(0,0,0,.07);border-radius:2px">
         <div style="height:100%;width:${Math.round(n/3*100)}%;background:var(--green);border-radius:2px"></div>
       </div>
     </div>`:''}
-    <div onclick="startDirectMealRecord()" style="height:164px;border-radius:24px;background:var(--accent-s);display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;overflow:hidden;cursor:pointer">
-      <button onclick="event.stopPropagation();startBackfillMealRecord()" style="position:absolute;top:12px;right:12px;border:none;background:rgba(255,255,255,.92);color:var(--accent);border-radius:999px;padding:7px 10px;font-family:var(--sans);font-size:12px;font-weight:900;box-shadow:0 6px 16px rgba(26,22,18,.08);cursor:pointer;z-index:2">补录</button>
+    <div style="height:150px;border-radius:24px;background:var(--accent-s);display:flex;align-items:center;justify-content:center;margin-bottom:0;position:relative;overflow:hidden">
       ${heroVisual}
-      <div style="position:absolute;left:0;right:0;bottom:14px;text-align:center;z-index:2">
-        <span style="font-size:14px;font-weight:700;color:rgba(255,255,255,.95);text-shadow:0 1px 6px rgba(0,0,0,.18)">${isFirstRecord?'记录第一餐':'记录这一餐'}</span>
-      </div>
     </div>
-    <button class="btn btn-ghost" onclick="startMealDecision()" style="font-size:13px;margin-top:4px">还没想好吃什么 →</button>
+    ${renderHomeRecordSlider()}
+    <button class="btn btn-primary" onclick="startMealDecision()">帮我想想吃什么</button>
+  </div>`;
+}
+
+function renderHomeRecordSlider(){
+  return `<div class="home-slide" style="grid-template-columns:1fr 1fr" aria-label="滑动选择记录方式">
+    <button onclick="homeRecordSlide('direct')">← 直接记录</button>
+    <button onclick="homeRecordSlide('backfill')">补录 →</button>
   </div>`;
 }
 
@@ -2401,6 +1968,11 @@ function getHomeRecordImage(){
   const todayStart=new Date();todayStart.setHours(0,0,0,0);
   const latest=[...meals].reverse().find(m=>(m.ts||0)>=todayStart.getTime()&&m.wideImg);
   return latest?.wideImg||null;
+}
+
+function homeRecordSlide(action){
+  if(action==='direct') startDirectMealRecord();
+  if(action==='backfill') startBackfillMealRecord();
 }
 
 function isLateNightWithDinner(){
@@ -2498,40 +2070,20 @@ function renderHomeEating(scene){
 
 function renderHomeFeedback(scene){
   const dish=pendingAnalysis?.dish||inferDishFromAnalysis(pendingAnalysis||{tags:[]});
-  const analysis=pendingAnalysis?normalizeMealAnalysis(pendingAnalysis):null;
-  const n=analysis?normalizeNutritionEstimate(analysis.nutritionEstimate,analysis.foodType):null;
-  const nutritionLine=n?`${n.calories.range} · 蛋白${n.protein.level} · 碳水${n.carbs.level}`:'';
-  const photo=wideImg;
-  const addLabels=pendingAdditionals.map(a=>a.dish||'附加食物').join(' + ');
-  const dishLabel=addLabels?`${dish} + ${addLabels}`:dish;
-  const photoBlock=photo?`
-    <div style="position:relative;border-radius:calc(var(--r) - 2px) calc(var(--r) - 2px) 0 0;overflow:hidden">
-      <img src="${photo}" style="width:100%;height:200px;object-fit:cover;display:block">
-      <div style="position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:900">待反馈</div>
-      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,22,18,.65));padding:28px 16px 14px">
-        <p style="font-size:15px;font-weight:800;color:#fff;margin-bottom:3px">${dishLabel}</p>
-        ${nutritionLine?`<p style="font-size:11px;color:rgba(255,255,255,.8)">${nutritionLine}</p>`:''}
-      </div>
-    </div>`
-  :`<div style="padding:18px 18px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
-      <div>
-        <p style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px">${dishLabel}</p>
-        ${nutritionLine?`<p style="font-size:12px;color:var(--ink60)">${nutritionLine}</p>`:''}
-      </div>
-      <span style="background:var(--accent);color:#fff;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:900;flex-shrink:0;margin-top:2px">待反馈</span>
-    </div>`;
-  return `<div class="card fade" style="animation-delay:.08s;margin-top:8px;padding:0;border:2.5px solid var(--accent);border-radius:var(--r);overflow:hidden;background:var(--white)">
-    ${photoBlock}
-    <div style="padding:14px 16px">
-      <button class="btn btn-primary" onclick="goFeedback()" style="margin-bottom:10px">去打分 →</button>
-      <button onclick="recordPostMealAddOn()" style="width:100%;border:1.5px dashed var(--border);background:var(--cream);border-radius:100px;padding:13px 16px;color:var(--ink60);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">刚刚又吃/喝了别的 →</button>
+  return `<div class="card fade" style="animation-delay:.08s;margin-top:8px;padding:22px;border:none;background:var(--white)">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+      <p style="font-family:var(--serif);font-size:30px;line-height:1.2">${pendingMealType||scene.label}吃得怎么样？</p>
+      <button onclick="flipHomeCardToDefault()" style="border:none;background:var(--accent-s);color:var(--accent);border-radius:999px;padding:7px 10px;font-family:var(--sans);font-size:11px;font-weight:900;box-shadow:0 4px 12px rgba(26,22,18,.05);cursor:pointer;white-space:nowrap">待反馈</button>
     </div>
+    <p style="font-size:13px;color:var(--ink60);text-align:center;margin-bottom:22px">刚才那顿：${dish}</p>
+    ${renderHomeQuickFeedback()}
+    <button onclick="recordPostMealAddOn()" style="width:100%;border:1.5px dashed var(--border);background:var(--cream);border-radius:100px;padding:13px 16px;color:var(--ink60);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;margin-top:10px">刚刚又吃/喝了别的 →</button>
   </div>`;
 }
 
 function renderHomeDone(meal,n){
   const left=Math.max(7-n,0);
-  return `<div class="card fade" style="animation-delay:.08s;margin-top:8px;padding:22px;border:2.5px solid var(--green);background:linear-gradient(180deg,var(--green-s),var(--white))">
+  return `<div class="card fade" style="animation-delay:.08s;margin-top:8px;padding:22px;border:none;background:linear-gradient(180deg,var(--green-s),var(--white))">
     <div style="margin-bottom:14px">
       <p style="font-size:12px;color:var(--green);font-weight:600;margin-bottom:4px">好好吃饭</p>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
@@ -2643,7 +2195,9 @@ function homeScoreSelect(key,val,btn){
 }
 
 function startHomeFeedback(){
-  goFeedback();
+  mealEatingStarted=true;
+  homeScores={};
+  renderHome();
 }
 
 function submitHomeFeedback(){
@@ -2655,39 +2209,22 @@ function submitHomeFeedback(){
 }
 
 function recordPostMealAddOn(){
-  if(mealEatingStarted && pendingAnalysis){
-    // 待反馈状态：附加食物合并入本餐
-    recordingAdditional=true;
-    window._savedMainAnalysis=pendingAnalysis;
-    wideImg=null;
-    leftoverImg=null;
-    renderCameraShoot(null,'加餐');
-    show('camera');
-  } else {
-    // 已完成状态：新建独立加餐记录
-    clearDoneReceipt();
-    drawnCard=null;
-    wideImg=null;
-    leftoverImg=null;
-    pendingMealType='加餐';
-    pendingAnalysis=null;
-    mealEatingStarted=false;
-    renderCameraShoot(null,'加餐');
-    show('camera');
-  }
-}
-
-function confirmAddAdditional(){
-  const added={...pendingAnalysis};
-  pendingAnalysis=window._savedMainAnalysis||pendingAnalysis;
-  pendingAdditionals.push(added);
-  recordingAdditional=false;
-  window._savedMainAnalysis=null;
-  mealEatingStarted=true;
+  clearDoneReceipt();
+  drawnCard=null;
   wideImg=null;
-  renderHome();
-  show('home');
-  toast(`已合并：${added.dish||'附加食物'} 加入本餐`);
+  leftoverImg=null;
+  pendingMealType='加餐';
+  pendingAnalysis={
+    ...mockAnalysis(),
+    dish:'奶茶 / 加餐',
+    scene:'饭后追加',
+    structure:'饭后追加食物，单独记录',
+    advice:'这类追加会影响饭后感受，单独记下来更容易看出规律。'
+  };
+  mealEatingStarted=true;
+  homeScores={};
+  renderCameraShoot(null,'加餐');
+  show('camera');
 }
 
 function renderHomeFeedbackSummary(meal){
@@ -3074,58 +2611,27 @@ function normalizeExpectedReactions(v){
   }).filter(x=>x.name).slice(0,3);
 }
 
-function defaultEatingAdviceForType(foodType, fallbackAdvice){
-  const type = normalizeFoodType(foodType);
-  if(type === 'drink'){
-    return {
-      howMuch:'先按小杯或半杯喝，不要当正餐顶掉。',
-      howToEat:['不要空腹猛喝','搭配正餐或多喝水'],
-      reduceOrAvoid:['少加糖、少喝奶盖或厚乳部分'],
-      expectedReaction:[{name:'口渴/犯困',reason:'甜饮和乳制品负担需要饭后反馈验证',evidence:''}],
-      feedbackFocus:['口渴吗','困不困','还饿吗'],
-    };
-  }
-  if(type === 'snack' || type === 'dessert'){
-    return {
-      howMuch:'先吃一小份，别用它替代正餐。',
-      howToEat:['慢一点吃','吃完观察是否更想吃'],
-      reduceOrAvoid:['不要和甜饮叠加'],
-      expectedReaction:[{name:'更想吃/犯困',reason:'零食甜品对饥饿感的影响需要反馈验证',evidence:''}],
-      feedbackFocus:['解馋了吗','困不困','影响下一餐吗'],
-    };
-  }
-  return {
-    howMuch:'吃到七分饱，后面用饭后反馈校准。',
-    howToEat: fallbackAdvice ? [fallbackAdvice] : ['先吃蛋白质和蔬菜，再吃主食。'],
-    reduceOrAvoid:['少喝油汤或重口汤底。'],
-    expectedReaction:[{name:'困倦/撑胀',reason:'照片显示的结构需要饭后反馈验证',evidence:''}],
-    feedbackFocus:['撑不撑','困不困','舒不舒服'],
-  };
-}
-
-function normalizeEatingAdvice(v, fallbackAdvice, foodType){
+function normalizeEatingAdvice(v, fallbackAdvice){
   const a = v && typeof v === 'object' ? v : {};
-  const defaults = defaultEatingAdviceForType(foodType, fallbackAdvice);
   return {
     basis: a.basis || bodyPuzzleStatusText(),
-    howMuch: a.howMuch || defaults.howMuch,
-    howToEat: toArray(a.howToEat, defaults.howToEat).slice(0,4),
-    reduceOrAvoid: toArray(a.reduceOrAvoid, defaults.reduceOrAvoid).slice(0,3),
-    expectedReaction: normalizeExpectedReactions(a.expectedReaction || defaults.expectedReaction),
-    feedbackFocus: toArray(a.feedbackFocus, defaults.feedbackFocus).slice(0,4),
+    howMuch: a.howMuch || '吃到七分饱，后面用饭后反馈校准。',
+    howToEat: toArray(a.howToEat, fallbackAdvice ? [fallbackAdvice] : ['先吃蛋白质和蔬菜，再吃主食。']).slice(0,4),
+    reduceOrAvoid: toArray(a.reduceOrAvoid, ['少喝油汤或重口汤底。']).slice(0,3),
+    expectedReaction: normalizeExpectedReactions(a.expectedReaction || [{name:'困倦/撑胀',reason:'照片显示的结构需要饭后反馈验证'}]),
+    feedbackFocus: toArray(a.feedbackFocus, ['撑不撑','困不困','舒不舒服']).slice(0,4),
     personalizationLevel: a.personalizationLevel || bodyPuzzleStatus(),
   };
 }
 
 function normalizeMealAnalysis(raw){
+  const fallback = mockAnalysis();
   const a = raw && typeof raw === 'object' ? raw : {};
   const source = a._source || 'mock';
-  const useMockFallback = source !== 'ai';
-  const fallback = useMockFallback ? mockAnalysis() : {};
-  const foodType = normalizeFoodType(a.foodType || fallback.foodType || (useMockFallback ? 'meal' : 'unknown'));
+  const foodType = normalizeFoodType(a.foodType || fallback.foodType || 'meal');
   const typeFields = {
     ...defaultTypeFields(foodType, a),
-    ...(useMockFallback ? (fallback.typeFields || {}) : {}),
+    ...(fallback.typeFields || {}),
     ...(a.typeFields || {}),
   };
   return {
@@ -3133,20 +2639,20 @@ function normalizeMealAnalysis(raw){
     ...a,
     foodType,
     typeFields,
-    recognizedFoods: normalizeRecognizedFoods(a.recognizedFoods || (useMockFallback ? fallback.recognizedFoods : null), a.dish || fallback.dish || (useMockFallback ? inferDishFromAnalysis(fallback) : '这一餐')),
-    nutritionEstimate: normalizeNutritionEstimate(a.nutritionEstimate || (useMockFallback ? fallback.nutritionEstimate : null), foodType),
-    eatingAdvice: normalizeEatingAdvice(a.eatingAdvice || (useMockFallback ? fallback.eatingAdvice : null), a.advice || (useMockFallback ? fallback.advice : ''), foodType),
-    dish: a.dish || fallback.dish || (useMockFallback ? inferDishFromAnalysis(a) : '这一餐'),
+    recognizedFoods: normalizeRecognizedFoods(a.recognizedFoods || fallback.recognizedFoods, a.dish || fallback.dish || inferDishFromAnalysis(fallback)),
+    nutritionEstimate: normalizeNutritionEstimate(a.nutritionEstimate || fallback.nutritionEstimate, foodType),
+    eatingAdvice: normalizeEatingAdvice(a.eatingAdvice || fallback.eatingAdvice, a.advice || fallback.advice),
+    dish: a.dish || fallback.dish || inferDishFromAnalysis(a),
     cuisine: a.cuisine || fallback.cuisine || '家常菜',
     province: a.province || fallback.province || '全国',
     scene: a.scene || '外卖',
-    structure: a.structure || fallback.structure || '图片信息不足，等待补全识别结果',
+    structure: a.structure || fallback.structure,
     portion: a.portion || '适中',
     oilLevel: a.oilLevel || '中',
     tags: toArray(a.tags, fallback.tags || []).slice(0,3),
     risk: normalizeRisk(a.risk || fallback.risk),
     detail: toArray(a.detail, fallback.detail || []).slice(0,3),
-    advice: a.advice || fallback.advice || '先按实际饥饿感少量开始，结果会用饭后反馈校准。',
+    advice: a.advice || fallback.advice,
     _source: source,
   };
 }
@@ -3354,7 +2860,6 @@ async function aiAnalyzeMeal(imageUrl, userProfile, mealHistory, onProgress){
     `${m.date}${m.type}：${m.dish||m.analysis?.structure}，饭后${m.fb?.comfort||'未记录'}`
   ).join('；');
   const profileSummary = `目标：${userProfile.goal||'未填'}，忌口：${userProfile.avoid||'无'}，预算：${userProfile.budget||'不限'}，常见感受：${userProfile.feeling||'未填'}`;
-  const foodProfileSummary = formatUserFoodProfileSummary(userFoodProfile);
   const puzzleStatus = bodyPuzzleStatus();
   const analysisStartedAt = Date.now();
   const timings = {};
@@ -3370,7 +2875,7 @@ async function aiAnalyzeMeal(imageUrl, userProfile, mealHistory, onProgress){
     const base64 = await timed('imageEncode', ()=>imgToBase64(compressed));
 
     const imageBlock = { type:'image_url', image_url:{ url:`data:image/jpeg;base64,${base64}` } };
-    const contextBase = `用户档案：${profileSummary}\n最近记录：${historySummary||'暂无'}\n当前餐次：${pendingMealType}${foodProfileSummary}`;
+    const contextBase = `用户档案：${profileSummary}\n最近记录：${historySummary||'暂无'}\n当前餐次：${pendingMealType}`;
 
     // ── 阶段1：快速识别，≤280 tokens ──────────────────
     const phase1TimeLimit = 8000; // 留 2s 给后续处理
@@ -3414,14 +2919,9 @@ async function aiAnalyzeMeal(imageUrl, userProfile, mealHistory, onProgress){
           _source: 'ai',
         });
         merged.analysisMeta = buildAnalysisMeta('success', null, analysisStartedAt, timings, 'meal-analysis-two-stage-v1.0');
+        // 无缝更新 UI
+        updateAnalysisDetails(merged);
         pendingAnalysis = merged;
-        // Phase2 会补全标题、风险、营养和建议，必须整块刷新，避免顶部摘要和详情卡不一致。
-        if(curScreen === 'camera' && document.getElementById('analysis-area')){
-          showInlineResult(false);
-          setTimeout(() => enableEditableAnalysis(), 400);
-        } else {
-          updateAnalysisDetails(merged);
-        }
         console.log('Phase2 异步完成，已自动更新详情');
       }
     });
@@ -3559,28 +3059,6 @@ const PROMPT_CARD_RECOMMEND = `你是用户的饮食伙伴，要根据他的历�
 }
 
 生成3张卡，类型各不同，按推荐优先级排序。`;
-
-// ── 餐后对比 Prompt ──────────────────────────────────────────────
-const PROMPT_LEFTOVER_COMPARE = `你是用户的饮食摄入分析助手。用户提供了同一餐同一食物/饮品的两张照片：第一张是开始前，第二张是结束后。这两张照片拍的是完全相同的食物或饮品，不存在"另一道菜"的情况。
-
-对比规则（根据食物类型判断）：
-- 饮品（奶茶/咖啡/果汁等）：对比杯中液面高度或杯中剩余量，估算喝了多少比例
-- 固体餐食（饭/菜/面等）：对比盘中食物减少量，估算吃了多少比例
-- 如果两张照片几乎相同，说明基本没有消耗，intakeRatio 填接近0的小数
-
-严格只对比这一种食物/饮品的实际消耗，不要推断或假设有其他未出现的食物。
-
-返回严格 JSON（无 Markdown、无注释、无多余文字）：
-{
-  "intakeRatio": 0到1之间的数字（0.8代表消耗了约80%），
-  "intakeLabel": "简短描述，如'喝了约七成'或'吃了约八成'",
-  "leftoverDesc": "剩余情况一句话，严格基于图片内容，如'杯中约剩1/3'或'饭菜基本吃完'",
-  "actualCalories": "实际热量范围，如'约260-340 kcal'",
-  "actualCarbs": "实际碳水范围，如'约28-38g'",
-  "actualProtein": "实际蛋白质范围，如'约5-8g'",
-  "actualFat": "实际脂肪范围，如'约8-12g'",
-  "intakeInsight": "一句话总结，只描述这一杯/份实际摄入"
-}`;
 
 async function aiGenerateCards(mealHistory, userProfile, state){
   if(!aiReady()) return null; // 无key用本地buildCardPool
@@ -3901,45 +3379,11 @@ function rerollCard(){
 }
 
 function acceptCard(){
-  // 记录采纳行为到卡片池统计
-  if(drawnCard){
-    drawnCard._adoptedAt = Date.now();
-    recordCardAction(drawnCard, 'accepted');
-  }
+  // 带着推荐卡进入拍照
   renderCameraShoot(drawnCard);
 }
-
 function skipCard(){
-  // 记录跳过行为
-  if(drawnCard){
-    recordCardAction(drawnCard, 'skipped');
-  }
-  drawnCard = null;
   renderCameraShoot(null);
-}
-
-function recordCardAction(card, action){
-  try{
-    const history = JSON.parse(localStorage.getItem('card_actions')||'[]');
-    history.push({
-      dish: card.dish,
-      badge: card.badge||'',
-      risk: card.risk||'',
-      action,          // 'accepted' | 'skipped'
-      ts: Date.now(),
-    });
-    localStorage.setItem('card_actions', JSON.stringify(history.slice(-50)));
-  }catch(_){}
-}
-
-// 统计卡片推荐命中率（供洞察页使用）
-function getCardAcceptanceRate(){
-  try{
-    const history = JSON.parse(localStorage.getItem('card_actions')||'[]');
-    if(!history.length) return null;
-    const accepted = history.filter(h=>h.action==='accepted').length;
-    return { total: history.length, accepted, rate: Math.round(accepted/history.length*100) };
-  }catch(_){ return null; }
 }
 
 // ── CAMERA ────────────────────────────────────────────────────────────────────
@@ -3952,7 +3396,7 @@ function guessMealType(){
   return '加餐';
 }
 function renderCamera(){
-  renderCameraShoot(null);
+  renderRecordMode();
 }
 
 function renderRecordMode(){
@@ -4001,10 +3445,9 @@ function renderPostMealBackfill(){
   };
   renderFeedback();
 }
-function renderCameraShoot(card, presetMealType, opts={}){
+function renderCameraShoot(card, presetMealType){
   clearDoneReceipt();
-  if(!opts.keepImage) wideImg=null;
-  recordCaptureMode='camera';
+  wideImg=null;
   camMealType=presetMealType||guessMealType();
   const cardBanner = card ? `
   <div style="background:var(--green-s);border:1px solid var(--green);border-radius:var(--rs);padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px" class="fade">
@@ -4017,106 +3460,38 @@ function renderCameraShoot(card, presetMealType, opts={}){
   const s=document.getElementById('s-camera');
   s.innerHTML=`
   ${cardBanner}
-  <div class="upload-zone fade" id="uz-wide" onclick="openMealImagePicker()" style="position:relative;min-height:540px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:#000;border:none;border-radius:28px;padding:28px 20px 24px;color:#fff;overflow:hidden">
-    <div style="position:absolute;top:18px;left:18px;display:flex;gap:5px;background:rgba(255,255,255,.14);border-radius:999px;padding:4px">
-      <button id="capture-camera-btn" onclick="event.stopPropagation();setRecordCaptureMode('camera')" style="${recordCaptureModeButtonStyle(true)}">拍照</button>
-      <button id="capture-gallery-btn" onclick="event.stopPropagation();setRecordCaptureMode('gallery')" style="${recordCaptureModeButtonStyle(false)}">图片</button>
-    </div>
-    <div style="text-align:center;margin-top:42px">
-      <p style="font-size:28px;font-weight:900;color:#fff;margin-bottom:28px">拍图记录</p>
-      <p id="capture-mode-title" style="font-size:18px;color:rgba(255,255,255,.82);line-height:1.5">正上方俯拍食物，识别更精准</p>
-    </div>
-    <div style="width:100%;height:280px;border-radius:34px;background:linear-gradient(180deg,#1f1f1f,#111);display:flex;align-items:center;justify-content:center;margin:10px 0 18px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)">
-      <div style="width:112px;height:112px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:48px">🍽️</div>
-    </div>
-    <div style="width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px">
-      <span></span>
-      <span style="width:78px;height:78px;border-radius:50%;background:#fff;box-shadow:0 0 0 7px rgba(255,255,255,.18);display:block"></span>
-      <span style="justify-self:end;font-size:34px;color:#fff">▧</span>
-    </div>
-    <p id="capture-mode-sub" style="font-size:14px;color:rgba(255,255,255,.72);margin-top:16px">拍食物</p>
+  <div class="label fade">这是</div>
+  <div class="score-row fade" id="meal-type-row" style="margin-bottom:20px">
+    ${['早饭','午饭','晚饭','加餐'].map(t=>`<button class="score-btn${t===camMealType?' sel':''}" onclick="selectMealType('${t}')">${t}</button>`).join('')}
+  </div>
+  <div class="upload-zone fade" id="uz-wide" onclick="document.getElementById('file-wide').click()">
+    <div class="uz-icon">📷</div>
+    <p>拍整份餐盒 / 整桌</p>
+    <p style="font-size:11px;color:var(--ink30);margin-top:4px">让食物都入镜</p>
   </div>
   <div id="analysis-area"></div>
   <button class="btn btn-ghost fade" style="margin-top:4px" onclick="mockAnalyze()">没有照片，用模拟数据试试 →</button>`;
 
-  syncMealImageInputMode();
-  bindMealFileInput(file=>handleMealImageFile(file, false));
+  document.getElementById('file-wide').onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const previewUrl=URL.createObjectURL(f);
+    const uz=document.getElementById('uz-wide');
+    uz.style.padding='0';uz.style.border='none';uz.style.borderRadius='var(--r)';uz.style.overflow='hidden';uz.style.marginBottom='0';
+    uz.innerHTML=`<img src="${previewUrl}" style="width:100%;height:200px;object-fit:cover;display:block;border-radius:var(--r)">`;
+    e.target.value='';
+    // Read as data URL so AI gets correct media_type and blob URLs don't fail
+    const reader=new FileReader();
+    reader.onloadend=()=>{ wideImg=reader.result; startInlineAnalyze(); };
+    reader.onerror=()=>{ wideImg=previewUrl; startInlineAnalyze(); };
+    reader.readAsDataURL(f);
+  };
 }
 function selectMealType(t){
   camMealType=t;
-  pendingMealType=t;
   document.querySelectorAll('#meal-type-row .score-btn').forEach(b=>{
     b.classList.toggle('sel',b.textContent===t);
   });
 }
-
-function renderSelectedMealPreview(previewUrl){
-  const uz=document.getElementById('uz-wide');
-  if(!uz) return;
-  uz.style.cssText='padding:0;border:none;border-radius:0;overflow:visible;margin-bottom:14px;background:transparent;min-height:auto;display:block;color:inherit';
-  uz.innerHTML=`
-    <div id="meal-type-area"></div>
-    <div style="position:relative;border-radius:18px;overflow:hidden">
-      <img src="${previewUrl}" style="width:100%;height:320px;object-fit:cover;display:block;border-radius:18px">
-      <button onclick="event.stopPropagation();openMealImagePicker()" style="position:absolute;left:12px;bottom:12px;border:none;background:rgba(255,255,255,.92);color:var(--ink);border-radius:999px;padding:8px 11px;font-family:var(--sans);font-size:12px;font-weight:900;cursor:pointer">重拍/重选</button>
-    </div>`;
-}
-
-function bindMealFileInput(onFile){
-  const input=document.getElementById('file-wide');
-  if(!input) return;
-  input.onchange=e=>{
-    const f=e.target.files[0];
-    e.target.value='';
-    if(!f) return;
-    onFile(f);
-  };
-}
-
-function handleMealImageFile(file, fromHome){
-  const previewUrl=URL.createObjectURL(file);
-  if(fromHome || curScreen!=='camera'){
-    renderCameraShoot(null, camMealType, {keepImage:true});
-    show('camera');
-  }
-  renderSelectedMealPreview(previewUrl);
-  const reader=new FileReader();
-  reader.onloadend=()=>{ wideImg=reader.result; startInlineAnalyze(); };
-  reader.onerror=()=>{ wideImg=previewUrl; startInlineAnalyze(); };
-  reader.readAsDataURL(file);
-}
-
-function recordCaptureModeButtonStyle(active){
-  return `border:none;border-radius:999px;padding:6px 9px;font-family:var(--sans);font-size:11px;font-weight:900;cursor:pointer;background:${active?'#fff':'transparent'};color:${active?'#111':'rgba(255,255,255,.72)'}`;
-}
-
-function syncMealImageInputMode(){
-  const input=document.getElementById('file-wide');
-  if(!input) return;
-  input.setAttribute('accept','image/*');
-  if(recordCaptureMode==='camera') input.setAttribute('capture','environment');
-  else input.removeAttribute('capture');
-}
-
-function setRecordCaptureMode(mode){
-  recordCaptureMode = mode === 'gallery' ? 'gallery' : 'camera';
-  syncMealImageInputMode();
-  const cameraBtn=document.getElementById('capture-camera-btn');
-  const galleryBtn=document.getElementById('capture-gallery-btn');
-  if(cameraBtn) cameraBtn.style.cssText=recordCaptureModeButtonStyle(recordCaptureMode==='camera');
-  if(galleryBtn) galleryBtn.style.cssText=recordCaptureModeButtonStyle(recordCaptureMode==='gallery');
-  const title=document.getElementById('capture-mode-title');
-  const sub=document.getElementById('capture-mode-sub');
-  if(title) title.textContent = recordCaptureMode==='camera' ? '打开摄像头拍这一餐' : '从相册选择餐食图片';
-  if(sub) sub.textContent = recordCaptureMode==='camera' ? '也可以切换成选择图片' : '选择后会立即开始分析';
-}
-
-function openMealImagePicker(){
-  syncMealImageInputMode();
-  const input=document.getElementById('file-wide');
-  if(input) input.click();
-}
-
 function startInlineAnalyze(){
   renderAnalysisProgress('recognition');
   pendingMealType=camMealType;
@@ -4171,32 +3546,12 @@ function renderAnalysisProgress(step){
 
 function shortAIErrorMessage(error){
   const msg = String(error?.message || error || '真实 AI 分析暂时失败');
-  const status = error?.status || '';
-  if(status === 'NETWORK' || /Failed to fetch|NetworkError|Load failed|network/i.test(msg))
-    return !navigator.onLine ? '当前无网络连接，请检查网络后重试。' : '网络请求失败，请检查网络连接后重试。';
-  if(status === 'TIMEOUT' || /timeout/i.test(msg)) return '请求超时（模型响应过慢），请重试或换用更快的模型。';
   if(/API error 401|unauthorized|invalid api key/i.test(msg)) return 'Key 无效或无权限，请检查 API Key。';
   if(/API error 400|model|vision|image/i.test(msg)) return '模型或图片识别参数不匹配，请换一个支持视觉的模型。';
   if(/API error 429|rate limit|quota/i.test(msg)) return '额度或并发受限，请稍后重试或换 Key。';
   if(/API error 500|unknown error|server/i.test(msg)) return '模型服务端返回异常，请重试或换一个视觉模型。';
   return msg.slice(0,120);
 }
-
-function showOfflineBanner(){
-  if(document.getElementById('offline-banner')) return;
-  const el=document.createElement('div');
-  el.id='offline-banner';
-  el.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);max-width:420px;width:100%;background:#c0392b;color:#fff;font-size:13px;font-weight:700;text-align:center;padding:10px 16px;z-index:9999;font-family:var(--sans)';
-  el.textContent='⚠ 网络已断开，AI 分析不可用';
-  document.body.prepend(el);
-}
-function hideOfflineBanner(){
-  const el=document.getElementById('offline-banner');
-  if(el) el.remove();
-  toast('网络已恢复，可以重新分析');
-}
-window.addEventListener('offline', showOfflineBanner);
-window.addEventListener('online', hideOfflineBanner);
 
 function renderAnalysisFailure(error){
   const area=document.getElementById('analysis-area');
@@ -4256,15 +3611,6 @@ function showInlineResult(isPartial){
   const srcBadge = a._source==='ai'
     ? `<span style="font-size:10px;font-weight:600;color:#2e7d32;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px">✦ AI 识别</span>`
     : `<span style="font-size:10px;color:var(--ink30);background:var(--cream);border:1px solid var(--border);border-radius:4px;padding:2px 7px">模拟数据</span>`;
-  const mta=document.getElementById('meal-type-area');
-  if(mta){
-    mta.innerHTML=`<div class="fade" style="padding:0 0 14px">
-      <p style="font-size:12px;font-weight:600;color:var(--ink60);text-align:center;letter-spacing:.06em;margin-bottom:10px">这是</p>
-      <div id="meal-type-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        ${['早饭','午饭','晚饭','加餐'].map(t=>`<button class="score-btn${t===pendingMealType?' sel':''}" onclick="selectMealType('${t}')">${t}</button>`).join('')}
-      </div>
-    </div>`;
-  }
   area.innerHTML=`
   <div class="fade" style="margin-top:14px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -4280,13 +3626,10 @@ function showInlineResult(isPartial){
     ${analysisCards}
     <div style="margin-top:10px;margin-bottom:16px">${tags}</div>
     <p style="font-size:13px;color:var(--ink60);text-align:center;margin-bottom:14px">吃完记得回来打分 🙂</p>
-    ${recordingAdditional
-      ? `<button class="btn btn-primary" onclick="confirmAddAdditional()">加入本餐 +</button>
-         <button class="btn btn-ghost" onclick="recordingAdditional=false;window._savedMainAnalysis=null;show('home')">取消</button>`
-      : `<button class="btn btn-primary" onclick="goFeedback()">好的，去吃了 ✓</button>`}
+    <button class="btn btn-primary" onclick="goFeedback()">好的，去吃了 ✓</button>
   </div>`;
   const ghost=document.querySelector('#s-camera .btn-ghost');
-  if(ghost&&!recordingAdditional) ghost.style.display='none';
+  if(ghost) ghost.style.display='none';
 }
 
 function renderMealUnderstanding(a){
@@ -4552,12 +3895,9 @@ function editRecognition(key,label){
   if(!el) return;
   const current=el.textContent||'';
   const next=prompt(`修改${label}`, current);
-  if(!next || next===current) return;
+  if(!next) return;
   el.textContent=next;
-  // 存 diff：保留 AI 原始值 + 用户修正值 + 时间戳
-  const corrections = pendingAnalysis.corrections || {};
-  corrections[key] = { ai_value: corrections[key]?.ai_value ?? current, user_value: next, ts: Date.now() };
-  pendingAnalysis.corrections = corrections;
+  pendingAnalysis.corrections={...(pendingAnalysis.corrections||{}),[key]:next};
   if(key==='dish') pendingAnalysis.dish=next;
   if(key==='scene') pendingAnalysis.scene=next;
   if(key==='foodType'){
@@ -4573,41 +3913,8 @@ function editRecognition(key,label){
 }
 function goFeedback(){
   mealEatingStarted=true;
-  mealStartedAt=Date.now();
-  startAutoCloseTimer();
   renderFeedback();
   show('feedback');
-}
-
-function startAutoCloseTimer(){
-  clearAutoCloseTimer();
-  autoCloseTimer=setTimeout(()=>{
-    if(!pendingAnalysis) return;
-    const m={
-      id:Date.now(),
-      date:DAYS[meals.length%7],
-      type:pendingMealType,
-      dish:pendingAnalysis?.dish||'这一餐',
-      cuisine:'家常菜',province:'全国',
-      analysis:pendingAnalysis,
-      additionals:pendingAdditionals.length?[...pendingAdditionals]:null,
-      fb:null,
-      wideImg,
-      ts:Date.now(),
-      autoClosedAt:new Date().toISOString(),
-    };
-    meals.push(m);
-    if(currentUser) saveUserMeals(meals);
-    pendingAnalysis=null; mealEatingStarted=false;
-    pendingAdditionals=[]; wideImg=null; autoCloseTimer=null;
-    if(curScreen==='feedback') show('home');
-    renderHome();
-    toast('这顿没打分，已自动存档。可在「我的记录」补填反馈。');
-  }, 30*60*1000);
-}
-
-function clearAutoCloseTimer(){
-  if(autoCloseTimer){ clearTimeout(autoCloseTimer); autoCloseTimer=null; }
 }
 
 // ── FEEDBACK ──────────────────────────────────────────────────────────────────
@@ -4691,57 +3998,8 @@ function feedbackEstimateText(a){
   return '这餐饭量和结构已估过。这里告诉我实际吃掉多少和身体感受。';
 }
 
-// ── 餐后对比分析（两图发给模型）────────────────────────────────────
-async function aiAnalyzeLeftover(beforeImg, afterImg, originalAnalysis){
-  if(!aiReady() || !beforeImg || !afterImg) return null;
-  try {
-    const [b64Before, b64After] = await Promise.all([
-      compressImage(beforeImg, 768, 0.75).then(c=>imgToBase64(c)),
-      compressImage(afterImg, 768, 0.75).then(c=>imgToBase64(c)),
-    ]);
-    const n = normalizeNutritionEstimate(originalAnalysis.nutritionEstimate, originalAnalysis.foodType);
-    const foods = normalizeRecognizedFoods(originalAnalysis.recognizedFoods, originalAnalysis.dish).slice(0,3);
-    const foodList = foods.map(f=>f.name).join('、') || originalAnalysis.dish || '这一餐';
-    const foodTypeLabel = originalAnalysis.foodType==='drink' ? '饮品' : '餐食';
-    const ctx = `【食物信息】餐前识别为：${foodList}（类型：${foodTypeLabel}）。结构描述：${originalAnalysis.structure||'未知'}。
-【两张图说明】这两张图拍的是同一${foodTypeLabel}的开始前和结束后，不存在其他食物。
-【餐前营养基准】热量${n.calories.range}，碳水${n.carbs.range}，蛋白${n.protein.range}，脂肪${n.fat.range}。请以此为基准，按实际消耗比例推算实际摄入量。`;
-    return await callModel(
-      PROMPT_LEFTOVER_COMPARE,
-      [
-        { type:'image_url', image_url:{ url:`data:image/jpeg;base64,${b64Before}` } },
-        { type:'text', text:'（第一张：餐前照片）' },
-        { type:'image_url', image_url:{ url:`data:image/jpeg;base64,${b64After}` } },
-        { type:'text', text:`（第二张：餐后/剩余照片）\n${ctx}` },
-      ],
-      300,
-      { timeoutMs: 14000 }
-    );
-  } catch(e){
-    console.error('餐后对比分析失败:', e);
-    return null;
-  }
-}
-
-function renderActualIntakeCard(r){
-  if(!r) return '';
-  return `<div>
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-      <span style="font-size:10px;font-weight:600;color:#2e7d32;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px">✦ AI 对比识别</span>
-      <span style="font-size:12px;color:var(--ink60)">${r.intakeLabel||'实际摄入'}</span>
-    </div>
-    <p style="font-size:15px;font-weight:800;color:var(--ink);line-height:1.4;margin-bottom:6px">${r.actualCalories||'热量待确认'}</p>
-    <p style="font-size:13px;color:var(--ink60);line-height:1.6">碳水 ${r.actualCarbs||'—'} · 蛋白 ${r.actualProtein||'—'} · 脂肪 ${r.actualFat||'—'}</p>
-    <p style="font-size:12px;color:var(--ink60);margin-top:6px;line-height:1.5">${r.leftoverDesc||''}</p>
-    <div style="background:var(--white);border-radius:12px;padding:11px 12px;margin-top:10px">
-      <p style="font-size:11px;font-weight:800;color:var(--ink60);margin-bottom:3px">本餐实际摄入小结</p>
-      <p style="font-size:13px;color:var(--ink);line-height:1.55">${r.intakeInsight||''}</p>
-    </div>
-  </div>`;
-}
-
 function renderFeedback(){
-  scores={};leftoverImg=null;actualIntakeAnalysis=null;
+  scores={};leftoverImg=null;
   feedbackStartedAt=Date.now();
   const analysis = normalizeMealAnalysis(pendingAnalysis || mockAnalysis());
   pendingAnalysis = analysis;
@@ -4754,29 +4012,16 @@ function renderFeedback(){
   const s=document.getElementById('s-feedback');
   s.innerHTML=`
   <p style="font-family:var(--serif);font-size:22px;margin-bottom:4px" class="fade">吃完了？</p>
-  <p style="font-size:14px;color:var(--ink60);margin-bottom:16px" class="fade">拍剩余或空盘，AI 对比计算实际摄入。没拍默认用餐前数据。</p>
-  <div class="upload-zone fade" id="uz-leftover" onclick="document.getElementById('file-leftover').click()" style="padding:16px;margin-bottom:12px;text-align:center">
-    <div class="uz-icon" style="font-size:24px">📷</div>
-    <p style="font-size:14px;font-weight:600;color:var(--ink60)">拍剩余 / 空盘照片</p>
-    <p style="font-size:11px;color:var(--ink30);margin-top:2px">可选 · 没拍默认用餐前估算数据</p>
-  </div>
-  ${pendingAdditionals.length ? `<div class="card fade" style="background:var(--amber-s);border:1.5px solid rgba(232,166,38,.25);padding:12px 14px;margin-bottom:10px">
-    <p style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">本餐还包含</p>
-    ${pendingAdditionals.map(a=>{
-      const an=normalizeMealAnalysis(a);
-      const nn=normalizeNutritionEstimate(an.nutritionEstimate,an.foodType);
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)">
-        <p style="font-size:13px;font-weight:600;color:var(--ink)">${a.dish||'附加食物'}</p>
-        <p style="font-size:11px;color:var(--ink60)">${nn.calories.range}</p>
-      </div>`;
-    }).join('')}
-    <p style="font-size:11px;color:var(--ink30);margin-top:6px">以上将合并入本餐营养统计</p>
-  </div>` : ''}
+  <p style="font-size:14px;color:var(--ink60);margin-bottom:18px" class="fade">确认实际吃了多少，再记录身体反应。</p>
   <div class="card fade" style="background:var(--cream);border:none;padding:14px;margin-bottom:16px">
-    <div class="label" style="margin-bottom:5px">本餐实际摄入</div>
+    <div class="label" style="margin-bottom:5px">饭后摄入评估</div>
     <div id="post-meal-estimate">
     ${renderMealConclusionMini(analysis)}
     </div>
+  </div>
+  <div class="upload-zone fade" id="uz-leftover" onclick="document.getElementById('file-leftover').click()" style="padding:16px;margin-bottom:16px">
+    <div class="uz-icon" style="font-size:24px">📷</div>
+    <p id="leftover-label">可选：拍剩余 / 空盘，用来校准实际吃了多少</p>
   </div>
   ${rows}
   <button class="btn btn-primary fade" id="fb-submit" disabled style="opacity:.4;margin-top:8px" onclick="submitFeedback()">提交 ✓</button>`;
@@ -4784,8 +4029,8 @@ function renderFeedback(){
     const f=e.target.files[0];if(!f)return;
     const previewUrl=URL.createObjectURL(f);
     const uz=document.getElementById('uz-leftover');
-    uz.style.cssText='padding:0;border:none;border-radius:var(--r);overflow:hidden;margin-bottom:12px';
-    uz.innerHTML=`<img src="${previewUrl}" style="width:100%;height:160px;object-fit:cover;display:block;border-radius:var(--r)">`;
+    uz.style.padding='0';uz.style.border='none';uz.style.borderRadius='var(--r)';uz.style.overflow='hidden';
+    uz.innerHTML=`<img src="${previewUrl}" style="width:100%;height:150px;object-fit:cover;display:block;border-radius:var(--r)">`;
     e.target.value='';
     const reader=new FileReader();
     reader.onloadend=()=>{ leftoverImg=reader.result; scores.afterPhotoCalibration='uploaded'; updatePostMealEstimate(); };
@@ -4834,24 +4079,9 @@ function renderPostMealConclusion(a, intake){
   </div>`;
 }
 
-async function updatePostMealEstimate(){
+function updatePostMealEstimate(){
   const box=document.getElementById('post-meal-estimate');
-  if(!box) return;
-  if(leftoverImg && wideImg && aiReady()){
-    box.innerHTML=`<div style="text-align:center;padding:18px 0">
-      <span class="spin" style="font-size:28px">🔍</span>
-      <p style="font-size:13px;color:var(--ink60);margin-top:8px">对比餐前餐后照片，计算实际摄入…</p>
-    </div>`;
-    const result = await aiAnalyzeLeftover(wideImg, leftoverImg, pendingAnalysis);
-    if(result && document.getElementById('post-meal-estimate')){
-      actualIntakeAnalysis = result;
-      scores.afterPhotoIntakeRatio = typeof result.intakeRatio==='number' ? result.intakeRatio : null;
-      document.getElementById('post-meal-estimate').innerHTML = renderActualIntakeCard(result);
-      return;
-    }
-  }
-  // 无后图或 AI 不可用：用餐前数据（按手选饭量比例缩放）
-  box.innerHTML = renderMealConclusionMini(pendingAnalysis);
+  if(box) box.innerHTML=renderMealConclusionMini(pendingAnalysis);
 }
 
 function postMealFeedbackQuestions(analysis){
@@ -4859,8 +4089,7 @@ function postMealFeedbackQuestions(analysis){
   return [
     {key:'actualIntake',label:'实际吃掉多少',opts:['全吃完','吃了3/4','吃了一半','剩很多']},
     {key:'fullness',label:'饱腹状态',opts:['撑','刚好','还饿']},
-    {key:'comfort',label:'身体即时感受',opts:['舒服','胀气','困倦','有精神']},
-    {key:'satisfaction',label:'这顿吃得开心吗',opts:['很开心','还不错','一般','有点后悔']},
+    {key:'comfort',label:'身体感受',opts:['舒服','胀气','困倦','有精神']},
     ...dynamic,
   ];
 }
@@ -4900,82 +4129,7 @@ function scoreSelect(key,val,btn){
   const sub=document.getElementById('fb-submit');
   sub.disabled=!all;sub.style.opacity=all?1:.4;
 }
-// ── 个人食物规律摘要（L4层）────────────────────────────────────────
-function buildUserFoodProfile(mealList){
-  if(!mealList || mealList.length < 2) return null;
-  const withFb = mealList.filter(m=>m.fb?.comfort);
-  const n = withFb.length;
-
-  // 最佳/最差饮食
-  const bestMeals = [...new Set(
-    withFb.filter(m=>['有精神','舒服'].includes(m.fb?.comfort) && m.fb?.fullness==='刚好')
-          .slice(-8).map(m=>m.dish).filter(Boolean)
-  )].slice(0,3);
-  const worstPatterns = withFb
-    .filter(m=>['困倦','胀气'].includes(m.fb?.comfort))
-    .slice(-6).map(m=>m.dish ? `${m.dish} → ${m.fb.comfort}` : null).filter(Boolean)
-    .slice(0,3);
-
-  // 份量偏差
-  const withIntake = mealList.filter(m=>m.fb?.afterPhotoIntakeRatio || m.fb?.actualIntake);
-  let portionBias = null;
-  if(withIntake.length >= 3){
-    const map = {'全吃完':1,'吃了3/4':.75,'吃了一半':.5,'剩很多':.25};
-    const ratios = withIntake.map(m=>m.fb?.afterPhotoIntakeRatio ?? map[m.fb?.actualIntake] ?? 1);
-    const avg = ratios.reduce((a,b)=>a+b,0)/ratios.length;
-    portionBias = avg < 0.82 ? `通常只吃完约${Math.round(avg*100)}%，倾向少吃`
-                : avg > 1.02 ? '通常全吃完'
-                : '摄入量接近 AI 估算';
-  }
-
-  // 高碳午饭与困意的关联
-  const hcLunches = mealList.filter(m=>m.type==='午饭'&&(m.analysis?.tags||[]).some(t=>/主食偏多|高碳/.test(t)));
-  const sleepyRate = hcLunches.length >= 3
-    ? Math.round(hcLunches.filter(m=>m.fb?.comfort==='困倦').length/hcLunches.length*100)
-    : null;
-
-  // 成熟度
-  const maturity = n>=30?'深度个性化':n>=15?'规律浮现期':n>=5?'模式萌芽期':'冷启动期';
-
-  // 目标进展
-  let goalProgress = null;
-  if(profile?.goal==='下午不困' && sleepyRate!==null)
-    goalProgress = `午饭高碳水后困意率约 ${sleepyRate}%`;
-
-  const fp = { totalMeals:mealList.length, maturity, bestMeals, worstPatterns, portionBias,
-               highCarbSleepyRate:sleepyRate, goalProgress, updatedAt:Date.now() };
-
-  // 持久化
-  try{
-    const allStr=localStorage.getItem('user_data');
-    const allData=allStr?JSON.parse(allStr):{};
-    if(currentUser){
-      allData[currentUser.userId]=allData[currentUser.userId]||{};
-      allData[currentUser.userId].foodProfile=fp;
-      localStorage.setItem('user_data',JSON.stringify(allData));
-    }
-  }catch(_){}
-  return fp;
-}
-
-function formatUserFoodProfileSummary(fp){
-  if(!fp || fp.totalMeals < 2) return '';
-  const lines = [`个人规律（${fp.maturity}，已记录${fp.totalMeals}餐）：`];
-  if(fp.bestMeals?.length)   lines.push(`- 吃得好的餐：${fp.bestMeals.join('、')}`);
-  if(fp.worstPatterns?.length) lines.push(`- 容易不舒服：${fp.worstPatterns.join('；')}`);
-  if(fp.portionBias)         lines.push(`- 份量习惯：${fp.portionBias}`);
-  if(fp.goalProgress)        lines.push(`- 目标进展：${fp.goalProgress}`);
-  return '\n' + lines.join('\n');
-}
-
-async function submitFeedback(){
-  // 保存前压缩图片，避免 localStorage 超限
-  const btn=document.getElementById('fb-submit');
-  if(btn){ btn.disabled=true; btn.textContent='保存中…'; }
-  const [storedWideImg, storedLeftoverImg] = await Promise.all([
-    compressImgForStorage(wideImg, 480, 0.65),
-    compressImgForStorage(leftoverImg, 480, 0.65),
-  ]);
+function submitFeedback(){
   if(scores.actualIntake){
     scores.intake = scores.actualIntake;
     scores.adjustedIntakeRatio = scores.actualIntakeRatio || intakeRatioInfo(scores.actualIntake).ratio;
@@ -5006,7 +4160,6 @@ async function submitFeedback(){
     afterPhotoCalibration: scores.afterPhotoCalibration,
     predictionFeedbackCount: scores.predictionFeedback?.length || 0,
   };
-  clearAutoCloseTimer();
   const feedbackSubmittedAt=Date.now();
   const feedbackMeta={
     feedbackStartedAt: feedbackStartedAt ? new Date(feedbackStartedAt).toISOString() : null,
@@ -5022,45 +4175,10 @@ async function submitFeedback(){
       ? CUISINE_MAP[drawnCard.dish]||{cuisine:drawnCard.cuisine||'家常菜',province:drawnCard.province||'全国'}
       : {cuisine:'家常菜',province:'全国'};
   const dish = pendingAnalysis?.dish || (drawnCard ? drawnCard.dish : '这一餐');
-  const feedbackSubmittedAt2=Date.now();
-  const m={
-    id:feedbackSubmittedAt2,
-    date:DAYS[meals.length%7],
-    type:pendingMealType,
-    dish,
-    cuisine:cuisine.cuisine,
-    province:cuisine.province,
-    analysis:pendingAnalysis,
-    analysisMeta:pendingAnalysis?.analysisMeta,
-    additionals:pendingAdditionals.length?[...pendingAdditionals]:null,
-    actualIntakeAnalysis,
-    feedbackMeta,
-    fb:scores,
-    wideImg:storedWideImg, leftoverImg:storedLeftoverImg,
-    ts:feedbackSubmittedAt2,
-    state:todayState,
-    fromCard: drawnCard ? {dish:drawnCard.dish, badge:drawnCard.badge||'', risk:drawnCard.risk||''} : null,
-    // L3 精确时间戳
-    mealStartedAt,
-    mealDurationMs: mealStartedAt ? feedbackSubmittedAt2 - mealStartedAt : null,
-  };
-  actualIntakeAnalysis=null;
-  pendingAdditionals=[];
+  const m={id:Date.now(),date:DAYS[meals.length%7],type:pendingMealType,dish,cuisine:cuisine.cuisine,province:cuisine.province,analysis:pendingAnalysis,analysisMeta:pendingAnalysis?.analysisMeta,feedbackMeta,fb:scores,wideImg,leftoverImg,ts:Date.now(),state:todayState};
   const wasFasting=fastingState==='fasting';
-  // 补录模式：替换原记录而非新增
-  if(window._backfillMealId){
-    const idx=meals.findIndex(x=>x.id===window._backfillMealId);
-    if(idx>=0){ m.id=window._backfillMealId; m.ts=meals[idx].ts; meals[idx]=m; }
-    else meals.push(m);
-    window._backfillMealId=null;
-  } else {
-    meals.push(m);
-  }
-  if(currentUser) saveUserMeals(meals);
-  // L4：每次提交后重新压缩个人规律摘要
-  userFoodProfile = buildUserFoodProfile(meals);
-  // L3：写入每日回访计划（每天一次，非每餐）
-  scheduleDailyCheckin(m);
+  meals.push(m);
+  if(currentUser) saveUserMeals(meals); // 保存到用户账户
   justCompletedMealId=m.id;
   forceHomeRecordDefault=false;
   pendingAnalysis=null;
@@ -5209,151 +4327,24 @@ function showBodyMirrorIfReady(insight){
 }
 
 let historyView = 'calendar'; // 'calendar' | 'map'
-let historyTypeFilter = '全部'; // 餐次筛选
 
 // 菜系→省份映射表
 const CUISINE_MAP = {
-  // 川菜
-  '黄焖鸡米饭':{cuisine:'川菜',province:'四川'},
+  '黄焖鸡米饭':{cuisine:'鲁菜',province:'山东'},
   '麻辣香锅':{cuisine:'川菜',province:'四川'},
   '夫妻肺片':{cuisine:'川菜',province:'四川'},
-  '麻婆豆腐':{cuisine:'川菜',province:'四川'},
-  '回锅肉':{cuisine:'川菜',province:'四川'},
-  '水煮鱼':{cuisine:'川菜',province:'四川'},
-  '鱼香肉丝':{cuisine:'川菜',province:'四川'},
-  '宫保鸡丁':{cuisine:'川菜',province:'四川'},
-  '辣子鸡':{cuisine:'川菜',province:'四川'},
-  '红烧肉':{cuisine:'川菜',province:'四川'},
-  '担担面':{cuisine:'川菜',province:'四川'},
-  '重庆小面':{cuisine:'渝菜',province:'重庆'},
-  '重庆火锅':{cuisine:'渝菜',province:'重庆'},
-  '毛血旺':{cuisine:'川菜',province:'四川'},
-  '麻辣烫':{cuisine:'川菜',province:'四川'},
-  '串串香':{cuisine:'渝菜',province:'重庆'},
-  '钵钵鸡':{cuisine:'川菜',province:'四川'},
-  '口水鸡':{cuisine:'川菜',province:'四川'},
-  '干锅虾':{cuisine:'川菜',province:'四川'},
-  '酸菜鱼':{cuisine:'川菜',province:'四川'},
-  // 粤菜
-  '白切鸡饭':{cuisine:'粤菜',province:'广东'},
-  '白切鸡':{cuisine:'粤菜',province:'广东'},
   '鸡胸肉饭':{cuisine:'粤菜',province:'广东'},
-  '清蒸鱼':{cuisine:'粤菜',province:'广东'},
+  '白切鸡饭':{cuisine:'粤菜',province:'广东'},
+  '番茄鸡蛋面':{cuisine:'家常菜',province:'全国'},
   '清蒸鱼+米饭':{cuisine:'粤菜',province:'广东'},
   '牛肉炒饭':{cuisine:'粤菜',province:'广东'},
-  '叉烧饭':{cuisine:'粤菜',province:'广东'},
-  '烧鸭饭':{cuisine:'粤菜',province:'广东'},
-  '烤鸭饭':{cuisine:'粤菜',province:'广东'},
-  '虾饺':{cuisine:'粤菜',province:'广东'},
-  '肠粉':{cuisine:'粤菜',province:'广东'},
-  '云吞面':{cuisine:'粤菜',province:'广东'},
-  '猪脚饭':{cuisine:'粤菜',province:'广东'},
-  '煲仔饭':{cuisine:'粤菜',province:'广东'},
-  '烧腊双拼饭':{cuisine:'粤菜',province:'广东'},
-  '港式奶茶':{cuisine:'粤菜',province:'广东'},
-  '蛋挞':{cuisine:'粤菜',province:'广东'},
-  '菠萝包':{cuisine:'粤菜',province:'广东'},
-  '艇仔粥':{cuisine:'粤菜',province:'广东'},
-  '皮蛋瘦肉粥':{cuisine:'粤菜',province:'广东'},
-  '螃蟹粥':{cuisine:'粤菜',province:'广东'},
-  // 湘菜
-  '剁椒鱼头':{cuisine:'湘菜',province:'湖南'},
-  '湖南臭豆腐':{cuisine:'湘菜',province:'湖南'},
-  '米粉':{cuisine:'湘菜',province:'湖南'},
-  '长沙臭豆腐':{cuisine:'湘菜',province:'湖南'},
-  '毛氏红烧肉':{cuisine:'湘菜',province:'湖南'},
-  '辣椒炒肉':{cuisine:'湘菜',province:'湖南'},
-  '农家小炒肉':{cuisine:'湘菜',province:'湖南'},
-  // 鲁菜
-  '糖醋里脊':{cuisine:'鲁菜',province:'山东'},
-  '葱烧海参':{cuisine:'鲁菜',province:'山东'},
-  '锅包肉':{cuisine:'东北菜',province:'辽宁'},
-  '地三鲜':{cuisine:'东北菜',province:'辽宁'},
-  '东北乱炖':{cuisine:'东北菜',province:'辽宁'},
-  '小鸡炖蘑菇':{cuisine:'东北菜',province:'吉林'},
-  '猪肉炖粉条':{cuisine:'东北菜',province:'辽宁'},
-  '酸菜白肉':{cuisine:'东北菜',province:'辽宁'},
-  // 苏浙沪
   '小笼包':{cuisine:'沪菜',province:'上海'},
   '生煎包':{cuisine:'沪菜',province:'上海'},
-  '上海本帮红烧肉':{cuisine:'沪菜',province:'上海'},
-  '葱油拌面':{cuisine:'沪菜',province:'上海'},
-  '蟹粉小笼':{cuisine:'苏菜',province:'江苏'},
-  '清炖蟹粉狮子头':{cuisine:'苏菜',province:'江苏'},
-  '阳澄湖大闸蟹':{cuisine:'苏菜',province:'江苏'},
-  '西湖醋鱼':{cuisine:'浙菜',province:'浙江'},
-  '东坡肉':{cuisine:'浙菜',province:'浙江'},
-  '龙井虾仁':{cuisine:'浙菜',province:'浙江'},
-  '叫花鸡':{cuisine:'浙菜',province:'浙江'},
-  // 徽菜/闽菜
-  '臭鳜鱼':{cuisine:'徽菜',province:'安徽'},
-  '佛跳墙':{cuisine:'闽菜',province:'福建'},
-  '沙茶面':{cuisine:'闽菜',province:'福建'},
-  '海蛎煎':{cuisine:'闽菜',province:'福建'},
-  // 陕西/西北
-  '肉夹馍':{cuisine:'陕菜',province:'陕西'},
-  '羊肉泡馍':{cuisine:'陕菜',province:'陕西'},
-  '凉皮':{cuisine:'陕菜',province:'陕西'},
-  '油泼面':{cuisine:'陕菜',province:'陕西'},
-  '蒜苗炒肉':{cuisine:'陕菜',province:'陕西'},
-  '兰州拉面':{cuisine:'西北菜',province:'甘肃'},
-  '手抓羊肉':{cuisine:'西北菜',province:'新疆'},
-  '大盘鸡':{cuisine:'西北菜',province:'新疆'},
-  '新疆拌面':{cuisine:'西北菜',province:'新疆'},
-  '烤羊肉串':{cuisine:'西北菜',province:'新疆'},
-  // 北京/天津
-  '北京烤鸭':{cuisine:'京菜',province:'北京'},
-  '炸酱面':{cuisine:'京菜',province:'北京'},
-  '铜锅涮肉':{cuisine:'京菜',province:'北京'},
-  '驴打滚':{cuisine:'京菜',province:'北京'},
-  '豆汁儿':{cuisine:'京菜',province:'北京'},
-  '煎饼果子':{cuisine:'津菜',province:'天津'},
-  '狗不理包子':{cuisine:'津菜',province:'天津'},
-  // 家常/快餐
-  '番茄鸡蛋面':{cuisine:'家常菜',province:'全国'},
-  '番茄炒蛋':{cuisine:'家常菜',province:'全国'},
-  '蒸蛋':{cuisine:'家常菜',province:'全国'},
-  '红烧豆腐':{cuisine:'家常菜',province:'全国'},
-  '青椒炒肉':{cuisine:'家常菜',province:'全国'},
-  '土豆丝':{cuisine:'家常菜',province:'全国'},
-  '蒜蓉西兰花':{cuisine:'家常菜',province:'全国'},
-  '水煮青菜':{cuisine:'家常菜',province:'全国'},
-  '清炒时蔬':{cuisine:'家常菜',province:'全国'},
-  '蛋炒饭':{cuisine:'家常菜',province:'全国'},
-  '泡面':{cuisine:'家常菜',province:'全国'},
-  '方便面':{cuisine:'家常菜',province:'全国'},
-  '饺子':{cuisine:'家常菜',province:'全国'},
-  '包子':{cuisine:'家常菜',province:'全国'},
-  '馒头':{cuisine:'家常菜',province:'全国'},
-  '稀饭':{cuisine:'家常菜',province:'全国'},
-  '小米粥':{cuisine:'家常菜',province:'全国'},
-  '玉米粥':{cuisine:'家常菜',province:'全国'},
-  '白米饭':{cuisine:'家常菜',province:'全国'},
-  // 轻食
   '鸡胸肉沙拉':{cuisine:'轻食',province:'全国'},
   '轻食沙拉碗':{cuisine:'轻食',province:'全国'},
-  '希腊沙拉':{cuisine:'轻食',province:'全国'},
-  '鸡肉沙拉':{cuisine:'轻食',province:'全国'},
-  '藜麦碗':{cuisine:'轻食',province:'全国'},
-  '三文鱼沙拉':{cuisine:'轻食',province:'全国'},
-  '水果酸奶':{cuisine:'轻食',province:'全国'},
-  '燕麦碗':{cuisine:'轻食',province:'全国'},
-  '全麦三明治':{cuisine:'轻食',province:'全国'},
-  // 境外
   '泰式柠檬鸡':{cuisine:'泰国菜',province:'境外'},
-  '泰式炒河粉':{cuisine:'泰国菜',province:'境外'},
   '日式定食':{cuisine:'日料',province:'境外'},
-  '寿司':{cuisine:'日料',province:'境外'},
-  '拉面':{cuisine:'日料',province:'境外'},
-  '乌冬面':{cuisine:'日料',province:'境外'},
   '韩式拌饭':{cuisine:'韩餐',province:'境外'},
-  '韩式炸鸡':{cuisine:'韩餐',province:'境外'},
-  '部队锅':{cuisine:'韩餐',province:'境外'},
-  '汉堡':{cuisine:'西餐',province:'境外'},
-  '披萨':{cuisine:'西餐',province:'境外'},
-  '意大利面':{cuisine:'西餐',province:'境外'},
-  '牛排':{cuisine:'西餐',province:'境外'},
-  '三明治':{cuisine:'西餐',province:'境外'},
 };
 
 // 省份 SVG 路径数据（简化轮廓，足够辨认）
@@ -5397,23 +4388,11 @@ function renderHistory(){
   if(!meals.length){
     s.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--ink60)"><div style="font-size:48px;margin-bottom:12px">📋</div><p>还没有餐次记录</p></div>`;return;
   }
-  // 统计各类型餐次数量
-  const typeCounts={'全部':meals.length};
-  ['早饭','午饭','晚饭','加餐'].forEach(t=>{ const c=meals.filter(m=>m.type===t).length; if(c) typeCounts[t]=c; });
-  const unratedCount=meals.filter(m=>!m.fb).length;
-
   // 视图切换 tab
   const tabHtml=`
-  <div style="display:flex;background:var(--cream);border-radius:100px;padding:3px;margin-bottom:14px">
-    <button onclick="switchHistoryView('calendar')" style="flex:1;padding:8px;border:none;border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:${historyView==='calendar'?'var(--white)':'transparent'};color:${historyView==='calendar'?'var(--ink)':'var(--ink60)'};box-shadow:${historyView==='calendar'?'0 1px 4px rgba(0,0,0,.08)':'none'}">📅 打卡日历</button>
-    <button onclick="switchHistoryView('map')" style="flex:1;padding:8px;border:none;border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:${historyView==='map'?'var(--white)':'transparent'};color:${historyView==='map'?'var(--ink)':'var(--ink60)'};box-shadow:${historyView==='map'?'0 1px 4px rgba(0,0,0,.08)':'none'}">🗺️ 菜系地图</button>
-  </div>
-  <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none">
-    ${Object.entries(typeCounts).map(([t,c])=>{
-      const sel=historyTypeFilter===t;
-      return `<button onclick="setHistoryFilter('${t}')" style="flex-shrink:0;border:${sel?'none':'1.5px solid var(--border)'};background:${sel?'var(--accent)':'var(--white)'};color:${sel?'#fff':'var(--ink60)'};border-radius:999px;padding:5px 12px;font-family:var(--sans);font-size:12px;font-weight:${sel?700:500};cursor:pointer;white-space:nowrap">${t} ${c}</button>`;
-    }).join('')}
-    ${unratedCount?`<button onclick="setHistoryFilter('未打分')" style="flex-shrink:0;border:${historyTypeFilter==='未打分'?'none':'1.5px solid var(--accent)'};background:${historyTypeFilter==='未打分'?'var(--accent)':'var(--white)'};color:${historyTypeFilter==='未打分'?'#fff':'var(--accent)'};border-radius:999px;padding:5px 12px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">未打分 ${unratedCount}</button>`:''}
+  <div style="display:flex;background:var(--cream);border-radius:100px;padding:3px;margin-bottom:18px">
+    <button onclick="switchHistoryView('calendar')" id="hv-cal" style="flex:1;padding:8px;border:none;border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:${historyView==='calendar'?'var(--white)':'transparent'};color:${historyView==='calendar'?'var(--ink)':'var(--ink60)'};box-shadow:${historyView==='calendar'?'0 1px 4px rgba(0,0,0,.08)':'none'}">📅 打卡日历</button>
+    <button onclick="switchHistoryView('map')" id="hv-map" style="flex:1;padding:8px;border:none;border-radius:100px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:${historyView==='map'?'var(--white)':'transparent'};color:${historyView==='map'?'var(--ink)':'var(--ink60)'};box-shadow:${historyView==='map'?'0 1px 4px rgba(0,0,0,.08)':'none'}">🗺️ 菜系地图</button>
   </div>`;
   s.innerHTML=`${tabHtml}<div id="hv-content"></div>`;
   renderHistoryContent();
@@ -5422,17 +4401,6 @@ function renderHistory(){
 function switchHistoryView(v){
   historyView=v;
   renderHistory();
-}
-
-function setHistoryFilter(t){
-  historyTypeFilter=t;
-  renderHistory();
-}
-
-function getFilteredMeals(){
-  if(historyTypeFilter==='全部') return meals;
-  if(historyTypeFilter==='未打分') return meals.filter(m=>!m.fb);
-  return meals.filter(m=>m.type===historyTypeFilter);
 }
 
 function renderHistoryContent(){
@@ -5450,10 +4418,9 @@ function renderCalendarView(container){
   const daysInMonth=new Date(year,month+1,0).getDate();
   const today=now.getDate();
 
-  // 把 meals 按日期分组（用 ts 时间戳），应用筛选
-  const sourceMeals = getFilteredMeals();
+  // 把 meals 按日期分组（用 ts 时间戳）
   const mealsByDay={};
-  sourceMeals.forEach(m=>{
+  meals.forEach(m=>{
     const d=new Date(m.ts||Date.now());
     if(d.getFullYear()===year&&d.getMonth()===month){
       const day=d.getDate();
@@ -5465,12 +4432,12 @@ function renderCalendarView(container){
   [1,2,3,4,5].forEach((offset,i)=>{
     const day=today-4+i;
     if(day>0&&day<=daysInMonth&&!Object.keys(mealsByDay).length){
-      mealsByDay[day]=[sourceMeals[i]].filter(Boolean);
+      mealsByDay[day]=[meals[i]].filter(Boolean);
     }
   });
   // 补充 seed meals 到近几天
-  if(Object.keys(mealsByDay).length===0||sourceMeals.slice(0,5).some(m=>!m.ts||m.ts<Date.now()-7*86400000)){
-    sourceMeals.forEach((m,i)=>{
+  if(Object.keys(mealsByDay).length===0||meals.slice(0,5).some(m=>!m.ts||m.ts<Date.now()-7*86400000)){
+    meals.forEach((m,i)=>{
       const day=Math.max(1,today-4+i);
       if(!mealsByDay[day]) mealsByDay[day]=[];
       if(!mealsByDay[day].find(x=>x.id===m.id)) mealsByDay[day].push(m);
@@ -5487,7 +4454,7 @@ function renderCalendarView(container){
     const hasMeals=mealsByDay[d]&&mealsByDay[d].length>0;
     const isToday=d===today;
     const m=hasMeals?mealsByDay[d][0]:null;
-    const dotColor=m?(m.fb?.comfort==='有精神'||m.fb?.comfort==='舒服'?'var(--green)':m.fb?.comfort==='困倦'||m.fb?.comfort==='胀气'?'var(--red)':m.fb?'var(--amber)':'var(--border)'):'transparent';
+    const dotColor=m?(m.fb.comfort==='有精神'||m.fb.comfort==='舒服'?'var(--green)':m.fb.comfort==='困倦'||m.fb.comfort==='胀气'?'var(--red)':'var(--amber)'):'transparent';
     cells+=`<div onclick="${hasMeals?`showDayDetail(${d},${year},${month})`:'null'}" style="
       aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
       border-radius:10px;cursor:${hasMeals?'pointer':'default'};position:relative;
@@ -5530,24 +4497,17 @@ function renderDayMeals(day, list){
   const items=list.map(m=>{
     const imgEl=m.wideImg
       ?`<img src="${m.wideImg}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0">`
-      :`<div style="width:60px;height:60px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${ava(m.analysis?.risk)}</div>`;
-    const noFb=!m.fb;
-    const feelColor=m.fb?.comfort==='有精神'||m.fb?.comfort==='舒服'?'var(--green)':m.fb?.comfort==='困倦'||m.fb?.comfort==='胀气'?'var(--red)':'var(--amber)';
-    const addLabel=m.additionals?.length?` + ${m.additionals.map(a=>a.dish||'附加').join(' + ')}`:'';
+      :`<div style="width:60px;height:60px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${ava(m.analysis.risk)}</div>`;
+    const feelColor=m.fb.comfort==='有精神'||m.fb.comfort==='舒服'?'var(--green)':m.fb.comfort==='困倦'||m.fb.comfort==='胀气'?'var(--red)':'var(--amber)';
     return `<div style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="showMealDetail(${m.id})">
-      <div style="position:relative;flex-shrink:0">
-        ${imgEl}
-        ${noFb?`<div style="position:absolute;bottom:-4px;right:-4px;background:var(--accent);color:#fff;border-radius:999px;font-size:9px;font-weight:900;padding:2px 5px">未打分</div>`:''}
-      </div>
+      ${imgEl}
       <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <p style="font-weight:600;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(m.dish||'这一餐')+addLabel}</p>
-          ${noFb
-            ? `<button onclick="event.stopPropagation();backfillFeedback(${m.id})" style="flex-shrink:0;border:1.5px solid var(--accent);background:var(--accent-s);color:var(--accent);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">补录反馈</button>`
-            : `<span style="font-size:11px;color:${feelColor};font-weight:600;flex-shrink:0">${feelEmoji(m.fb.comfort)} ${m.fb.comfort}</span>`}
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <p style="font-weight:600;font-size:14px">${m.dish||m.analysis.structure.split('，')[0]}</p>
+          <span style="font-size:11px;color:${feelColor};font-weight:600">${feelEmoji(m.fb.comfort)} ${m.fb.comfort}</span>
         </div>
         <p style="font-size:12px;color:var(--ink60);margin-top:2px">${m.type} · ${m.cuisine||'家常菜'}</p>
-        <p style="font-size:12px;color:var(--ink30);margin-top:2px">${m.analysis?.structure||''}</p>
+        <p style="font-size:12px;color:var(--ink30);margin-top:2px">${m.analysis.structure}</p>
       </div>
     </div>`;
   }).join('');
@@ -5660,126 +4620,42 @@ function renderMapView(container){
   };
 }
 
-function backfillFeedback(mealId){
-  const m=meals.find(x=>x.id===mealId);if(!m)return;
-  // 恢复这顿饭的 pending 状态，打开补录打分页
-  pendingAnalysis=m.analysis||null;
-  pendingMealType=m.type||'午饭';
-  pendingAdditionals=m.additionals||[];
-  wideImg=m.wideImg||null;
-  mealEatingStarted=true;
-  // 提交后替换原记录而非新增
-  window._backfillMealId=mealId;
-  renderFeedback();
-  show('feedback');
-}
-
 function showMealDetail(id){
   const m=meals.find(x=>x.id===id);if(!m)return;
-  const a=normalizeMealAnalysis(m.analysis||{});
+  const a=m.analysis;
   const s=document.getElementById('s-history');
-
-  // 封面图
   const imgEl=m.wideImg
     ?`<img src="${m.wideImg}" style="width:calc(100% + 40px);margin:-20px -20px 0 -20px;height:200px;object-fit:cover;display:block;border-radius:14px 14px 0 0">`
-    :`<div style="width:calc(100% + 40px);margin:-20px -20px 0 -20px;height:80px;background:var(--cream);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;font-size:42px">${ava(a.risk)}</div>`;
-
-  // AI 分析内容
-  const detail=(a.detail||[]).map(d=>`<li style="font-size:13px;color:var(--ink60);padding:4px 0;list-style:none;display:flex;gap:6px"><span style="color:var(--ink30);flex-shrink:0">—</span>${d}</li>`).join('');
-  const tags=(a.tags||[]).map(t=>`<span class="chip chip-amber" style="margin-right:4px">${t}</span>`).join('');
-
-  // 附加食物 block
-  const addBlock=(m.additionals&&m.additionals.length)?`
-    <div style="margin-top:14px;background:var(--amber-s);border-radius:var(--rs);padding:10px 12px">
-      <p style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">同餐附加</p>
-      ${m.additionals.map(ad=>{
-        const an=normalizeMealAnalysis(ad);
-        const nn=normalizeNutritionEstimate(an.nutritionEstimate,an.foodType);
-        return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.05)">
-          <span style="font-size:13px;font-weight:600">${ad.dish||'附加食物'}</span>
-          <span style="font-size:11px;color:var(--ink60)">${nn.calories.range}</span>
-        </div>`;
-      }).join('')}
-    </div>`:''  ;
-
-  // AI 修正记录
-  const corrections=m.analysis?.corrections||{};
-  const corrKeys=Object.keys(corrections);
-  const corrBlock=corrKeys.length?`
-    <div style="margin-top:14px;background:var(--cream);border-radius:var(--rs);padding:10px 12px">
-      <p style="font-size:11px;font-weight:700;color:var(--ink60);margin-bottom:6px">你修正了 AI 的识别</p>
-      ${corrKeys.map(k=>{
-        const c=corrections[k];
-        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px">
-          <span style="color:var(--ink30)">${k}：</span>
-          <span style="color:var(--ink30);text-decoration:line-through">${c.ai_value}</span>
-          <span style="color:var(--ink30)">→</span>
-          <span style="font-weight:600;color:var(--ink)">${c.user_value}</span>
-        </div>`;
-      }).join('')}
-    </div>`:'' ;
-
-  // 来自推荐卡
-  const fromCardBlock=m.fromCard?`
-    <div style="margin-top:14px;background:var(--green-s);border-radius:var(--rs);padding:10px 12px;display:flex;align-items:center;gap:8px">
-      <span style="font-size:16px">🃏</span>
-      <p style="font-size:12px;color:var(--green)">来自推荐卡片：<strong>${m.fromCard.dish}</strong></p>
-    </div>`:'' ;
-
-  // 饭后照片
-  const leftoverEl=m.leftoverImg
-    ?`<div style="margin-top:14px"><p style="font-size:11px;font-weight:700;color:var(--ink60);margin-bottom:6px">饭后照片</p><img src="${m.leftoverImg}" style="width:100%;height:130px;object-fit:cover;border-radius:var(--rs)"></div>`:'';
-
-  // 反馈 block
-  const noFb=!m.fb;
-  const fbGrid=noFb?`
-    <div class="card fade" style="animation-delay:.12s;border:2px dashed var(--border)">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <p style="font-size:13px;font-weight:600;color:var(--ink60);margin-bottom:2px">这餐没有打分记录</p>
-          <p style="font-size:12px;color:var(--ink30)">${m.autoClosedAt?'30分钟内未完成，已自动存档':'手动返回未提交'}</p>
-        </div>
-        <button onclick="backfillFeedback(${m.id})" style="flex-shrink:0;border:none;background:var(--accent);color:#fff;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer">补录反馈</button>
-      </div>
-    </div>`:
-    m.fb.comfort?`
-    <div class="card fade" style="animation-delay:.12s">
-      <div class="label" style="margin-bottom:10px">饭后感受</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-        ${[['饱腹',m.fb.fullness||'—'],['身体',m.fb.comfort||'—'],['价格',m.fb.price||'—']].map(([k,v])=>`
-          <div style="background:var(--cream);border-radius:var(--rs);padding:10px 12px;text-align:center">
-            <p style="font-size:10px;color:var(--ink60);margin-bottom:3px">${k}</p>
-            <p style="font-size:14px;font-weight:700">${v}</p>
+    :`<div style="width:calc(100% + 40px);margin:-20px -20px 0 -20px;height:100px;background:var(--cream);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;font-size:52px">${ava(a.risk)}</div>`;
+  const detail=a.detail.map(d=>`<li style="font-size:13px;color:var(--ink60);padding:4px 0;list-style:none;display:flex;gap:6px"><span style="color:var(--ink30);flex-shrink:0">—</span>${d}</li>`).join('');
+  const tags=a.tags.map(t=>`<span class="chip chip-amber" style="margin-right:4px">${t}</span>`).join('');
+  const fbGrid=m.fb.fullness?`
+    <div class="card fade" style="animation-delay:.15s">
+      <div class="label">饭后感受</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${[['饱腹',m.fb.fullness],['身体',m.fb.comfort],['价格',m.fb.price||'—']].map(([k,v])=>`
+          <div style="background:var(--cream);border-radius:var(--rs);padding:10px 12px">
+            <p style="font-size:11px;color:var(--ink60);margin-bottom:3px">${k}</p>
+            <p style="font-size:14px;font-weight:600">${v}</p>
           </div>`).join('')}
       </div>
-      ${m.fb.actualIntake?`<div style="background:var(--accent-s);border-radius:var(--rs);padding:8px 12px">
-        <p style="font-size:12px;color:var(--accent)">实际摄入：<strong>${m.fb.actualIntake}</strong>（约饭前估算的 ${Math.round((m.fb.actualIntakeRatio||1)*100)}%）</p>
-      </div>`:''}
     </div>`:'';
-
-  // 时间信息
-  const tsDate=m.ts?new Date(m.ts).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-  const dur=m.mealDurationMs?Math.round(m.mealDurationMs/60000)+'分钟':'';
-
+  const leftoverEl=m.leftoverImg
+    ?`<div style="margin-top:14px"><div class="label">饭后照片</div><img src="${m.leftoverImg}" style="width:100%;height:130px;object-fit:cover;border-radius:var(--rs)"></div>`:'';
   s.innerHTML=`
     <button onclick="renderHistory()" style="background:none;border:none;color:var(--ink60);font-size:14px;cursor:pointer;margin-bottom:14px;padding:0;font-family:var(--sans)">← 返回记录本</button>
-    <div class="card fade" style="overflow:hidden;padding-top:0;${noFb?'border:2.5px solid var(--accent)':'border:2.5px solid var(--green)'}">
+    <div class="card fade" style="overflow:hidden;padding-top:0">
       ${imgEl}
       <div style="padding-top:16px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
-          <div>
-            <p style="font-weight:700;font-size:16px">${m.type} · ${tsDate}${dur?' · 吃了'+dur:''}</p>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <p style="font-weight:700;font-size:16px">${m.date} · ${m.type}</p>
           ${riskChip(a.risk)}
         </div>
-        <p style="font-family:var(--serif);font-size:20px;line-height:1.3;margin-bottom:8px">${m.dish||a.structure||'这一餐'}</p>
+        <p style="font-family:var(--serif);font-size:20px;line-height:1.3;margin-bottom:8px">${a.structure}</p>
         <div class="risk-bar risk-${a.risk}"></div>
-        ${detail?`<ul style="margin-top:10px">${detail}</ul>`:''}
-        ${a.advice?`<div class="advice-box" style="margin-top:10px"><p style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px">吃法建议</p><p class="advice-text">${a.advice}</p></div>`:''}
-        ${tags?`<div style="margin-top:10px">${tags}</div>`:''}
-        ${addBlock}
-        ${corrBlock}
-        ${fromCardBlock}
+        <ul style="margin-top:12px">${detail}</ul>
+        <div class="advice-box"><p style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">吃法建议</p><p class="advice-text">${a.advice}</p></div>
+        <div style="margin-top:10px">${tags}</div>
         ${leftoverEl}
       </div>
     </div>
@@ -6129,17 +5005,7 @@ function renderProfile(){
   const tasteStats = computeTasteStats();
   const heightTxt = profile.height ? profile.height + ' cm' : '未填';
   const weightTxt = profile.weight ? profile.weight + ' kg' : '未填';
-  const ageTxt = profile.age ? profile.age + ' 岁' : '未填';
   const genderTxt = profile.gender || '未填';
-  const healthBg = Array.isArray(profile.healthBackground) && profile.healthBackground.length
-    ? profile.healthBackground.join('、') : '无特殊情况';
-  // 体重趋势
-  const wLog = profile.weightLog||[];
-  const lastWeighTs = wLog.length ? wLog[wLog.length-1].ts : null;
-  const daysSince = lastWeighTs ? Math.floor((Date.now()-lastWeighTs)/86400000) : 999;
-  const weightTrend = wLog.length>=2
-    ? (wLog[wLog.length-1].value - wLog[wLog.length-2].value).toFixed(1) : null;
-  const trendTxt = weightTrend===null ? '' : weightTrend>0 ? `↑${weightTrend}kg` : weightTrend<0 ? `↓${Math.abs(weightTrend)}kg` : '持平';
   const s = document.getElementById('s-profile');
   s.innerHTML = `
   <div class="fade" style="display:flex;flex-direction:column;align-items:center;padding:28px 0 20px;gap:10px">
@@ -6150,22 +5016,11 @@ function renderProfile(){
     </div>
   </div>
 
-  ${daysSince>=7?`
-  <div class="fade" style="background:var(--amber-s);border:1px solid rgba(212,134,10,.2);border-radius:var(--r);padding:14px 16px;margin-bottom:0;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openProfileNumEdit('weight','体重','kg')">
-    <span style="font-size:22px">⚖️</span>
-    <div style="flex:1">
-      <p style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:2px">该称体重了</p>
-      <p style="font-size:13px;color:var(--ink60)">${lastWeighTs?`上次记录距今 ${daysSince} 天`:'还未记录过体重'}</p>
-    </div>
-    <span style="font-size:13px;color:var(--ink30)">→</span>
-  </div>`:''}
-
   <div class="card fade" style="animation-delay:.04s">
     <div class="label">基础信息</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
       ${profileEditStat('身高', heightTxt, "openProfileNumEdit('height','身高','cm')")}
-      ${profileEditStat('体重', weightTxt + (trendTxt?` <span style="font-size:11px;color:${weightTrend>0?'var(--red)':'var(--green)'}">${trendTxt}</span>`:''), "openProfileNumEdit('weight','体重','kg')")}
-      ${profileEditStat('年龄', ageTxt, "openProfileNumEdit('age','年龄','岁')")}
+      ${profileEditStat('体重', weightTxt, "openProfileNumEdit('weight','体重','kg')")}
       ${profileEditStat('性别', genderTxt, 'openProfileGenderEdit()')}
     </div>
   </div>
@@ -6175,7 +5030,6 @@ function renderProfile(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       ${profileEditStat('目标', goal, 'openGoalEditor()')}
       ${profileEditStat('饭后感受', feeling, 'openProfileFeelingEdit()')}
-      ${profileEditStat('健康背景', healthBg, 'openHealthBackgroundEdit()')}
     </div>
     <div style="margin-top:10px">${profileEditStat('反馈提醒', profile.reminderDelayMin===undefined?'未设置':profile.reminderDelayMin===null?'不提醒':profile.reminderDelayMin>=60?Math.floor(profile.reminderDelayMin/60)+'小时后打分':profile.reminderDelayMin+'分钟后打分', 'openReminderSetup()')}</div>
   </div>
@@ -6201,17 +5055,7 @@ function renderProfile(){
     </div>
   </div>
 
-  <button onclick="openProductMapFromProfile()" style="width:100%;border:none;background:transparent;color:var(--ink30);font-family:var(--sans);font-size:12px;padding:8px 0 2px;cursor:pointer">查看产品架构图 →</button>
-
-  <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
-    <p style="font-size:11px;font-weight:700;color:var(--ink30);margin-bottom:12px;letter-spacing:.06em">数据管理</p>
-    <button onclick="confirmClearAllData()" style="width:100%;border:1.5px solid var(--border);border-radius:14px;background:var(--cream);color:var(--ink60);font-family:var(--sans);font-size:14px;padding:14px;cursor:pointer;margin-bottom:10px;text-align:left">
-      🗑️ &nbsp;清空所有饮食记录
-    </button>
-    <button onclick="confirmDeleteAccount()" style="width:100%;border:1.5px solid #ffb3b3;border-radius:14px;background:#fff5f5;color:#c0392b;font-family:var(--sans);font-size:14px;padding:14px;cursor:pointer;text-align:left">
-      ⚠️ &nbsp;注销账户 &amp; 删除全部数据
-    </button>
-  </div>`;
+  <button onclick="openProductMapFromProfile()" style="width:100%;border:none;background:transparent;color:var(--ink30);font-family:var(--sans);font-size:12px;padding:8px 0 2px;cursor:pointer">查看产品地图 →</button>`;
 }
 
 function openAIKeySheet(){
@@ -6414,41 +5258,6 @@ function openProfileGenderEdit(){
   document.body.appendChild(overlay);
 }
 
-let _hbgSel = [];
-function openHealthBackgroundEdit(){
-  _hbgSel = Array.isArray(profile.healthBackground) ? [...profile.healthBackground] : [];
-  document.querySelectorAll('[data-hbg-overlay]').forEach(e=>e.remove());
-  _renderHealthBgOverlay();
-}
-function _renderHealthBgOverlay(){
-  document.querySelectorAll('[data-hbg-overlay]').forEach(e=>e.remove());
-  const opts=['无特殊情况','血糖容易波动','肠胃比较敏感','高血压/高血脂','睡眠质量差','其他'];
-  const overlay=document.createElement('div');
-  overlay.dataset.hbgOverlay='1';
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(26,22,18,.38);z-index:700;display:flex;align-items:flex-end;padding:20px';
-  overlay.innerHTML=`<div style="background:var(--white);border-radius:24px 24px 20px 20px;padding:22px;width:100%;max-width:420px;margin:0 auto;animation:fadeUp .3s ease">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <p style="font-family:var(--serif);font-size:22px">健康背景</p>
-      <button onclick="this.closest('[data-hbg-overlay]').remove()" style="width:34px;height:34px;border:none;border-radius:50%;background:var(--cream);cursor:pointer;font-size:18px">×</button>
-    </div>
-    <p style="font-size:13px;color:var(--ink60);margin-bottom:16px">帮助系统更准确解读你的身体信号，可多选</p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
-      ${opts.map(o=>{
-        const on=_hbgSel.includes(o);
-        return `<button onclick="toggleHbg('${o}')"
-          style="border:none;background:${on?'var(--green)':'var(--cream)'};color:${on?'#fff':'var(--ink)'};border-radius:999px;padding:10px 14px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">${o}</button>`;
-      }).join('')}
-    </div>
-    <button onclick="saveProfileField('healthBackground',[..._hbgSel]);document.querySelectorAll('[data-hbg-overlay]').forEach(e=>e.remove())"
-      style="width:100%;border:none;background:var(--accent);color:#fff;border-radius:14px;padding:15px;font-family:var(--sans);font-size:16px;font-weight:700;cursor:pointer">保存</button>
-  </div>`;
-  document.body.appendChild(overlay);
-}
-function toggleHbg(opt){
-  const idx=_hbgSel.indexOf(opt);
-  if(idx>=0) _hbgSel.splice(idx,1); else _hbgSel.push(opt);
-  _renderHealthBgOverlay();
-}
 function openProfileFeelingEdit(){
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(26,22,18,.38);z-index:700;display:flex;align-items:flex-end;padding:20px';
@@ -6469,13 +5278,6 @@ function saveProfileField(key, value){
   if(value===''||value===null||value===undefined) return;
   const num = Number(value);
   profile[key] = isNaN(num)||value==='' ? value : num;
-  // 体重每次保存都追加到时序日志
-  if(key==='weight' && !isNaN(num) && num>0){
-    if(!profile.weightLog) profile.weightLog=[];
-    profile.weightLog.push({ value:parseFloat(num), ts:Date.now() });
-    profile.weightLog = profile.weightLog.slice(-52); // 保留约一年周数据
-  }
-  if(currentUser){ try{ localStorage.setItem('profile_'+currentUser, JSON.stringify(profile)); }catch(_){} }
   renderProfile();
 }
 
@@ -6486,14 +5288,14 @@ function computeTasteStats(){
   return {topCuisine:top?top[0]:'暂无', cuisineCount:new Set(cuisines).size};
 }
 
-// ── PRODUCT ARCHITECTURE MAP ──────────────────────────────────────────────────
+// ── PRODUCT MAP ──────────────────────────────────────────────────────────────
 function renderProductMap(){
   const s=document.getElementById('s-productmap');
   s.innerHTML=`
   <div class="fade" style="margin-bottom:20px">
-    <p style="font-size:13px;color:var(--ink60)">干饭产品架构图</p>
-    <h1 style="font-family:var(--serif);font-size:30px;line-height:1.2;margin-top:4px">先有架构，再开工</h1>
-    <p style="font-size:14px;color:var(--ink60);line-height:1.7;margin-top:10px">这里只看产品底层结构：数据对象、能力流向、算法边界和商业化边界。1.0-5.0 的阶段入口和阶段描述统一放在产品路线页。</p>
+    <p style="font-size:13px;color:var(--ink60)">干饭产品地图</p>
+    <h1 style="font-family:var(--serif);font-size:30px;line-height:1.2;margin-top:4px">先有地图，再开工</h1>
+    <p style="font-size:14px;color:var(--ink60);line-height:1.7;margin-top:10px">这张地图把 5 个 MVP 串成一条线：先让用户愿意记录，再让数据变成建议，最后帮用户真正吃到适合自己的饭。</p>
   </div>
 
   ${mapSection('产品主线','所有阶段都回答同一个问题：下一餐怎么吃，才能开心，也让身体舒服',[
@@ -6502,6 +5304,14 @@ function renderProductMap(){
     ['3','生成餐饮计划','用目标、口味、预算、身体反馈生成日餐和周餐'],
     ['4','看懂身体结构','血糖、睡眠、心率、运动和饭后反馈形成身体结构，只做解释不生成菜单'],
     ['5','完成吃饭动作','食材清单、购买渠道、定制配餐承接建议']
+  ])}
+
+  ${mapSection('MVP 关系','不是五个独立功能，而是五层能力逐步叠加',[
+    ['1.0','基础功能开发','基础信息收集、记录分析、7 天拼图、餐前抽卡、个人饮食地图、趋势行动、账号'],
+    ['2.0','餐饮助手','接住 1.0 的档案和反馈，生成日餐、周餐、食材分量、营养和预算方案'],
+    ['3.0','目标约束','智能算法基于目标、历史餐饮和身体记录，给出体重与进食节奏建议，用户选择后才同步'],
+    ['4.0','身体结构','分层采集 App、手机、穿戴和专业设备数据；未授权或采不到的数据不进身体结构判断'],
+    ['5.0','计划履约','把餐饮计划转成购物清单、商超跳转、定制配餐和履约反馈']
   ])}
 
   ${mapSection('核心数据对象','原型之后的架构设计要围绕这些对象展开',[
@@ -6526,73 +5336,16 @@ function renderProductMap(){
     ['5.0','履约匹配','把餐饮计划拆成可买食材，按价格、库存、渠道和替换方案匹配']
   ])}
 
-  <div class="card fade" style="margin-bottom:12px">
-    <div class="label" style="margin-bottom:6px">─── 以下为开发阶段数据架构设计 ───</div>
-    <p style="font-size:13px;color:var(--ink60);line-height:1.6">原型验证完成后进入开发，以下是数据流向、模型调用、校正机制和个性化成熟路径的设计规范。</p>
-  </div>
-
-  ${mapSection('数据分层架构','每一层都在为下一层提供更可信的输入；Layer 3 是最有价值的层，通用数据库给不了',[
-    ['L0','通用知识层','AI 预训练提供：食物识别能力、通用营养数据、烹饪方式与营养关系。所有用户共享，不可个性化'],
-    ['L1','识别层','这一餐是什么、大概多少。来源：餐前图 → AI识别 → 用户修正。初始误差 ±30%，随修正下降'],
-    ['L2','摄入层','实际吃了多少。来源：餐后图对比（±15%）或手选比例（±25%）。存储原始AI值和最终值的 diff'],
-    ['L3','响应层','这个人吃了这个之后怎样。来源：饭后反馈 + 精确时间戳 + 2小时延迟回访。通用数据库完全无法替代'],
-    ['L4','模式层','这个人的规律。10-30 餐后开始涌现。例："午饭高碳水 → 下午困意率 78%"。置信度随样本增长'],
-    ['L5','预测层','基于规律做前瞻。输出：餐前推荐、今日计划、结构调整建议。需 L3+L4 足够丰富才能激活']
-  ])}
-
-  ${mapSection('数据校正飞轮','每一餐经历 4 轮校正，最终真值是叠加的；校正本身就是数据，记录 diff 而非覆盖',[
-    ['①','AI 初始估算','识别菜品结构，输出热量/营养范围。置信度：低（约60%）。存储为 analysis.ai_raw'],
-    ['②','用户修正','修正菜名、份量、食物类型。存储格式：{ field, ai_value, user_value }。diff 积累后反哺识别准确率'],
-    ['③','餐后图对比','AI 对比餐前餐后两张图，输出 intakeRatio 和实际营养值。有图误差 ±15%，无图降级为手选比例'],
-    ['④','身体反馈真值','饭后感受 + 2小时回访 = 最高价值信号。"AI 预测困倦 → 用户确认有明显困意"才能真正建立规律']
-  ])}
-
-  <div class="card fade">
-    <div class="label" style="margin-bottom:6px">模型调用上下文设计</div>
-    <p style="font-size:13px;color:var(--ink60);line-height:1.6;margin-bottom:12px">每次调用模型不应是无状态的。需要把该用户的个人规律作为持久 context 传入，让模型每次都"认识"这个用户。</p>
-    <div style="background:var(--cream);border-radius:12px;padding:14px;margin-bottom:10px;font-family:monospace;font-size:11px;line-height:1.7;color:var(--ink60)">
-      <span style="color:var(--ink30)">// 当前（无状态，每次从零开始）</span><br>
-      callModel(prompt, [餐前图, 通用背景])<br><br>
-      <span style="color:var(--ink30)">// 应该（有状态，带个人规律）</span><br>
-      callModel(prompt, [<br>
-      &nbsp;&nbsp;餐前图,<br>
-      &nbsp;&nbsp;<span style="color:var(--accent)">userFoodProfile,</span> &nbsp;<span style="color:var(--ink30)">← 该用户的规律摘要</span><br>
-      &nbsp;&nbsp;<span style="color:var(--accent)">相似历史记录,</span> &nbsp;&nbsp;<span style="color:var(--ink30)">← "上次吃类似食物后Y"</span><br>
-      &nbsp;&nbsp;当前目标和状态,<br>
-      &nbsp;&nbsp;当前餐次和时间<br>
-      ])
-    </div>
-    <div style="background:var(--cream);border-radius:12px;padding:14px;font-family:monospace;font-size:11px;line-height:1.7;color:var(--ink60)">
-      <span style="color:var(--ink30)">// userFoodProfile 结构（每5餐压缩更新一次）</span><br>
-      {<br>
-      &nbsp;&nbsp;<span style="color:var(--green)">"highCarbLunch"</span>: { sleepyRate: 0.78, n: 14 },<br>
-      &nbsp;&nbsp;<span style="color:var(--green)">"portionBias"</span>: "比AI估算少吃约15%",<br>
-      &nbsp;&nbsp;<span style="color:var(--green)">"bestMeals"</span>: ["白切鸡饭", "鸡胸肉沙拉"],<br>
-      &nbsp;&nbsp;<span style="color:var(--green)">"worstPatterns"</span>: ["炸鸡+奶茶 → 困意明显"],<br>
-      &nbsp;&nbsp;<span style="color:var(--green)">"goalProgress"</span>: "高碳午饭从7/10降到4/10"<br>
-      }
-    </div>
-  </div>
-
-  ${mapSection('个性化成熟度阶段','数据不够时降级为通用建议；不要用没有依据的"个性化"误导用户',[
-    ['0-5','冷启动期','全靠通用知识。推荐泛化建议。重点是 onboarding 采集目标/偏好/忌口，降低后续模型推理成本'],
-    ['5-15','模式萌芽期','"你上次吃X之后Y"类个性化提示开始出现。食物-响应初始映射建立。建议有历史依据但置信度标注低'],
-    ['15-30','规律浮现期','能预测"今天吃这个大概会有什么感受"。推荐有明显个性化依据。可区分偶发反应和稳定规律'],
-    ['30+','深度个性化','生成个人化饮食结构方案。能追踪目标达成率。模型知道该用户的例外情况（"周五压力大时碳水需求更高"）']
-  ])}
-
-  ${mapSection('开发必须补全的关键字段','原型已跑通主流程，以下字段在工程化时必须完整采集，否则 L3/L4 层无法建立',[
-    ['⚑','精确时间戳','mealStartedAt（开始进食）、photoTakenAt（拍照时刻）、feedbackSubmittedAt（填反馈时刻）。仅存日期不够'],
-    ['⚑','修正 diff 存储','每次用户修改 AI 估算，存 { field, ai_value, user_value, timestamp }，而非直接覆盖 AI 结果'],
-    ['⚑','2小时延迟回访','困意/胀气/精力通常不是饭后立刻出现。需要在提交反馈后约 2 小时推送一次简短回访（2个问题）'],
-    ['⚑','进食时长','进食开始到结束的时长。吃快/吃慢对饱腹感和身体反应有直接影响，是 L3 层重要变量'],
-    ['⚑','数据贡献方向','个人数据优化个人模型（userId 隔离）；脱敏模式贡献群体模型（"高碳午饭与困意相关"）；明确告知用户']
-  ])}
-
   <div class="card fade" style="animation-delay:.18s;background:var(--accent);border:none">
     <p style="font-size:11px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">阶段边界</p>
     <p style="color:#fff;font-family:var(--serif);font-size:18px;line-height:1.7">商业化不能提前打断信任。先证明用户愿意持续记录和采纳建议，再进入计划订阅、健康管理、数据服务和购买履约。</p>
-  </div>`;
+  </div>
+
+  ${stageCard('MVP 1.0','基础功能开发','先拿到可信数据：档案、记录、分析、饭后反馈、身体拼图、饮食地图和账号。')}
+  ${stageCard('MVP 2.0','餐饮助手','把数据变成计划：日餐、周餐、食材营养、分量、预算和可替换餐。')}
+  ${stageCard('MVP 3.0','目标约束','把计划接到目标：体重、进食节奏、控糖、睡眠、心情，默认目标是越来越舒服。')}
+  ${stageCard('MVP 4.0','身体结构','把可采集身体信号做成用户能看懂的结构：基础记录、手机数据、穿戴设备和专业设备分层进入。')}
+  ${stageCard('MVP 5.0','计划履约','把餐饮计划接到履约：一键买食材、商超跳转、定制配餐和商业闭环。')}`;
 }
 
 function mapSection(title,desc,items){
@@ -6623,23 +5376,10 @@ function stageCard(version,title,scope){
 // ── Init ──────────────────────────────────────────────────────────────────────
 // ── 1️⃣ 登录系统 ────────────────────────────────────────────────────
 function renderLogin(){
-  if(loginMode === 'new') return renderNewUserAuth();
-  if(loginMode === 'returning') return renderReturningUserAuth();
-  return renderLoginRole();
-}
-
-function authButton(label, sub, handler, primary=false){
-  return `<button onclick="${handler}" style="width:100%;border:${primary?'none':'1.5px solid rgba(45,106,79,.22)'};background:${primary?'var(--accent)':'var(--green-s)'};color:${primary?'#fff':'var(--ink)'};border-radius:22px;padding:20px;text-align:left;font-family:var(--sans);cursor:pointer;box-shadow:${primary?'0 12px 28px rgba(232,93,38,.18)':'none'}">
-    <span style="display:block;font-size:18px;font-weight:900;margin-bottom:6px">${label}</span>
-    <span style="display:block;font-size:12px;color:${primary?'rgba(255,255,255,.78)':'var(--ink60)'};line-height:1.55">${sub}</span>
-  </button>`;
-}
-
-function renderLoginShell(inner){
   const s = document.getElementById('s-login');
   s.innerHTML = `
-    <div style="display:flex;flex-direction:column;min-height:100%;background:linear-gradient(135deg, var(--accent-s), var(--green-s))">
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:34px 20px 24px;text-align:center">
+    <div style="display:flex;flex-direction:column;height:100%;background:linear-gradient(135deg, var(--accent-s), var(--green-s))">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 20px;text-align:center">
         <div style="font-size:64px;margin-bottom:24px">🍽️</div>
         <p style="font-size:28px;font-weight:800;margin-bottom:12px;font-family:var(--serif);color:var(--ink)">干饭</p>
         <p style="font-size:16px;color:var(--ink60);margin-bottom:8px">好好吃饭</p>
@@ -6647,128 +5387,24 @@ function renderLoginShell(inner){
       </div>
 
       <div style="padding:32px 20px;background:#fff;border-radius:24px 24px 0 0">
-        ${inner}
+        <div style="margin-bottom:20px">
+          <input id="login-phone" type="text" placeholder="手机号" style="width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:var(--sans);margin-bottom:12px">
+          <button onclick="loginWithPhone()" style="width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:15px;font-family:var(--sans)">继续</button>
+        </div>
+
+        <div style="position:relative;margin-bottom:20px">
+          <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border)"></div>
+          <div style="position:relative;text-align:center">
+            <span style="background:#fff;padding:0 8px;color:var(--ink30);font-size:13px">或</span>
+          </div>
+        </div>
+
+        <button onclick="loginWithWeChat()" style="width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:15px;font-family:var(--sans);margin-bottom:16px">微信登录</button>
+
+        <p style="font-size:11px;color:var(--ink30);text-align:center;line-height:1.5">登录即表示同意<br><span style="text-decoration:underline">服务条款</span>和<span style="text-decoration:underline">隐私政策</span></p>
       </div>
     </div>
   `;
-}
-
-function renderLoginRole(){
-  renderLoginShell(`
-    <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:10px">
-      ${authButton('我是新用户','先登录或注册，再完成建档和第一餐记录。',"openNewUserAuth()",true)}
-      ${authButton('我是老用户','带历史记录进入首页，直接查看身体拼图、周报和继续记录。',"openReturningUserAuth()")}
-    </div>
-    <p style="font-size:11px;color:var(--ink30);line-height:1.6;text-align:center;margin-top:18px">1.0 原型演示入口 · 先选身份，再进入对应路径</p>
-  `);
-}
-
-function renderAgreement(){
-  return `<button onclick="toggleAuthAgreement()" style="width:100%;border:none;background:transparent;padding:0;margin-top:26px;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;color:var(--ink30)">
-    <span style="width:22px;height:22px;border-radius:50%;border:2px solid ${authAgreementChecked?'#111':'#d8d8d8'};background:${authAgreementChecked?'#111':'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900">${authAgreementChecked?'✓':''}</span>
-    <span style="font-size:14px;line-height:1.45">我已阅读并同意《用户协议》和《隐私政策》</span>
-  </button>`;
-}
-
-function renderNewUserAuth(){
-  const disabled = authAgreementChecked ? '' : 'opacity:.45;filter:grayscale(.2)';
-  renderLoginShell(`
-    <div style="padding:12px 0 6px">
-      <button onclick="completeNewUserAuth('wechat')" style="width:100%;height:88px;border:none;border-radius:999px;background:#000;color:#fff;font-family:var(--sans);font-size:24px;font-weight:900;cursor:pointer;margin-bottom:26px;${disabled}">
-        <span style="font-size:28px;vertical-align:-2px;margin-right:12px">💬</span>微信登录
-      </button>
-      <button onclick="completeNewUserAuth('phone')" style="width:100%;height:88px;border:none;border-radius:999px;background:#F6F7FA;color:#202027;font-family:var(--sans);font-size:24px;font-weight:900;cursor:pointer;${disabled}">
-        <span style="font-size:28px;vertical-align:-3px;margin-right:14px">▯</span>手机号登录
-      </button>
-      ${renderAgreement()}
-      <button onclick="loginMode='role';authAgreementChecked=false;renderLogin()" style="width:100%;border:none;background:transparent;color:var(--ink30);font-size:13px;font-family:var(--sans);cursor:pointer;margin-top:22px">返回身份选择</button>
-    </div>
-  `);
-}
-
-function renderReturningUserAuth(){
-  renderLoginShell(`
-    <div style="padding:8px 0 4px">
-      <p style="font-family:var(--serif);font-size:24px;line-height:1.25;text-align:center;margin-bottom:18px">老用户演示登录</p>
-      <button onclick="startReturningUserDemo()" style="width:100%;height:76px;border:none;border-radius:999px;background:#000;color:#fff;font-family:var(--sans);font-size:21px;font-weight:900;cursor:pointer;margin-bottom:18px">
-        <span style="font-size:25px;vertical-align:-2px;margin-right:10px">💬</span>微信登录
-      </button>
-      <button onclick="startReturningUserDemo()" style="width:100%;height:76px;border:none;border-radius:999px;background:#F6F7FA;color:#202027;font-family:var(--sans);font-size:21px;font-weight:900;cursor:pointer;margin-bottom:18px">
-        <span style="font-size:25px;vertical-align:-3px;margin-right:12px">▯</span>手机号登录
-      </button>
-      <p style="font-size:12px;color:var(--ink60);line-height:1.6;text-align:center">进入后会加载 5 条历史记录，用来演示身体拼图、周报和继续记录。</p>
-      <button onclick="loginMode='role';renderLogin()" style="width:100%;border:none;background:transparent;color:var(--ink30);font-size:13px;font-family:var(--sans);cursor:pointer;margin-top:22px">返回身份选择</button>
-    </div>
-  `);
-}
-
-function openNewUserAuth(){
-  loginMode='new';
-  authAgreementChecked=false;
-  renderLogin();
-}
-
-function openReturningUserAuth(){
-  loginMode='returning';
-  renderLogin();
-}
-
-function toggleAuthAgreement(){
-  authAgreementChecked=!authAgreementChecked;
-  renderLogin();
-}
-
-function completeNewUserAuth(method){
-  if(!authAgreementChecked){
-    toast('请先勾选用户协议和隐私政策');
-    return;
-  }
-  startNewUserDemo(method);
-}
-
-function resetMealFlowState(){
-  pendingAnalysis=null;
-  pendingMealType=guessMealType();
-  mealEatingStarted=false;
-  justCompletedMealId=null;
-  drawnCard=null;
-  todayState='';
-  wideImg=null;
-  closeImg=null;
-  leftoverImg=null;
-  scores={};
-  forceHomeRecordDefault=false;
-  mealStartedAt=null;
-  actualIntakeAnalysis=null;
-}
-
-function startOnboardingFlow(){
-  resetMealFlowState();
-  obStep=0;
-  renderOnboard();
-  show('onboard');
-}
-
-function startNewUserDemo(method='demo'){
-  const user = {userId:'demo_new_user', phone:'新用户演示', loginType:method, demoType:'new', loginAt:new Date().toISOString()};
-  saveUserSession(user);
-  profile={};
-  meals=[];
-  correctionHistory=[];
-  setUserDataForCurrent(meals, profile);
-  startOnboardingFlow();
-}
-
-function startReturningUserDemo(){
-  const user = {userId:'demo_returning_user', phone:'老用户演示', loginType:'demo', demoType:'returning', loginAt:new Date().toISOString()};
-  saveUserSession(user);
-  profile={...RETURNING_USER_PROFILE};
-  meals=demoSeedMeals();
-  correctionHistory=[];
-  resetMealFlowState();
-  setUserDataForCurrent(meals, profile);
-  renderHome();
-  show('home');
 }
 
 function loginWithPhone(){
@@ -6777,31 +5413,22 @@ function loginWithPhone(){
     toast('请输入有效的手机号');
     return;
   }
-  const user = {userId: 'user_' + phone, phone, loginType: 'phone', demoType:'new', loginAt: new Date().toISOString()};
+  const user = {userId: 'user_' + phone, phone, loginType: 'phone', loginAt: new Date().toISOString()};
   saveUserSession(user);
-  profile = {};
-  meals = [];
-  correctionHistory = [];
-  setUserDataForCurrent(meals, profile);
-  startOnboardingFlow();
+  loadMealsForUser();
+  show('onboard');
 }
 
 function loginWithWeChat(){
-  startReturningUserDemo();
+  toast('微信登录（原型演示）');
+  const user = {userId: 'user_wechat_' + Date.now(), phone: '微信用户', loginType: 'wechat', loginAt: new Date().toISOString()};
+  saveUserSession(user);
+  loadMealsForUser();
+  show('onboard');
 }
 
 function loadMealsForUser(){
-  const data = getCurrentUserData();
-  if(data){
-    profile = data.profile || {};
-    correctionHistory = data.correctionHistory || [];
-    meals = data.meals?.length ? data.meals : (currentUser?.demoType === 'returning' ? demoSeedMeals() : []);
-    userFoodProfile = data.foodProfile || buildUserFoodProfile(meals);  // 恢复或重建
-    return;
-  }
-  profile = currentUser?.demoType === 'returning' ? {...RETURNING_USER_PROFILE} : {};
-  correctionHistory = [];
-  meals = currentUser?.demoType === 'returning' ? demoSeedMeals() : [];
+  meals = getUserMeals() || [];
 }
 
 // ── 2️⃣ 识别可编辑 ────────────────────────────────────────────────────
@@ -6827,33 +5454,13 @@ function enableEditableAnalysis(){
 }
 
 // ── 3️⃣ 周报表（集成到身体拼图） ────────────────────────────────────────────────────
-function mealTimeMs(m){
-  const candidates=[m?.ts,m?.createdAt,m?.created_at,m?.time,m?.dateTime];
-  for(const v of candidates){
-    const t=typeof v==='number'?v:Date.parse(v);
-    if(Number.isFinite(t)) return t;
-  }
-  return null;
-}
-
-function firstNumber(value){
-  const hit=String(value||'').match(/\d+(?:\.\d+)?/);
-  return hit ? Number(hit[0]) : null;
-}
-
 function renderWeeklyReportSection(allMeals){
-  const source = toArray(allMeals);
-  if(source.length === 0) return '';
-  const now = Date.now();
-  let weekMeals = source.filter(m => {
-    const t = mealTimeMs(m);
-    if(!t) return false;
-    const daysAgo = (now - t) / (1000*60*60*24);
-    return daysAgo >= 0 && daysAgo <= 7;
+  const weekMeals = allMeals.filter(m => {
+    const mealTime = new Date(m.ts);
+    const now = new Date();
+    const daysAgo = (now - mealTime) / (1000*60*60*24);
+    return daysAgo <= 7;
   });
-
-  // 兼容补记、历史导入和旧原型数据：没有有效时间时，用最近 7 条记录生成周报。
-  if(weekMeals.length === 0) weekMeals = source.slice(-7);
 
   if(weekMeals.length === 0) return '';
 
@@ -6866,70 +5473,50 @@ function renderWeeklyReportSection(allMeals){
   const topFlavors = Object.entries(flavorMap).sort((a,b) => b[1]-a[1]).slice(0,3);
 
   // 营养汇总
-  let totalCals = 0, calCount = 0, totalProtein = 0, proteinCount = 0;
+  let totalCals = 0, totalProtein = 0;
   weekMeals.forEach(m => {
     if(m.analysis?.nutritionEstimate?.calories?.range){
-      const cal = firstNumber(m.analysis.nutritionEstimate.calories.range);
-      if(cal !== null){ totalCals += cal; calCount++; }
+      const cal = parseInt(m.analysis.nutritionEstimate.calories.range);
+      totalCals += cal || 0;
     }
     if(m.analysis?.nutritionEstimate?.protein?.range){
-      const prot = firstNumber(m.analysis.nutritionEstimate.protein.range);
-      if(prot !== null){ totalProtein += prot; proteinCount++; }
+      const prot = parseInt(m.analysis.nutritionEstimate.protein.range);
+      totalProtein += prot || 0;
     }
   });
 
   // 感受统计
   const feelingMap = {};
-  const fullnessMap = {};
   weekMeals.forEach(m => {
     const comfort = m.fb?.comfort || '未评';
     feelingMap[comfort] = (feelingMap[comfort] || 0) + 1;
-    const fullness = m.fb?.fullness || m.fb?.satiety || '未评';
-    fullnessMap[fullness] = (fullnessMap[fullness] || 0) + 1;
   });
 
   // 改进建议（基于反馈）
   let suggestion = '';
   if(feelingMap['困倦'] && feelingMap['困倦'] >= weekMeals.length/2){
     suggestion = '😴 这周午餐后困倦明显，建议减少高碳水组合，增加蛋白质。';
-  } else if(fullnessMap['撑'] && fullnessMap['撑'] >= 2){
+  } else if(feelingMap['撑'] && feelingMap['撑'] >= 2){
     suggestion = '🍽️ 发现容易吃撑的模式，可以提前设定饭量提醒。';
   } else {
     suggestion = '✨ 保持现在的饮食节奏，身体反馈很稳定！';
   }
 
-  const goodFeelings = Object.entries(feelingMap).filter(([k]) => ['舒服','有精神'].includes(k));
-  const avgCal = calCount ? Math.round(totalCals / calCount) : null;
-  const avgProtein = proteinCount ? Math.round(totalProtein / proteinCount) : null;
-
   return `
     <div class="card fade" style="animation-delay:.24s;background:linear-gradient(135deg, var(--accent-s), var(--amber-s));border:1px solid var(--border)">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:600;color:var(--ink60);text-transform:uppercase;letter-spacing:.07em">📊 你的一周</div>
-        <span style="font-size:11px;color:var(--ink30)">近 ${weekMeals.length} 餐</span>
-      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--ink60);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">📊 你的一周</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div>
           <div style="font-size:13px;color:var(--ink60);margin-bottom:6px">口味</div>
           <div style="display:flex;gap:4px;flex-wrap:wrap">
-            ${topFlavors.slice(0,2).map(([f,c]) => `<span class="chip chip-amber" style="font-size:11px">${f}${c}×</span>`).join('') || '<span class="chip" style="font-size:11px">待观察</span>'}
+            ${topFlavors.slice(0,2).map(([f,c]) => `<span class="chip chip-amber" style="font-size:11px">${f}</span>`).join('')}
           </div>
         </div>
         <div>
           <div style="font-size:13px;color:var(--ink60);margin-bottom:6px">感受最好</div>
           <div style="display:flex;gap:4px;flex-wrap:wrap">
-            ${goodFeelings.map(([k,v]) => `<span class="chip chip-green" style="font-size:11px">${k}${v}×</span>`).join('') || '<span class="chip" style="font-size:11px">待观察</span>'}
+            ${Object.entries(feelingMap).filter(([k]) => ['舒服','有精神'].includes(k)).map(([k,v]) => `<span class="chip chip-green" style="font-size:11px">${k}${v}×</span>`).join('')}
           </div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
-        <div style="background:rgba(255,255,255,.62);border-radius:12px;padding:10px">
-          <p style="font-size:11px;color:var(--ink60);margin-bottom:4px">粗估热量</p>
-          <p style="font-size:16px;font-weight:800;color:var(--accent)">${avgCal ? `约${avgCal} kcal/餐` : '待确认'}</p>
-        </div>
-        <div style="background:rgba(255,255,255,.62);border-radius:12px;padding:10px">
-          <p style="font-size:11px;color:var(--ink60);margin-bottom:4px">蛋白质</p>
-          <p style="font-size:16px;font-weight:800;color:var(--green)">${avgProtein ? `约${avgProtein} g/餐` : '待确认'}</p>
         </div>
       </div>
       <p style="font-size:12px;color:var(--ink);margin-top:10px;line-height:1.5">${suggestion}</p>
@@ -6938,11 +5525,14 @@ function renderWeeklyReportSection(allMeals){
 
 // 初始化
 function initApp(){
-  loadUserSession();
-  if(currentUser) loadMealsForUser();
-  navBackTarget='roadmap';
-  renderRoadmap();
-  show('roadmap');
+  if(loadUserSession()){
+    loadMealsForUser();
+    renderRoadmap();
+    show('onboard');
+  } else {
+    renderLogin();
+    show('login');
+  }
 }
 
 window.addEventListener('load', initApp);
