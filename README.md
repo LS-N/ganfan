@@ -2,22 +2,57 @@
 
 干饭是一款 AI 饮食决策 App，目标是帮助用户记录饮食、判断当天饮食状态，并给出下一餐可执行建议。
 
-## Current Status
+## 当前状态
 
-当前阶段：MVP 0.0 工程入场。
+当前仓库处于工作区治理和总纲对齐阶段。
 
-现在不要直接开发完整 MVP 0.1 业务闭环。当前优先目标是完成可运行、可测试、可通过 EAS Update 热更新的移动端工程底座。
+唯一主路径：
 
-开发状态和阶段计划见：
+```text
+F:\ganfan
+```
 
-- `docs/PROJECT_STATUS.md`
+权威总纲：
 
-## Development Entry
+```text
+05_ai-coding/ganfan-full-implementation-plan.md
+```
 
-1. 先看 `docs/PROJECT_STATUS.md`，确认当前阶段和下一步。
-2. 再看 `START_HERE.md` 和 `AGENTS.md`，确认开发约束。
-3. 工程任务看 `05_ai-coding/mvp-0.0-engineering-entry.md`。
-4. MVP 0.1 业务开发必须等 `03_prd/mvp-0.1/mvp-0.1-prd-v1-coding.md` 回填完成。
+当前阶段入口：
+
+```text
+05_ai-coding/current-phase.md
+```
+
+## 开发入口
+
+新 Agent 或开发者进入仓库后，按顺序阅读：
+
+1. `05_ai-coding/current-phase.md`
+2. `05_ai-coding/ganfan-full-implementation-plan.md`
+3. `AGENTS.md`
+4. 当前任务文件
+
+不要以 `.claude/worktrees/*` 作为开发目录。那些目录是工具工作树，只可参考。
+
+## 当前工程形态
+
+短期工程仍在根目录：
+
+```text
+app/               Expo Router entry files
+src/               App code: components, screens, services, stores, styles, types
+```
+
+总纲目标可能演进为：
+
+```text
+apps/mobile/
+services/ai/
+supabase/
+```
+
+是否迁移到完整 monorepo，需要单独确认后执行。
 
 ## Commands
 
@@ -26,7 +61,7 @@ npm install
 npm run lint
 npm run typecheck
 npm test
-npm start
+npm run web
 ```
 
 Preview OTA update:
@@ -38,28 +73,18 @@ npm run eas:update:preview
 ## Project Map
 
 ```text
-app/               Expo Router entry files
-src/               App code: components, screens, services, styles, types
+app/               Current Expo Router entry files
+src/               Current app code
 01_product/        Product north star and roadmap
-02_architecture/   Technical architecture and platform strategy
-03_prd/            MVP PRDs
-04_prototype/      Prototype outputs and page flow
-05_ai-coding/      AI coding tasks and task breakdown
-06_delivery/       Release checklist and acceptance docs
-docs/              Current project status and engineering notes
+02_architecture/   Architecture notes
+03_prd/            PRDs
+04_prototype/      Product prototypes and archived prototype snapshots
+05_ai-coding/      Active AI development docs and total implementation plan
+06_delivery/       Release and acceptance docs
+docs/              Project status and engineering notes
 ```
 
-## MVP Direction
+## 注意
 
-- MVP 0.0: engineering entry and release/update pipeline.
-- MVP 0.1: diet logging loop after prototype and PRD V1 are confirmed.
-- MVP 0.2: AI next-meal advice.
-- MVP 0.3: trend review and diet recap.
-- MVP 1.0: personal diet decision system.
+当前仓库存在未提交的 Phase 1/Phase 2 代码和旧文档改动。提交前必须按阶段拆分，不要 `git add .`。
 
-## Current Blockers Before MVP 0.1
-
-- Stabilize Android emulator or connect a physical Android device for preview verification.
-- Expo project is linked as `@ls-n/ganfan`.
-- GitHub Actions EAS preview update from `dev` is verified.
-- Confirm MVP 0.1 prototypes and fill PRD V1 before business development.

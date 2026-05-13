@@ -2,101 +2,82 @@
 
 ## Current Stage
 
-Current stage: MVP 0.1 specification preparation.
+Current stage: workspace governance and full-plan alignment.
 
-The MVP 0.0 engineering baseline is ready for continued development. Full MVP 0.1 business coding should still wait for prototype confirmation and PRD V1 completion.
+The repository previously contained conflicting execution entry points:
 
-## Stage Plan
+- Older MVP 0.0 / MVP 0.1 engineering-entry docs.
+- A lightweight Phase 1 / Phase 2 mock-first plan.
+- The complete implementation plan generated in a Claude worktree.
 
-| Stage | Goal | Main Work | Exit Criteria |
-|---|---|---|---|
-| MVP 0.0 Engineering Entry | Build the mobile engineering baseline | Expo + TypeScript app, Expo Router, page shells, base components, design tokens, CI, EAS config, preview OTA flow | App opens on phone, at least 5 page entries exist, CI runs, preview OTA can update phone |
-| MVP 0.1 Diet Logging Loop | Let users record meals and see today's diet state | Home, record, detail, history, profile pages; local/mock data flow; meal record types; today's intake summary | Prototype confirmed, PRD V1 filled, meal can be saved, home state updates, tests pass |
-| MVP 0.2 AI Meal Advice | Turn meal data into actionable next-meal advice | Single-meal analysis, next-meal recommendation, AI JSON schema, prompt rules, fallback output | AI advice is specific, safe, parseable, and has fallback when AI fails |
-| MVP 0.3 Trends and Review | Help users understand longer-term eating patterns | Weekly trends, diet structure review, behavior recap, history summaries | User can review trends and get non-anxious adjustment suggestions |
-| MVP 1.0 Personal Diet Decision System | Complete the record-analysis-advice-review loop | Stable account/data model, production release process, long-term personalization, analytics, reliability | Production-ready mobile product with a sustainable decision loop |
+The complete implementation plan is now the authority:
 
-## MVP 0.0 Checklist
+```text
+05_ai-coding/ganfan-full-implementation-plan.md
+```
 
-- [x] GitHub repository exists.
-- [x] Root project structure is cleaned up.
-- [x] Expo project files exist.
-- [x] TypeScript is configured.
-- [x] Expo Router entry exists.
-- [x] Base `src/` structure exists.
-- [x] Base design tokens exist.
-- [x] Base components exist.
-- [x] Home page shell is connected.
-- [x] Five page entries are connected through `app/`.
-- [x] Local lint, typecheck, and test commands pass.
-- [x] Expo config is readable.
-- [x] `npm start` starts the Expo Metro Bundler locally.
-- [ ] Android preview is verified on a device or emulator.
-- [x] CI is verified on GitHub.
-- [x] EAS preview update is verified locally.
-- [x] GitHub Actions EAS preview update is verified on `dev`.
-- [x] README contains current run and release commands.
+The current phase entry is:
 
-Deferred device validation:
+```text
+05_ai-coding/current-phase.md
+```
 
-- [ ] Android preview and preview OTA should be verified on a physical device or stable emulator before any external tester release.
+## Unique Workspace
 
-## MVP 0.1 Entry Conditions
+Formal development must happen only in:
 
-Do not begin full MVP 0.1 business development until these are true:
+```text
+F:\ganfan
+```
 
-- [ ] Home prototype confirmed.
-- [ ] Record page prototype confirmed.
-- [ ] Detail page prototype confirmed.
-- [ ] History page prototype confirmed.
-- [ ] Profile page prototype confirmed.
-- [ ] Page flow confirmed.
-- [ ] Component usage confirmed.
-- [ ] State model confirmed.
-- [ ] `03_prd/mvp-0.1/mvp-0.1-prd-v1-coding.md` is filled with final page specs.
+The following paths are tool worktrees or caches and must not be used as the project root:
 
-Allowed before MVP 0.1 entry:
+```text
+F:\ganfan\.claude\worktrees\*
+C:\Users\a\.codex\worktrees\*
+```
 
-- Engineering baseline.
-- Page shells.
-- Base components.
-- Mock data.
-- Tests and CI.
-- EAS Update pipeline.
+## Current Decision State
 
-Not allowed before MVP 0.1 entry:
+The project must pause further feature expansion until these decisions are made:
 
-- Complete diet logging business loop.
-- Real AI service integration.
-- Real payment.
-- Complex user system.
-- Native plugin expansion.
-- Unconfirmed pages, fields, or components.
+- Whether to migrate from root Expo App to `apps/mobile`.
+- Whether to introduce `services/ai` FastAPI now.
+- Whether to introduce `supabase/migrations` now.
+- Whether to add native dependencies such as `expo-sqlite`, `expo-camera`, `expo-image-manipulator`, and `expo-notifications`.
+- How to split and preserve the already-created lightweight Phase 1 / Phase 2 code.
 
-## Immediate Next Work
+## Working Tree State
 
-1. Fill `03_prd/mvp-0.1/mvp-0.1-prd-v1-coding.md` with a development-ready MVP 0.1 spec.
-2. Confirm page flow, state model, component usage, and MVP 0.1 acceptance criteria.
-3. Start MVP 0.1 implementation only after the PRD V1 spec is approved.
+The working tree currently contains mixed changes:
 
-## Backlog
+- Workspace governance docs.
+- Lightweight Phase 1 app code.
+- Early Phase 2 service/test code.
+- Historical docs and prototype backup changes.
 
-- Verify Android preview on a physical device or stable emulator.
-- Verify that a phone or emulator receives the preview OTA update.
+Do not run `git add .`.
 
-## Key Commands
+Future commits should be split by intent:
+
+1. Workspace governance and authority-doc alignment.
+2. Preserved Phase 1 app code, if accepted.
+3. Phase 2 service/test code, if accepted.
+4. Historical docs/prototype archives, only if intentionally needed.
+
+## Commands
 
 ```powershell
 npm install
 npm run lint
 npm run typecheck
 npm test
-npm start
-npm run eas:update:preview
+npm run web
 ```
 
-## Manual Configuration Still Needed
+## Current Blockers
 
-- Expo project is linked as `@ls-n/ganfan`.
-- GitHub Actions EAS preview update is configured with `EXPO_TOKEN` and verified from `dev`.
-- Configure Supabase and OpenAI secrets only when the project reaches the relevant MVP stage.
+- Authority docs must be committed before more development.
+- The current code path must be reconciled with the full implementation plan.
+- `.claude/` and other tool/cache paths must remain ignored by tooling and Git.
+
