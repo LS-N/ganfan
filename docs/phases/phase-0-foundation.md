@@ -1,35 +1,46 @@
-# Phase 0: 工程底座与基础组件库
+# Phase 0: Sprint 0 工程底座与基础组件库
 
-来源：`docs/02-master-blueprint.md` 的 `Sprint 0 — 工程底座与基础组件库`。
+来源：`docs/02-master-blueprint.md` 第 1819-1917 行。
+
+本文件是蓝图任务映射，不得改写任务编号。开发时只能在对应任务下补充执行说明，不能新增脱离蓝图的任务。
 
 ## 阶段目标
 
-搭建可运行、可测试、可持续部署的工程底座，建立主题系统和基础组件库，确保后续 MVP 1.0 到 5.0 的开发不再重复搭建基础设施。
+搭建可运行的工程环境，建立主题系统和所有基础组件，后续 Sprint 直接复用。
 
-## 范围
+## 周期与完成判定
 
-- 工程初始化。
-- 移动端主题 token。
-- 基础组件库。
-- CI、类型检查、测试基础。
-- 环境变量样例。
+- 周期：1 Sprint，2 周。
+- 完成判定：App 在模拟器运行，组件预览页展示所有基础组件的所有状态，无 TypeScript 错误。
 
-## 任务拆解
+## Sprint 0: 工程初始化
 
-| 任务 | 开发目标 | 交付物 |
+| 任务 | 产出 | 验收 |
 |---|---|---|
-| Sprint 0-01 | 初始化 Expo / React Native 工程 | 可运行的移动端工程、基础路由、TypeScript 配置 |
-| Sprint 0-02 | 建立主题系统 | 色彩、字体、间距、圆角 token |
-| Sprint 0-03 | 建立基础组件库 | Button、Card、Input、Tag、Loading、Empty、Error 等基础组件 |
-| Sprint 0-04 | 建立测试与质量门禁 | lint、typecheck、test 命令和 CI 基础 |
-| Sprint 0-05 | 建立环境变量规范 | `.env.example`，禁止真实密钥进入代码 |
+| T0-00a 初始化 Monorepo | `ganfan/` 目录结构、`pnpm-workspace.yaml`、根 `package.json` | `pnpm install` 无报错 |
+| T0-00b 初始化 Expo App | `apps/mobile/` 完整 Expo + TypeScript 项目 | `npx expo start` 在模拟器显示空白界面 |
+| T0-00c 配置 Expo Router + TabBar | `app/(tabs)/_layout.tsx`，4 个 Tab：首页 / 记录 / 历史 / 我 | 4 个 Tab 可切换，无报错，tabbar 吸底显示 |
+
+以上三步是组件开发前置。当前仓库仍处于根目录 Expo App 过渡结构；如果不迁移 monorepo，必须在任务记录中说明与蓝图目标结构的差异和用户确认结果。
+
+## Sprint 0: 主题与组件基础
+
+| 任务 | 产出 | 验收 |
+|---|---|---|
+| T0-01 主题系统 | `src/theme/colors.ts`、`src/theme/typography.ts`、`src/theme/spacing.ts`、`src/theme/index.ts` | 所有 token 可从 `@/theme` 导入，无硬编码颜色/数字散落在组件中 |
+| T0-02 布局组件 | `src/components/layout/NavBar.tsx`、`TabBar.tsx`、`PageContainer.tsx`、`Section.tsx` | 四个组件渲染正确，符合设计规范尺寸 |
+| T0-03 卡片与容器组件 | `src/components/base/Card.tsx`、`CardSoft.tsx`、`Sheet.tsx` | Card 白底 border，CardSoft cream 背景，Sheet 动画正确 |
+| T0-04 按钮组件 | `PrimaryButton.tsx`、`GhostButton.tsx`、`OutlineButton.tsx`、`IconButton.tsx` | PrimaryButton loading 显示 spinner；disabled 透明度 0.4；所有按钮有 press 反馈 |
+| T0-05 选择控件 | `ScoreButton.tsx`、`OnboardingOption.tsx`、`SegmentTabs.tsx` | 选中状态颜色切换正确，SegmentTabs 滑块动画流畅 |
+| T0-06 展示组件 | `Label.tsx`、`Chip.tsx`、`RiskBar.tsx`、`AdviceBox.tsx`、`MealItemRow.tsx`、`DayDot.tsx`、`ProgressBar.tsx` | 所有变体在预览页可见 |
+| T0-07 反馈与状态组件 | `Toast.tsx` + `useToast()`、`EmptyState.tsx`、`LoadingSpinner.tsx`、`UploadZone.tsx` | `Toast.show('xxx')` 底部弹出后自动消失；EmptyState 居中布局正确 |
+| T0-08 组件预览页 | `app/dev/components.tsx`，仅开发环境注册 | 开发模式可访问 `/dev/components`，看到所有基础组件渲染结果 |
 
 ## 非目标
 
-- 不接真实 AI。
-- 不创建生产 Supabase migration。
-- 不实现业务闭环。
-- 不新增蓝图外的页面或服务。
+- 不实现 MVP 1.0 业务闭环。
+- 不接真实 Supabase、FastAPI、AI secret。
+- 不创建生产数据库 migration，除非用户明确批准。
 
 ## 关联验收
 

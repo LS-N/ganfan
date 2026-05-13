@@ -2,6 +2,38 @@
 
 本文件记录所有 Agent 或人工开发的开始与结束。任何正式开发都必须先写开始记录，结束前补结束记录。
 
+## 2026-05-13 22:57:12 +08:00 - Codex - START
+
+- 阶段：文档治理 / 蓝图任务映射修正
+- Sprint：无
+- 任务编号：DOCS-blueprint-task-mapping
+- 任务目标：将 `docs/phases/` 和 `docs/acceptance/` 严格对齐 `docs/02-master-blueprint.md` 第 1819-2624 行，保留蓝图任务编号、产出、逻辑和验收口径，避免阶段文档过度总结导致 AI 漏任务。
+- 预计触碰范围：`docs/phases/*.md`、`docs/acceptance/phase-*-acceptance.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 需要用户批准：不需要；用户已明确要求补齐。
+- 开始前状态：阶段文档当前只是高层摘要，Phase 0 / Phase 1 已确认存在蓝图任务漏项；工作区另有本任务外代码和 package 修改，不能混入本次提交。
+
+## 2026-05-13 23:04:59 +08:00 - Codex - END
+
+- 阶段：文档治理 / 蓝图任务映射修正
+- Sprint：无
+- 任务编号：DOCS-blueprint-task-mapping
+- 完成内容：将 `docs/phases/phase-0-foundation.md` 到 `phase-5-mvp-5-fulfillment-community.md` 改为严格蓝图任务映射，覆盖 `docs/02-master-blueprint.md` 第 1819-2624 行的任务编号、产出、关键逻辑、验收/测试；将 `docs/acceptance/phase-0-acceptance.md` 到 `phase-5-mvp-5-acceptance.md` 改为逐任务验收清单，方便 Agent 结束时逐条打 `PASS` / `PARTIAL` / `FAIL` / `N/A`。
+- 修改文件：`docs/phases/phase-0-foundation.md`、`docs/phases/phase-1-mvp-1-record-awareness.md`、`docs/phases/phase-2-mvp-2-plan-recommendation.md`、`docs/phases/phase-3-mvp-3-goal-intervention.md`、`docs/phases/phase-4-mvp-4-health-integration.md`、`docs/phases/phase-5-mvp-5-fulfillment-community.md`、`docs/acceptance/phase-0-acceptance.md`、`docs/acceptance/phase-1-mvp-1-acceptance.md`、`docs/acceptance/phase-2-mvp-2-acceptance.md`、`docs/acceptance/phase-3-mvp-3-acceptance.md`、`docs/acceptance/phase-4-mvp-4-acceptance.md`、`docs/acceptance/phase-5-mvp-5-acceptance.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 验收文档：N/A，本次为文档治理任务，不属于 Phase 0-5 的产品实现；验收依据为用户要求“补齐阶段文档和验收文档，使其对齐蓝图 1819-2624 行”。
+- 验收结果：
+  - PASS：阶段开发文档覆盖 Sprint 0、MVP 1.0、MVP 2.0、MVP 3.0、MVP 4.0、MVP 5.0；关键任务编号抽查命中 `T0-00a`、`T0-08`、`T1-05`、`T2-09`、`T3-05`、`T4-01b`、`T4-06`、`T5-06`、`T6-07`、`T7-01`、`T10-02`、`T11-01`、`T14-01`、`T15-01`、`T19-01`、`T20-01`、`T25-02`；验收文档改为逐任务清单。
+  - PARTIAL：`npm run lint` 未通过，但失败来自本次任务外未提交代码 `src/services/localFirstRepositories.ts` 的未使用导入，不是本次文档改动。
+  - FAIL：无。
+  - N/A：业务功能、真机、Supabase、FastAPI、AI 服务验收不适用于本次文档治理。
+- 已运行命令：`git diff --check -- docs\phases docs\acceptance docs\CURRENT_WORK.md docs\TASK_LOG.md` 通过；任务编号 `rg` 抽查通过；`npm run typecheck` 通过；`npm run lint` 失败于本次任务外代码。
+- 未能验证的项目：无法在当前混合未提交工作区证明全仓 lint 通过。
+- 需要人工/真机/外部服务验证的项目：无。
+- Android/iOS 影响：无，文档治理。
+- 热更新影响：无。
+- 是否需要重新打包：不需要。
+- 遗留问题：工作区仍有本次任务外未提交代码/package 变更和 `_archive/docs-restructure-20260512/image.png`；`src/services/localFirstRepositories.ts` 存在 lint 错误。
+- 下一步：提交本次文档治理变更；后续处理本次任务外代码改动时，应先修复 lint 错误并按对应 Phase 验收文档逐条验收。
+
 ## 记录模板
 
 ```text

@@ -6,12 +6,12 @@
 
 | 字段 | 内容 |
 |---|---|
-| 更新时间 | 2026-05-13 22:51:26 +08:00 |
+| 更新时间 | 2026-05-13 23:04:59 +08:00 |
 | 当前负责人 | Codex |
-| 当前阶段 | Phase 1 / MVP 1.0 记录感知 |
-| 当前 Sprint | Sprint 1-6 范围评估，待用户确认具体补齐批次 |
-| 当前任务编号 | Phase 1 / MVP 1.0 补齐 |
-| 状态 | 计划确认中；已允许修改代码和文档，但代码实现需先给出 Phase 1 补齐计划并得到用户确认 |
+| 当前阶段 | 文档治理 / 蓝图任务映射修正 |
+| 当前 Sprint | 无 |
+| 当前任务编号 | DOCS-blueprint-task-mapping |
+| 状态 | 已完成 |
 | 总蓝图 | `docs/02-master-blueprint.md` |
 | 阶段开发文档 | `docs/phases/phase-1-mvp-1-record-awareness.md` |
 | 阶段验收文档 | `docs/acceptance/phase-1-mvp-1-acceptance.md` |
@@ -30,4 +30,4 @@
 
 ## 最近一次交接摘要
 
-Phase 0 已按 `docs/audits/phase-0-1-gap-audit.md` 的差异清单完成补齐，最近 commit 为 `af833cb chore: complete phase 0 foundation`。当前已进入 Phase 1 / MVP 1.0 补齐的计划确认阶段；未新增原生依赖，未接 Supabase、FastAPI、真实 AI secret，未创建 migration。开发流程治理已补充结束验收铁律：任何 Agent 结束前必须逐条对照当前阶段验收文档，并把 `PASS` / `PARTIAL` / `FAIL` / `N/A` 结果写入 `docs/TASK_LOG.md`。
+已完成阶段开发文档和验收文档的蓝图任务映射修正，使其严格覆盖 `docs/02-master-blueprint.md` 第 1819-2624 行中的 Sprint 0、MVP 1.0、MVP 2.0、MVP 3.0、MVP 4.0、MVP 5.0 任务编号、产出、逻辑和验收口径。当前仅做文档治理，未修改业务代码；工作区内仍有其他未提交代码改动，不得混入本次提交。`npm run typecheck` 通过；`npm run lint` 因本次任务外的 `src/services/localFirstRepositories.ts` 未使用导入失败。
