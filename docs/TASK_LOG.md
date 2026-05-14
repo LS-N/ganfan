@@ -122,6 +122,28 @@
 - 需要用户批准：已获用户“批准”执行真实产品 Phase 1；不会写入真实 AI secret，不会伪造 Supabase/EAS/真机验收结果。
 - 开始前状态：最近 Phase 1 commit 为 `173da16 feat(phase-1): add real product record awareness foundation`；工作区仅有既有未跟踪 `_archive/docs-restructure-20260512/image.png`。
 
+## 2026-05-14 11:08:51 +08:00 - Codex - END
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 1-6 真实环境验收执行
+- 任务编号：Phase 1 / MVP 1.0 验收推进
+- 完成内容：执行本机可自动化验收；修复 FastAPI 分析接口缺少 `nutrition_source` 的契约问题，并新增 `/v1/nutrition/search` mock endpoint；使用 bundled Python 3.12 + 临时依赖启动 AI service，验证 `/health`、`/v1/meal/analyze`、`/v1/nutrition/search`；运行移动端 lint/typecheck/test；启动 Expo Web 并确认 `http://localhost:8082` 返回 200；确认 EAS CLI 登录和项目识别，提交并完成 Android preview build `38d4960f-a69d-45ef-bb4d-12296adee98e`，产出 APK `https://expo.dev/artifacts/eas/822q3L29Dvn7g3TErrHGS3.apk`。
+- 修改文件：`services/ai/routers/analyze.py`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 验收文档：`docs/acceptance/phase-1-mvp-1-acceptance.md`
+- 验收结果：
+  - PASS：必跑命令 `npm run lint`、`npm run typecheck`、`npm test`；T2-01 本地 FastAPI 服务可启动，`/health` 返回 ok；T2-02 分析接口包含 `nutrition_source=ai_estimate`，营养搜索接口返回 top5；Expo Web 基础服务返回 200；EAS CLI 已登录且项目 `@ls-n/ganfan` 可识别；Android preview build 完成并产出 APK。
+  - PARTIAL：Sprint 1 数据层仅完成本地文件和 migrations 准备，未在真实 Supabase 项目执行；Sprint 2 AI 仍是 mock provider，不是真实 Vision/pgvector；Sprint 6 EAS 云构建成功，但本机无 `adb`，尚未证明 APK 可安装和真机稳定运行。
+  - FAIL：Supabase CLI 通过 `npx --yes supabase@2.98.2` 在本机超时/异常退出，且缺 `supabase/config.toml`、`.env`，因此无法执行真实 migrations；本机无 `adb`，无法执行 Android 真机验收。
+  - N/A：Phase 2 及以后计划推荐、目标干预、健康整合、社区履约均不适用于本次 Phase 1 验收推进。
+- 已运行命令：`python --version`；`node --version`；`npm --version`；`npx --yes eas-cli whoami`；`npx --yes eas-cli project:info`；`npx --yes supabase@2.98.2 --help`（超时）；bundled Python 3.12 临时安装 FastAPI 依赖；`Invoke-RestMethod http://127.0.0.1:8000/health`；`POST http://127.0.0.1:8000/v1/meal/analyze`；`GET http://127.0.0.1:8000/v1/nutrition/search?q=东坡肉`；`npm run lint`；`npm run typecheck`；`npm test`；`npx --yes eas-cli build --profile preview --platform android --non-interactive --no-wait`；`npx --yes eas-cli build:view 38d4960f-a69d-45ef-bb4d-12296adee98e --json`；Expo Web 启动到 8082 并返回 200；`py_compile` 通过。
+- 未能验证的项目：真实 Supabase migrations/RLS/Storage bucket；`nutrition_items >= 1000` 和 embedding；真实 Anthropic/OpenAI AI provider；真机相机/通知/SQLite；断网 3 餐后联网同步；Android 24 小时稳定性；APK 真机安装。
+- 需要人工/真机/外部服务验证的项目：Supabase 项目链接和 CLI 修复；后端 AI secret 注入；Android 真机或模拟器环境；EAS build 完成后 APK 安装；5 台设备内测。
+- Android/iOS 影响：本轮触发 Android EAS preview build；未完成真机验证。iOS 未执行构建或真机验收。
+- 热更新影响：本轮 FastAPI contract 和文档可独立部署/更新；原生依赖相关验收仍要求重新打包。
+- 是否需要重新打包：Android preview 已完成；iOS 尚未构建。后续若修复原生配置仍需重新打包。
+- 遗留问题：Supabase CLI/项目配置阻塞；真实 AI provider 未接；真机验收未做；既有未跟踪 `_archive/docs-restructure-20260512/image.png` 未处理。
+- 下一步：安装 APK 到 Android 真机并跑完整 Phase 1 验收；修复/安装 Supabase CLI 后链接真实项目执行 migrations；配置 `meal-photos` Storage；接真实 AI provider。
+
 ## 2026-05-13 23:11:13 +08:00 - Codex - END
 
 - 阶段：Phase 1 / MVP 1.0 记录感知

@@ -32,9 +32,44 @@ def analyze_meal(payload: AnalyzeMealRequest) -> dict:
         "vegetableFiberLevel": "low",
         "oilLevel": "medium",
         "portionLevel": "medium",
+        "nutrition": {
+            "calories": 650,
+            "protein_g": 28,
+            "fat_g": 22,
+            "carb_g": 78,
+            "fiber_g": 5,
+            "sodium_mg": 980,
+        },
+        "nutrition_source": "ai_estimate",
+        "matched_nutrition_id": None,
+        "match_confidence": None,
         "riskHints": ["蔬菜纤维可能偏少"],
         "eatingAdvice": ["先吃蛋白和蔬菜，再吃主食。", "吃完后记录饱腹和消化感受。"],
         "feedbackFocus": ["饭后 1 小时是否困倦", "有没有胀气或太撑"],
         "confidence": "low",
         "imageQualityNote": "mock provider 不做真实图像识别，只验证服务边界和数据结构。",
     }
+
+
+@router.get("/nutrition/search")
+def search_nutrition(q: str) -> dict:
+    items = [
+        {
+            "dish_name": "红烧肉",
+            "score": 1.0 if q in ["红烧肉", "东坡肉"] else 0.72,
+            "nutrition_source": "mock_seed",
+            "nutrition_per_100g": {
+                "calories": 395,
+                "protein_g": 13.0,
+                "fat_g": 35.0,
+                "carb_g": 6.0,
+                "fiber_g": 0.2,
+                "sodium_mg": 520,
+            },
+        },
+        {"dish_name": "番茄鸡蛋", "score": 0.64, "nutrition_source": "mock_seed"},
+        {"dish_name": "牛肉饭", "score": 0.58, "nutrition_source": "mock_seed"},
+        {"dish_name": "清汤麻辣烫", "score": 0.54, "nutrition_source": "mock_seed"},
+        {"dish_name": "鸡胸肉沙拉", "score": 0.51, "nutrition_source": "mock_seed"},
+    ]
+    return {"query": q, "items": items[:5]}
