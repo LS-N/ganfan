@@ -2,6 +2,38 @@
 
 本文件记录所有 Agent 或人工开发的开始与结束。任何正式开发都必须先写开始记录，结束前补结束记录。
 
+## 2026-05-14 21:13:37 +08:00 - Codex - START
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 4 真实 env 与真机端到端验收
+- 任务编号：Phase 1 / Real env phone E2E
+- 任务目标：在用户明确同意后，把真实 Supabase 与 SiliconFlow 配置写入本机 gitignored `.env`，启动 FastAPI 真实 provider 和真机可访问的移动端配置，执行真实拍照/上传/signed URL/vision analyze 验收。
+- 预计触碰范围：本机 `.env`、`services/ai/.env`、启动脚本或运行命令、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`；如发现代码阻塞，只修改 Phase 1 必要范围。
+- 需要用户批准：已批准“写进去，我们要的是真实可用的”；不得提交 `.env` 或真实 secret。
+- 开始前状态：最近提交 `86ec90f feat(phase-1): use signed urls for meal photos`；当前工作区仍有任务外 SOP/资源索引文档改动和既有未跟踪图片；当前 shell 未找到 `adb`，需要重新定位 Android Platform Tools。
+
+## 2026-05-14 21:30:43 +08:00 - Codex - END
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 4 真实 env 与真机端到端验收
+- 任务编号：Phase 1 / Real env phone E2E
+- 完成内容：在用户明确批准后写入本机 gitignored `.env` 和 `services/ai/.env`；重新定位 Android Platform Tools；安装 FastAPI 运行依赖到本机忽略目录 `services/ai/.runtime-deps/`；以临时后台 Job 启动 FastAPI 真实 provider；上传合成餐图到私有 Supabase `meal-photos` bucket，生成 10 分钟 signed URL，并调用 `/v1/meal/analyze` 走 SiliconFlow vision provider，返回结构化营养结果且未降级；真机 ADB reverse `tcp:8000` 已设置，App 可启动并保持进程。
+- 修改文件：`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`；本机未提交文件：`.env`、`services/ai/.env`、`services/ai/.runtime-deps/`。
+- 验收文档：`docs/acceptance/phase-1-mvp-1-acceptance.md`
+- 验收结果：
+  - PASS：真实 env 已进入本机运行配置且不纳入 Git；私有 Storage 上传成功；signed URL 生成成功；FastAPI 真实 provider 可读取 signed URL 并调用 SiliconFlow vision；返回 `dishName`、`nutrition_source`、`confidence` 和结构化 `nutrition`；`fallback=false`；ADB 真机可见并已设置 `tcp:8000` reverse；App 可启动且进程存在。
+  - PARTIAL：当前真机安装包未重新构建/更新，不能证明手机 UI 已加载本轮最新 JS 与 `.env`；真机内“实际拍照 -> 上传 -> 分析 -> 保存结果”的 UI 操作链路仍需在更新包或 dev server 下继续验收。
+  - FAIL：无。
+  - N/A：Phase 2 及后续个性化、长期反馈、商业化功能不属于本轮。
+- 已运行命令：写入 `.env`/`services/ai/.env`；`adb devices -l`；`adb reverse tcp:8000 tcp:8000`；`pip install -r services/ai/requirements.txt --target services/ai/.runtime-deps`；临时启动 `uvicorn main:app`；Supabase Storage upload/create signed URL；`POST http://127.0.0.1:8000/v1/meal/analyze`；`adb shell monkey -p com.ganfan.app -c android.intent.category.LAUNCHER 1`；`adb shell pidof com.ganfan.app`；`npm.cmd run lint` 通过；`npm.cmd run typecheck` 通过；`npm.cmd test` 通过。
+- 未能验证的项目：未用真机相机实拍完成 UI 内完整链路；未重新打包或启动 dev server 给真机加载最新 JS/env。
+- 需要人工/真机/外部服务验证的项目：下一步需要决定用 Expo dev server、EAS update，或重新构建 Android 包，把 `.env` 和最新 JS 下发到真机后再做 UI 内实拍验收。
+- Android/iOS 影响：无新增原生依赖；Android 真机基础启动和端口 reverse 通过；iOS 未实测。
+- 热更新影响：真实 env 和 JS 变更需要通过 dev server、EAS update 或新包下发；本轮未执行 EAS update。
+- 是否需要重新打包：若继续用当前已安装包验收最新 JS/env，需要重新构建或走 dev server/EAS update；后端和 Supabase 侧不需要重新打包。
+- 遗留问题：手机 UI 仍未完成实拍闭环；当前工作区仍有任务外 SOP/资源索引文档改动和既有未跟踪图片，本轮不混入提交。
+- 下一步：启动 Expo dev server 或执行 Android 构建/更新包，让真机加载当前 JS/env；再执行 UI 内拍照、上传、signed URL、vision analyze、结果保存的最终 Phase 1 验收。
+
 ## 2026-05-14 17:27:44 +08:00 - Codex - START
 
 - 阶段：Phase 1 / MVP 1.0 记录感知
