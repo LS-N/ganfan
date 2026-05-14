@@ -6,7 +6,7 @@ import { getSupabaseClient } from "./supabaseClient"
 import { authService } from "./authService"
 
 type ProfileRow = {
-  id: string
+  user_id: string
   age_range: Profile["ageRange"] | null
   gender: Profile["gender"] | null
   height_cm: number | null
@@ -25,7 +25,7 @@ export function profileFromRow(row: ProfileRow): Profile {
   const weight = row.weight_kg ?? mockProfile.weight
   return {
     ...mockProfile,
-    id: row.id,
+    id: row.user_id,
     ageRange: row.age_range ?? undefined,
     gender: row.gender ?? "unknown",
     heightCm: row.height_cm ?? undefined,
@@ -45,7 +45,7 @@ export function profileFromRow(row: ProfileRow): Profile {
 
 export function profileToRow(profile: Profile, userId = profile.id): ProfileRow {
   return {
-    id: userId,
+    user_id: userId,
     age_range: profile.ageRange ?? null,
     gender: profile.gender ?? "unknown",
     height_cm: profile.heightCm ?? profile.height ?? null,
@@ -67,7 +67,7 @@ export function createProfileRepository(): ProfileRepository {
       if (!client) return mockProfileRepository.getCurrentProfile()
 
       const userId = await authService.getUserId()
-      const { data, error } = await client.from("profiles").select("*").eq("id", userId).maybeSingle<ProfileRow>()
+      const { data, error } = await client.from("profiles").select("*").eq("user_id", userId).maybeSingle<ProfileRow>()
       if (error || !data) return mockProfileRepository.getCurrentProfile()
       return profileFromRow(data)
     },

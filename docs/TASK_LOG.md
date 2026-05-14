@@ -2,6 +2,38 @@
 
 本文件记录所有 Agent 或人工开发的开始与结束。任何正式开发都必须先写开始记录，结束前补结束记录。
 
+## 2026-05-14 16:11:01 +08:00 - Codex - START
+
+- 阶段：开发流程治理 / 资源与密钥索引
+- Sprint：无
+- 任务编号：SOP-resource-registry
+- 任务目标：新增资源与密钥索引，规定账号、token、API key、项目资源、设备和数据集的记录方式，让任何 AI 知道需要哪些资源、真实值放在哪里、如何验证，同时禁止把真实密钥写入仓库。
+- 预计触碰范围：`docs/resources/`、`docs/00-INDEX.md`、`docs/development-sop/LATEST.md`、`AGENTS.md`、`docs/01-ai-working-manual.md`、`docs/TASK_LOG.md`
+- 需要用户批准：不需要；用户已明确要求更新。
+- 开始前状态：已有 `.env.example` 和 `services/ai/.env.example`，但缺少统一资源索引；当前另有进行中的 Phase 1 Supabase 真实数据层验收记录和未跟踪 `supabase/config.toml`，本次不处理真实 Supabase 连接和业务代码。
+
+## 2026-05-14 16:13:25 +08:00 - Codex - END
+
+- 阶段：开发流程治理 / 资源与密钥索引
+- Sprint：无
+- 任务编号：SOP-resource-registry
+- 完成内容：新增 `docs/resources/README.md` 和 `docs/resources/RESOURCE_REGISTRY.md`，定义资源与密钥索引、安全规则、本地存放约定、当前 Supabase/Storage/pgvector/营养库/AI Provider/Android/EAS 资源清单、验证方式和缺失降级口径；更新 `docs/00-INDEX.md` 增加资源索引入口；更新 `AGENTS.md` 和 `docs/01-ai-working-manual.md`，要求真实联调、migration、AI provider、云资源、真机验收或数据导入前先读取资源索引；更新 `docs/development-sop/LATEST.md` 的更新记录和前置资源 Gate。
+- 修改文件：`docs/resources/README.md`、`docs/resources/RESOURCE_REGISTRY.md`、`docs/00-INDEX.md`、`docs/development-sop/LATEST.md`、`AGENTS.md`、`docs/01-ai-working-manual.md`、`docs/TASK_LOG.md`
+- 验收文档：N/A，本次为开发流程治理，不属于 Phase 0-5 产品实现。
+- 验收结果：
+  - PASS：资源索引目录已建立；索引明确不记录真实密钥；索引记录变量名、存放位置、状态和验证方式；AGENTS 和 AI 工作手册已要求真实联调前读取资源索引；SOP 已加入资源索引更新记录和 Gate 要求。
+  - PARTIAL：无。
+  - FAIL：无。
+  - N/A：真实 Supabase migration、真实 AI provider、Android 真机、营养库导入、EAS 构建均不适用于本次文档治理。
+- 已运行命令：`git diff --check -- AGENTS.md docs/00-INDEX.md docs/01-ai-working-manual.md docs/development-sop/LATEST.md docs/resources docs/TASK_LOG.md` 通过，仅有 LF/CRLF 工作区提示；`Select-String` 确认入口文档已引用 `RESOURCE_REGISTRY`；`Select-String` 检查资源索引未发现真实 key 模式，仅包含变量名示例。
+- 未能验证的项目：无。
+- 需要人工/真机/外部服务验证的项目：无。
+- Android/iOS 影响：无，文档治理。
+- 热更新影响：无。
+- 是否需要重新打包：不需要。
+- 遗留问题：进行中的 Phase 1 Supabase 真实数据层验收仍在 `docs/CURRENT_WORK.md` 中；未跟踪 `supabase/config.toml` 和 `_archive/docs-restructure-20260512/image.png` 本次未处理。
+- 下一步：后续 Phase 1 真实 Supabase 验收继续按 `docs/resources/RESOURCE_REGISTRY.md` 核对资源，不在文档或日志中回显真实值。
+
 ## 2026-05-14 11:37:04 +08:00 - Codex - START
 
 - 阶段：开发流程治理 / 通用开发 SOP
@@ -11,6 +43,38 @@
 - 预计触碰范围：`docs/development-sop/`、`docs/00-INDEX.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
 - 需要用户批准：不需要；用户已明确要求建立方案文件夹和第一版开发方案。
 - 开始前状态：仓库已有《干饭》项目蓝图、AI 工作手册、任务日志和阶段验收文档，但缺少一份项目无关的“需求到开发交付”标准 SOP；当前工作区仅有既有未跟踪 `_archive/docs-restructure-20260512/image.png`。
+
+## 2026-05-14 16:01:01 +08:00 - Codex - START
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 1 真实 Supabase 数据层验收
+- 任务编号：Phase 1 / Supabase migrations and seed
+- 任务目标：使用用户提供的 Supabase access token、project ref、anon key、service role key 和 DB 密码，临时注入本机环境变量，执行 Phase 1 Supabase link、migrations、基础 seed、营养库 seed 和数据库验收。
+- 预计触碰范围：`supabase/`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`；必要时修复 migration 可重复执行问题。不得提交真实密钥、`.env`、CLI 本地缓存或生成的大体量 seed。
+- 需要用户批准：已批准使用 Supabase 真实项目资源；密钥只允许本机临时使用，不写入仓库。
+- 开始前状态：最近提交 `e56f472 feat(phase-1): add real nutrition source tooling`；工作区仅有既有未跟踪 `_archive/docs-restructure-20260512/image.png`。
+
+## 2026-05-14 16:16:10 +08:00 - Codex - END
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 1 真实 Supabase 数据层验收
+- 任务编号：Phase 1 / Supabase migrations and seed
+- 完成内容：下载并使用 Supabase CLI `2.98.2` 官方二进制；`supabase init` 生成无密钥 `supabase/config.toml`；通过 direct DB URL 执行远端 dry-run 和真实 `db push`；已应用 `000_pgvector_nutrition.sql`、`001_phase1_core_tables.sql`；新增并应用 `002_phase1_app_contract_alignment.sql`，补齐当前 App Supabase repository 需要的 `meals` 字段、`analyses`、`analysis_corrections`、`feedbacks`、`body_puzzle_reports`、`draw_cards`、`meal-photos` bucket 和 Storage policies；修正 `profileRepository` 使用 `user_id`；通过 REST service role 导入中国食物成分库 1657 条。
+- 修改文件：`supabase/config.toml`、`supabase/migrations/002_phase1_app_contract_alignment.sql`、`src/services/profileRepository.ts`、`src/services/__tests__/profileRepository.test.js`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 验收文档：`docs/acceptance/phase-1-mvp-1-acceptance.md`
+- 验收结果：
+  - PASS：T1-01 远端 Supabase 存在 Phase 1 表，15 张 public 表启用 RLS；T1-05 `nutrition_items` 远端总数 1660，中国食物成分库 1657 条，`红烧肉` 精确查询有 1 条，`东坡肉` alias 有 1 条；T2-04 `meal-photos` Storage bucket 存在且有 4 条用户路径隔离 policy；必跑命令 `npm run lint`、`npm run typecheck`、`npm test` 通过。
+  - PARTIAL：T1-05 embedding 非空数量为 0，尚不能执行真实 pgvector 相似度搜索；T1-02/T1-03 远端表已具备，但 App 仍缺邮箱密码注册/登录 UI 验收，当前 `authService` 使用 anonymous sign-in fallback；T2-06 schema 已补齐，但未通过真机写入真实 Supabase 证明 `meals` 和 `analyses`/`meal_analysis` 均有记录。
+  - FAIL：当前 Supabase access token 被 CLI 判定格式无效，未能完成 `supabase link`；用户提供的测试 AI key 仍缺 API base URL、模型名和请求协议，无法生成真实 embeddings 或接真实 meal analyze provider。
+  - N/A：Phase 2 及以后计划推荐、目标干预、健康整合、社区履约不属于本次 Phase 1。
+- 已运行命令：`supabase init --yes`；`supabase db push --db-url ... --dry-run`；`supabase db push --db-url ... --include-seed --yes`；`supabase db push --db-url ... --yes`；`python services\ai\nutrition\import_china_food_data.py`；REST service role DELETE/POST 导入 `nutrition_items`；远端 SQL 验证 `nutrition_total=1660`、`nutrition_china_food=1657`、`nutrition_embedding_non_null=0`、`red_exact=1`、`dongpo_alias=1`、`public_tables=15`、`rls_enabled_public_tables=15`、`meal_photos_bucket=1`、`storage_policies=4`；`npm run lint`；`npm run typecheck`；`npm test`。
+- 未能验证的项目：真实 embedding 生成和 pgvector score；真实 AI provider；邮箱密码注册/登录；真机完整注册 -> 建档 -> 拍照 -> 分析 -> 反馈 -> 回访；断网 3 餐后联网同步；Android 24 小时稳定性；5 台设备内测。
+- 需要人工/真机/外部服务验证的项目：提供测试 AI key 对应 API base URL、模型名和请求协议；如需 Supabase linked CLI workflow，重新生成 access token；保持 Android 真机解锁亮屏继续 UI 链路验收。
+- Android/iOS 影响：本次仅修正 JS repository mapper 和远端 Supabase schema，不新增原生依赖；Android/iOS 真实服务模式均受益于 schema 对齐。
+- 热更新影响：`profileRepository` 修正可 OTA；Supabase 远端 schema 已变更，不依赖热更新。
+- 是否需要重新打包：本次不新增原生依赖，不必须重新打包；如果后续注入新的 EAS 环境变量，可用 EAS Update 或 preview build 验证。
+- 遗留问题：Phase 1 仍未完整完成；embedding 和真实 AI provider 阻塞；真实 Auth UI 与当前 anonymous fallback 存在产品差距；既有未跟踪 `_archive/docs-restructure-20260512/image.png` 未处理；本次任务外还存在资源索引相关文档改动，未混入本次提交。
+- 下一步：补 AI endpoint/base URL 后实现真实 provider 与 embedding 生成；继续真机亮屏 UI 验收；决定是否把 Auth 从 anonymous fallback 升级为 Phase 1 要求的邮箱密码注册登录。
 
 ## 2026-05-14 11:53:06 +08:00 - Codex - START
 

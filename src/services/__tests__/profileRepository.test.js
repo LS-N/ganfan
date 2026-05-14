@@ -5,7 +5,7 @@ describe("profileRepository mappers", () => {
   test("maps app profile fields to Supabase row", () => {
     const row = profileToRow(mockProfile, "user-123")
 
-    expect(row.id).toBe("user-123")
+    expect(row.user_id).toBe("user-123")
     expect(row.height_cm).toBe(mockProfile.heightCm)
     expect(row.avoidances).toEqual(mockProfile.avoidances)
   })
@@ -13,6 +13,7 @@ describe("profileRepository mappers", () => {
   test("maps Supabase row back to compatibility profile", () => {
     const profile = profileFromRow({
       id: "user-123",
+      user_id: "user-123",
       age_range: "25_34",
       gender: "unknown",
       height_cm: 170,
