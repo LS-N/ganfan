@@ -1,0 +1,26 @@
+def analyze_meal_mock() -> dict:
+    return {
+        "dishName": "这一餐",
+        "structureSummary": "已收到餐图，当前使用后端 mock provider 输出结构化结果。",
+        "stapleLevel": "medium",
+        "proteinLevel": "medium",
+        "vegetableFiberLevel": "low",
+        "oilLevel": "medium",
+        "portionLevel": "medium",
+        "nutrition": {
+            "calories": 650,
+            "protein_g": 28,
+            "fat_g": 22,
+            "carb_g": 78,
+            "fiber_g": 5,
+            "sodium_mg": 980,
+        },
+        "nutrition_source": "ai_estimate",
+        "matched_nutrition_id": None,
+        "match_confidence": None,
+        "riskHints": ["蔬菜纤维可能偏少"],
+        "eatingAdvice": ["先吃蛋白和蔬菜，再吃主食。", "吃完后记录饱腹和消化感受。"],
+        "feedbackFocus": ["饭后 1 小时是否困倦", "有没有胀气或太撑"],
+        "confidence": "low",
+        "imageQualityNote": "mock provider 不做真实图像识别，只验证服务边界和数据结构。",
+    }

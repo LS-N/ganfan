@@ -2,6 +2,38 @@
 
 本文件记录所有 Agent 或人工开发的开始与结束。任何正式开发都必须先写开始记录，结束前补结束记录。
 
+## 2026-05-14 16:36:39 +08:00 - Codex - START
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 2 真实 AI provider 与 nutrition embeddings
+- 任务编号：Phase 1 / SiliconFlow provider and embeddings
+- 任务目标：使用用户确认的硅基流动 OpenAI-compatible API（同一 API key 调用 vision 与 embedding 模型），临时注入本机环境变量，验证 `/v1/embeddings` 和 `/v1/chat/completions`，回填 Supabase `nutrition_items.embedding`，并把 FastAPI mock provider 扩展为可配置 SiliconFlow provider。
+- 预计触碰范围：`services/ai/`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`，必要时补测试；不得提交真实 API key 或 `.env`。
+- 需要用户批准：已批准使用同一硅基流动 API key；真实密钥只允许本机临时使用，不写入仓库。
+- 开始前状态：最近 Phase 1 提交 `2ab3274 feat(phase-1): apply real supabase schema`；远端 Supabase `nutrition_items` 共 1660 条，embedding 非空数量为 0；工作区另有任务外 SOP/资源索引文档改动和既有未跟踪图片，本轮不混入提交。
+
+## 2026-05-14 17:15:03 +08:00 - Codex - END
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 2 真实 AI provider 与 nutrition embeddings
+- 任务编号：Phase 1 / SiliconFlow provider and embeddings
+- 完成内容：验证硅基流动 OpenAI-compatible `/v1/models`、`/v1/embeddings`、`/v1/chat/completions`；选用 `BAAI/bge-m3` 生成 1024 维 embedding，并在服务端工具中补齐到 Supabase `vector(1536)`；回填远端 `nutrition_items.embedding`，1660/1660 条非空；验证 `东坡肉` pgvector 查询 Top1 命中 `红烧肉`，score 约 0.9314；新增可配置 SiliconFlow meal analyze provider，保留 mock fallback；通过 FastAPI 本地服务验证真实 provider 可返回结构化字段和 `nutrition_source`。
+- 修改文件：`services/ai/.env.example`、`services/ai/routers/analyze.py`、`services/ai/providers/__init__.py`、`services/ai/providers/mock.py`、`services/ai/providers/siliconflow.py`、`services/ai/nutrition/embeddings.py`、`services/ai/nutrition/backfill_embeddings.py`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 验收文档：`docs/acceptance/phase-1-mvp-1-acceptance.md`
+- 验收结果：
+  - PASS：`nutrition_items` 远端总数 1660；embedding 非空 1660；`红烧肉` 精确数据存在；`东坡肉` 向量检索 Top1 命中 `红烧肉` 且 score >= 0.8；FastAPI `/v1/meal/analyze` 可在 `AI_PROVIDER=siliconflow` 下调用真实 provider 并返回 `nutrition_source`、结构化营养估算、风险提示和置信度；失败时降级 mock，不阻断 Phase 1 数据结构。
+  - PARTIAL：真实餐图上传后的 vision 链路尚未用手机照片和 signed URL 端到端验证；本地 FastAPI provider 验证使用 text-only 请求；硅基流动在默认 25 秒超时下可能因网络/模型排队降级，真实 provider 验证时使用了本机 60 秒超时环境变量。
+  - FAIL：无。
+  - N/A：Phase 2 及后续的个性化、长期反馈、商业化与部署流水线验收不属于本轮。
+- 已运行命令：`npm run lint` 通过；`npm run typecheck` 通过；`npm test` 通过；`python -m py_compile services\ai\main.py services\ai\routers\analyze.py services\ai\providers\mock.py services\ai\providers\siliconflow.py services\ai\nutrition\embeddings.py services\ai\nutrition\backfill_embeddings.py` 通过；硅基流动 `/v1/embeddings` 与 `/v1/chat/completions` 通过；Supabase REST/SQL 验证 embedding 1660/1660 和 `东坡肉` 向量检索通过；本地 FastAPI `/v1/meal/analyze` 真实 provider 验证通过。
+- 未能验证的项目：手机拍照、Storage signed URL、FastAPI 真实 vision 输入和 App UI 完整链路尚未端到端验收。
+- 需要人工/真机/外部服务验证的项目：下一轮需要真机解锁并在 App 内完成注册/建档/拍照/分析/反馈链路；需要服务部署或本机可访问地址把移动端接到真实 AI service；需要确认生产超时和模型成本策略。
+- Android/iOS 影响：无原生依赖变化；新增后端 provider 与 seed 工具对双端 JS 包无直接原生影响。
+- 热更新影响：App JS 未改动；后端服务配置变化不需要 EAS 原生重新打包。
+- 是否需要重新打包：不需要。
+- 遗留问题：Phase 1 真实数据与真实 AI provider 已推进到后端可用，但 UI 端的真实照片/signed URL/真机完整闭环仍未验收；Auth UI 与真实用户建档链路仍需单独推进。
+- 下一步：把移动端环境变量接到真实 Supabase 和 AI service 地址；部署或本机暴露 FastAPI；在真机执行完整“注册/建档/拍照/分析/反馈”链路，并把 vision 输入从公开 URL 或 signed URL 接入真实 provider。
+
 ## 2026-05-14 16:11:01 +08:00 - Codex - START
 
 - 阶段：开发流程治理 / 资源与密钥索引
