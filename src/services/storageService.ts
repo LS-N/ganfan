@@ -18,8 +18,16 @@ export function createStorageService(): StorageService {
       })
       if (error) return mockStorageService.uploadMealPhoto(input)
 
-      const { data } = client.storage.from(mealPhotoBucket).getPublicUrl(path)
-      return { path, url: data.publicUrl }
+      const { data } = await client.storage.from(mealPhotoBucket).createSignedUrl(path, 60 * 10)
+      return { path, url: data?.signedUrl }
+    },
+    async createSignedMealPhotoUrl(path, expiresInSeconds = 60 * 10) {
+      const client = getSupabaseClient()
+      if (!client || path.startsWith("mock://")) return mockStorageService.createSignedMealPhotoUrl(path, expiresInSeconds)
+
+      const { data, error } = await client.storage.from(mealPhotoBucket).createSignedUrl(path, expiresInSeconds)
+      if (error) return undefined
+      return data?.signedUrl
     }
   }
 }

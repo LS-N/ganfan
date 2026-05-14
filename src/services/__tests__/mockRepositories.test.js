@@ -3,6 +3,7 @@ const {
   mockAnalysisRepository,
   mockFeedbackRepository,
   mockMealRepository,
+  mockStorageService,
   resetMockRepositoryState
 } = require("../mockRepositories")
 
@@ -36,5 +37,18 @@ describe("mock repositories", () => {
     expect(feedback.mealId).toBe(meal.id)
     expect(storedMeal.corrections).toHaveLength(1)
     expect(storedMeal.feedbackId).toBe(feedback.id)
+  })
+
+  test("storage mock exposes a signed URL shape for uploaded meal photos", async () => {
+    const uploaded = await mockStorageService.uploadMealPhoto({
+      userId: "mock-user-001",
+      mealId: "meal-1",
+      uri: "file://meal.jpg",
+      kind: "before"
+    })
+    const signedUrl = await mockStorageService.createSignedMealPhotoUrl(uploaded.path)
+
+    expect(uploaded.path).toBe("mock-user-001/meals/meal-1/before.jpg")
+    expect(signedUrl).toBe("mock://signed-mock-user-001/meals/meal-1/before.jpg")
   })
 })

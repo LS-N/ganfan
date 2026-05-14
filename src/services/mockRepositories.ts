@@ -149,6 +149,9 @@ export const mockStorageService: StorageService = {
       path: `${input.userId}/meals/${input.mealId}/${input.kind}.jpg`,
       url: input.uri.startsWith("mock://") ? input.uri : `mock://${makeMockId("photo")}`
     }
+  },
+  async createSignedMealPhotoUrl(path) {
+    return path.startsWith("mock://") ? path : `mock://signed-${path}`
   }
 }
 

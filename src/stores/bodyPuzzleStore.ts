@@ -15,6 +15,7 @@ import {
   getMealRepository,
   getProfileRepository,
   getReportRepository,
+  getStorageService,
   getWeightRepository
 } from "../services"
 import { getServiceMode } from "../services/serviceMode"
@@ -315,12 +316,14 @@ function makeCheckinId(date: string) {
 
 async function persistCreatedMeal(localMeal: MealRecord) {
   const userId = await authService.getUserId()
+  const photoUpload = await uploadMealPhotoIfNeeded(userId, localMeal)
   const persistedMeal = await getMealRepository().createMeal({
     userId,
     id: localMeal.id,
     mealType: localMeal.mealType,
     source: localMeal.source,
-    photoUri: localMeal.photoUri,
+    photoUri: photoUpload?.url ?? localMeal.photoUri,
+    photoPath: photoUpload?.path,
     mealCategory: localMeal.mealCategory,
     drawCardId: localMeal.drawCardId
   })
@@ -335,10 +338,11 @@ async function persistAnalysis(meal: MealRecord) {
   const state = useBodyPuzzleStore.getState()
   const profile = state.profile ?? mockProfile
   const userId = await authService.getUserId()
+  const imageUrl = await resolveAnalysisImageUrl(userId, meal)
   const analysis = await getAiMealAnalysisService().analyzeMeal({
     userId,
     mealId: meal.id,
-    imageUrl: meal.photoUri ?? "mock://meal-photo",
+    imageUrl,
     mealType: meal.mealType,
     profileContext: {
       goal: profile.goal,
@@ -358,6 +362,38 @@ async function persistAnalysis(meal: MealRecord) {
     analyses: [saved, ...current.analyses.filter((item) => item.mealId !== meal.id)],
     meals: current.meals.map((item) => (item.id === meal.id ? attachAnalysisToMeal({ ...item, analysis: saved }, saved.id) : item))
   }))
+}
+
+async function resolveAnalysisImageUrl(userId: string, meal: MealRecord) {
+  const photoUri = meal.photoUri
+  if (!photoUri) return "mock://meal-photo"
+  if (isRemoteOrMockUri(photoUri)) return photoUri
+
+  const storage = getStorageService()
+  if (isStoragePath(photoUri)) {
+    return (await storage.createSignedMealPhotoUrl(photoUri)) ?? photoUri
+  }
+
+  const upload = await uploadMealPhotoIfNeeded(userId, meal)
+  return upload?.url ?? photoUri
+}
+
+async function uploadMealPhotoIfNeeded(userId: string, meal: MealRecord) {
+  if (!meal.photoUri || isRemoteOrMockUri(meal.photoUri) || isStoragePath(meal.photoUri)) return undefined
+  return getStorageService().uploadMealPhoto({
+    userId,
+    mealId: meal.id,
+    uri: meal.photoUri,
+    kind: "before"
+  })
+}
+
+function isRemoteOrMockUri(uri: string) {
+  return uri.startsWith("http://") || uri.startsWith("https://") || uri.startsWith("mock://")
+}
+
+function isStoragePath(uri: string) {
+  return /^[^:/]+\/meals\/[^/]+\/(before|after)\.jpg$/.test(uri)
 }
 
 async function persistFeedback(mealId: string, feedback: Feedback) {

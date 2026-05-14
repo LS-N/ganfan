@@ -84,6 +84,7 @@ export type DrawCardRepository = {
 
 export type StorageService = {
   uploadMealPhoto(input: { userId: string; mealId: string; uri: string; kind: "before" | "after" }): Promise<{ path: string; url?: string }>
+  createSignedMealPhotoUrl(path: string, expiresInSeconds?: number): Promise<string | undefined>
 }
 
 export type AnalyzeMealInput = {

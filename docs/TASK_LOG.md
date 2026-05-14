@@ -2,6 +2,38 @@
 
 本文件记录所有 Agent 或人工开发的开始与结束。任何正式开发都必须先写开始记录，结束前补结束记录。
 
+## 2026-05-14 17:27:44 +08:00 - Codex - START
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 3 真机照片与 Storage signed URL 验收
+- 任务编号：Phase 1 / Storage signed URL to vision provider
+- 任务目标：在不新增原生依赖、不做 Phase 2 的前提下，把移动端上传餐图后的私有 Storage path 转换为短期 signed URL，并传给后端 vision provider；用已连接 Android 真机执行基础端到端验证。
+- 预计触碰范围：`src/services/storageService.ts`、`src/stores/bodyPuzzleStore.ts`、必要测试、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`。
+- 需要用户批准：用户已确认真机接入并要求继续测试；本轮不新增原生依赖、不创建 Supabase migrations、不提交真实 secret。
+- 开始前状态：真机 `PJZ110` 已通过 ADB 连接；本机当前未检测到运行环境变量 `EXPO_PUBLIC_SUPABASE_URL`、`EXPO_PUBLIC_SUPABASE_ANON_KEY`、`EXPO_PUBLIC_AI_ANALYSIS_ENDPOINT`、`SILICONFLOW_API_KEY`、`SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`；仓库只有 `.env.example` 和 `services/ai/.env.example`，真实 env 仍需本机注入。
+
+## 2026-05-14 17:34:29 +08:00 - Codex - END
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 3 真机照片与 Storage signed URL 验收
+- 任务编号：Phase 1 / Storage signed URL to vision provider
+- 完成内容：移动端 Storage 上传成功后改为生成 10 分钟 signed URL，不再使用 private bucket 的 public URL；分析前增加图片 URL 解析，支持本地 `file://` 餐图先上传再拿 signed URL，也支持已持久化 Storage path 重新生成 signed URL；mock storage 补齐 signed URL 形态；新增测试覆盖 signed URL mock 行为；真机 `PJZ110` 已唤醒并打开 App，首页可见且未见 FATAL/ReactNativeJS 崩溃。
+- 修改文件：`src/services/storageService.ts`、`src/stores/bodyPuzzleStore.ts`、`src/services/repositoryTypes.ts`、`src/services/mockRepositories.ts`、`src/services/__tests__/mockRepositories.test.js`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 验收文档：`docs/acceptance/phase-1-mvp-1-acceptance.md`
+- 验收结果：
+  - PASS：代码链路已从 `getPublicUrl` 改为 `createSignedUrl`；分析前会把本地餐图或 Storage path 转成可供后端 vision provider 读取的短期 URL；`npm run lint`、`npm run typecheck`、`npm test` 通过；Android 真机 App 可启动，首页可见，未见崩溃日志。
+  - PARTIAL：真实 Supabase 上传、真实 signed URL、FastAPI `AI_PROVIDER=siliconflow` vision 输入和 SiliconFlow 餐图识别尚未端到端完成，因为当前运行环境未检测到真实 `.env` 或进程环境变量；`.env.example` 只是模板，不会被运行时当作真实 secret/config。
+  - FAIL：无。
+  - N/A：Phase 2 及后续个性化、长期反馈、商业化功能不属于本轮。
+- 已运行命令：`npm run lint` 通过；`npm run typecheck` 通过；`npm test` 通过，7 suites / 13 tests；`adb devices -l` 确认 `PJZ110`；`adb shell monkey -p com.ganfan.app -c android.intent.category.LAUNCHER 1` 启动 App；`adb shell screencap` 验证首页可见；`adb logcat` 未见 FATAL/ReactNativeJS 崩溃。
+- 未能验证的项目：真实餐图上传到 Supabase Storage、真实 signed URL 被后端 vision provider 读取、真实 AI 餐图识别结果落库。
+- 需要人工/真机/外部服务验证的项目：需要把真实运行配置注入本机 `.env` 或启动进程环境，包括移动端 `EXPO_PUBLIC_SUPABASE_URL`、`EXPO_PUBLIC_SUPABASE_ANON_KEY`、`EXPO_PUBLIC_AI_ANALYSIS_ENDPOINT`，后端 `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`SILICONFLOW_API_KEY`；随后启动 FastAPI 和 Expo/Dev Client，再用真机拍照执行完整链路。
+- Android/iOS 影响：仅 JS/TS 服务层变化，无原生依赖变化；Android 真机基础启动通过；iOS 未实测但使用 Supabase JS 标准接口，无平台专属逻辑。
+- 热更新影响：可通过 JS 热更新/Expo 更新分发；不需要原生重新打包。
+- 是否需要重新打包：不需要，除非要把环境变量编入新的原生/更新包或切换 release 构建。
+- 遗留问题：真实 env 尚未注入运行时，Phase 1 真实照片到 vision provider 的最后一跳仍为 PARTIAL；当前工作区仍有任务外 SOP/资源索引文档改动和既有未跟踪图片，本轮不混入提交。
+- 下一步：由用户确认允许 Agent 写入本机 `.env` 或手动放置真实 env；启动 FastAPI `AI_PROVIDER=siliconflow` 和真机可访问的 Expo/AI endpoint；执行拍照、上传、signed URL、vision analyze、结果保存的完整验收。
+
 ## 2026-05-14 16:36:39 +08:00 - Codex - START
 
 - 阶段：Phase 1 / MVP 1.0 记录感知
