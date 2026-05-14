@@ -12,6 +12,38 @@
 - 需要用户批准：不需要；用户已明确要求建立方案文件夹和第一版开发方案。
 - 开始前状态：仓库已有《干饭》项目蓝图、AI 工作手册、任务日志和阶段验收文档，但缺少一份项目无关的“需求到开发交付”标准 SOP；当前工作区仅有既有未跟踪 `_archive/docs-restructure-20260512/image.png`。
 
+## 2026-05-14 11:53:06 +08:00 - Codex - START
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 1-6 真实资源接入与真机验收
+- 任务编号：Phase 1 / MVP 1.0 真实资源接入
+- 任务目标：使用用户提供的测试 AI API key、营养库 GitHub 地址、Supabase 登录授权和已连接 Android 真机，继续推进 Phase 1 未完成验收：AI provider 适配、营养库导入准备、Supabase CLI/项目链接、APK 安装和真机检查。
+- 预计触碰范围：`services/ai/`、`supabase/`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`，必要时新增本地脚本或修复接入配置；不得提交真实 API key 或 `.env`。
+- 需要用户批准：已批准使用测试 API、GitHub 营养库、Supabase 登录和已连接真机；真实密钥只允许本机临时使用，不写入仓库。
+- 开始前状态：最近验收提交 `94bb1aa test(phase-1): run acceptance validation`；工作区仅有既有未跟踪 `_archive/docs-restructure-20260512/image.png`。
+
+## 2026-05-14 12:14:18 +08:00 - Codex - END
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 1-6 真实资源接入与真机验收
+- 任务编号：Phase 1 / MVP 1.0 真实资源接入
+- 完成内容：安装 Android Platform Tools 并识别真机 `PJZ110 / Android 16 / SDK 36 / arm64-v8a`；下载并安装 EAS preview APK 到真机，确认包名 `com.ganfan.app` 可启动且进程存在；logcat 看到 Expo Updates 和 ReactNativeJS `Running "main"`，未见 FATAL/ReactNativeJS 崩溃；克隆用户提供的 `Sanotsu/china-food-composition-data` 到临时目录；新增 FastAPI 营养 catalog，可读取本地营养库并保留 `红烧肉` / `东坡肉` Phase 1 菜名 overlay；新增 SQL seed 生成脚本，验证可生成 1657 条 `nutrition_items` 导入 SQL；更新 seed 增加 `红烧肉`；清理并忽略 Supabase CLI 本地缓存和生成 seed 输出。
+- 修改文件：`.gitignore`、`services/ai/routers/analyze.py`、`services/ai/nutrition/__init__.py`、`services/ai/nutrition/catalog.py`、`services/ai/nutrition/import_china_food_data.py`、`services/ai/nutrition/README.md`、`supabase/seed.sql`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 验收文档：`docs/acceptance/phase-1-mvp-1-acceptance.md`
+- 验收结果：
+  - PASS：`npm run lint`、`npm run typecheck`、`npm test`；T2-01 FastAPI 可用 bundled Python 3.12 + 临时依赖启动；T2-02 `/v1/meal/analyze` 返回 `nutrition_source`，`/v1/nutrition/search` 返回 top5；营养 catalog 读取 1657 条本地来源，`红烧肉` 精确命中，`东坡肉` 命中 `红烧肉`；T6-06 APK 安装到真机成功并能启动；logcat 未见 FATAL/ReactNativeJS 崩溃。
+  - PARTIAL：T1-05 已准备并验证 1657 条营养 seed 生成路径，但未在 Supabase 导入，embedding 未生成；T2-02 仍不是真实 Vision provider 和 pgvector 远端搜索；T2-03/T3-04/T3-05/T6-06 只完成权限授权、安装和启动级验证，因设备截图为黑屏/系统遮罩，未完成 UI 操作链路；Sprint 1/2/3/6 的真实 Supabase 数据写入、Storage、断网同步和 24 小时稳定性仍未完成。
+  - FAIL：Supabase CLI 自动登录在非 TTY 环境失败，提示需 `--token` 或 `SUPABASE_ACCESS_TOKEN`；用户提供的测试 AI key 缺 API base URL、模型名和请求协议，不能接入真实 provider；Android 截屏为黑屏，无法证明当前 UI 首屏和拍照链路。
+  - N/A：Phase 2 及以后计划推荐、目标干预、健康整合、社区履约不属于本次 Phase 1。
+- 已运行命令：`winget install --id Google.PlatformTools --exact --silent --accept-package-agreements --accept-source-agreements`；`adb devices -l`；`adb install -r -t -d --no-streaming`；`adb shell monkey -p com.ganfan.app -c android.intent.category.LAUNCHER 1`；`adb shell pidof com.ganfan.app`；`adb logcat` 过滤崩溃；`git ls-remote https://github.com/Sanotsu/china-food-composition-data.git HEAD`；`python services\ai\nutrition\import_china_food_data.py`；`python -m py_compile ...`；bundled Python 3.12 临时安装 FastAPI 依赖；`GET /health`；`POST /v1/meal/analyze`；`GET /v1/nutrition/search?q=红烧肉`；`GET /v1/nutrition/search?q=东坡肉`；`GET /v1/nutrition/search?q=鸡`；`npm run lint`；`npm run typecheck`；`npm test`；`git diff --check`。
+- 未能验证的项目：真实 Supabase migrations/RLS/Storage bucket；`nutrition_items` 远端导入和 embedding 非空；真实 AI provider；注册 -> 建档 -> 拍照 -> 分析 -> 反馈 -> 回访完整链路；断网 3 餐后联网同步；Android 24 小时稳定性；5 台设备内测。
+- 需要人工/真机/外部服务验证的项目：提供 `SUPABASE_ACCESS_TOKEN`、project ref、Supabase URL/anon key/service role key，或先在本机交互终端完成 `supabase login`；提供测试 AI key 对应的 API base URL、模型名和请求协议；保持 Android 真机解锁亮屏并允许继续 UI 操作。
+- Android/iOS 影响：本次未新增原生依赖；Android 真机已安装并启动现有 APK；iOS 未验证。
+- 热更新影响：本次后端 Python 和 Supabase seed 脚本可独立部署；移动端无 JS/TS 行为变更，不涉及 OTA 必须发布。
+- 是否需要重新打包：本次代码不要求重新打包；但真实产品验收仍应在接入 Supabase/AI 配置后重新打 preview build 或发 EAS Update 验证。
+- 遗留问题：Phase 1 仍未完整完成；Supabase 和真实 AI provider 需要上述资源；营养库 upstream 无明确 redistribution license，生产导入前需确认数据权利和质量；既有未跟踪 `_archive/docs-restructure-20260512/image.png` 未处理。
+- 下一步：拿到 Supabase token/project 信息和 AI endpoint 信息后，执行远端 migrations、Storage、nutrition seed、embedding 和真实 AI provider 验收；真机保持亮屏后继续注册/建档/拍照/反馈完整链路。
+
 ## 2026-05-14 11:39:01 +08:00 - Codex - END
 
 - 阶段：开发流程治理 / 通用开发 SOP

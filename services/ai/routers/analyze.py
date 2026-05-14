@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from fastapi import APIRouter
+from nutrition.catalog import search_catalog
 
 router = APIRouter()
 
@@ -53,23 +54,4 @@ def analyze_meal(payload: AnalyzeMealRequest) -> dict:
 
 @router.get("/nutrition/search")
 def search_nutrition(q: str) -> dict:
-    items = [
-        {
-            "dish_name": "红烧肉",
-            "score": 1.0 if q in ["红烧肉", "东坡肉"] else 0.72,
-            "nutrition_source": "mock_seed",
-            "nutrition_per_100g": {
-                "calories": 395,
-                "protein_g": 13.0,
-                "fat_g": 35.0,
-                "carb_g": 6.0,
-                "fiber_g": 0.2,
-                "sodium_mg": 520,
-            },
-        },
-        {"dish_name": "番茄鸡蛋", "score": 0.64, "nutrition_source": "mock_seed"},
-        {"dish_name": "牛肉饭", "score": 0.58, "nutrition_source": "mock_seed"},
-        {"dish_name": "清汤麻辣烫", "score": 0.54, "nutrition_source": "mock_seed"},
-        {"dish_name": "鸡胸肉沙拉", "score": 0.51, "nutrition_source": "mock_seed"},
-    ]
-    return {"query": q, "items": items[:5]}
+    return search_catalog(q, limit=5)

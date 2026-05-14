@@ -17,3 +17,7 @@ expo-*.log
 # Local AI agent workspaces and caches
 .claude/
 .codex/
+
+# Supabase CLI local state and generated seed outputs
+supabase/.temp/
+supabase/generated/
