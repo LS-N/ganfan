@@ -4,6 +4,24 @@
 
 本文件是蓝图任务映射，不得改写任务编号。开发时只能在对应任务下补充执行说明，不能新增脱离蓝图的任务。
 
+## 本阶段必须引用的蓝图章节
+
+开发 Phase 5 前必须同时读取 `docs/02-master-blueprint.md` 中这些章节：
+
+- `完整数据库 Schema`
+  - `Migration 005：5.0 社区表`
+  - 复用 `meal_plans`、`plan_slots`、`weekly_reports`、`predictions`、`prediction_accuracy`。
+- `API 接口规范`：履约、社区聚合、计划转食材、订阅相关接口边界。
+- `算法与大模型分工`：`grocery.py`、`collaborative.py`、社区菜品画像、冷启动推荐。
+- `核心 TypeScript 类型`：CommunityDish、GroceryList、Subscription、FulfillmentOrder 等阶段类型。
+- `完整 RLS 策略`：社区聚合数据、用户授权数据、履约数据的访问边界。
+- `FastAPI 安全规范`：履约接口、订单状态、第三方平台回调的鉴权与输入验证。
+- `UserContext 构建逻辑（builder.py）`：成果报告、食材清单、社区推荐需要的用户上下文。
+- `环境变量规范`：第三方采购/配餐平台 key 只能在服务端保存。
+- `CI/CD 流水线`：涉及外部平台和后台任务时必须区分沙盒与生产环境。
+
+不得把本章节内容复制成新的权威；如有冲突，以 `docs/02-master-blueprint.md` 为准。
+
 ## 阶段目标
 
 用户授权后可通过平台购买食材或订阅配餐，并用社区数据改善冷启动推荐。

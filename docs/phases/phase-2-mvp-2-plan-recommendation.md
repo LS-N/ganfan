@@ -4,6 +4,25 @@
 
 本文件是蓝图任务映射，不得改写任务编号。开发时只能在对应任务下补充执行说明，不能新增脱离蓝图的任务。
 
+## 本阶段必须引用的蓝图章节
+
+开发 Phase 2 前必须同时读取 `docs/02-master-blueprint.md` 中这些章节：
+
+- `完整数据库 Schema`
+  - `Migration 002：2.0 计划表`
+  - 复用 `Migration 001：1.0 核心表` 中 meals、daily_checkins、meal_feedback 等数据。
+- `API 接口规范`：`/v1/plan/generate`、`/v1/insight/generate`、计划/周报相关接口。
+- `算法与大模型分工`：`dish_score.py`、营养目标计算、计划生成、周报生成边界。
+- `核心 TypeScript 类型`：Plan、PlanSlot、DishScore、NutritionTarget、WeeklyReport 等阶段相关类型。
+- `Zustand Store 接口定义`：计划、首页、报告状态与现有 meal/profile store 的关系。
+- `完整 RLS 策略`：`meal_plans`、`plan_slots`、`dish_scores`、`nutrition_targets`、`weekly_reports` 的用户隔离。
+- `UserContext 构建逻辑（builder.py）`：计划生成和周报必须使用用户记录上下文。
+- `Claude Prompt 模板`
+  - `Prompt 4：周报生成（T10-01）`
+- `FastAPI 安全规范`：计划生成和洞察接口的 JWT、限流、输入验证。
+
+不得把本章节内容复制成新的权威；如有冲突，以 `docs/02-master-blueprint.md` 为准。
+
 ## 阶段目标
 
 基于 1.0 数据生成个性化周计划，用户能看到计划 vs 实际对比。

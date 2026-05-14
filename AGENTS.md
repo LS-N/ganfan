@@ -127,6 +127,7 @@ supabase/
 - 任何 Agent 结束任务前，必须读取当前阶段对应的 `docs/acceptance/phase-*.md`，逐条执行验收，并把结果写入 `docs/TASK_LOG.md` 的 END 记录。
 - 验收结果必须使用 `PASS` / `PARTIAL` / `FAIL` / `N/A`。所有 `PARTIAL`、`FAIL`、`N/A` 都必须写明原因或未验证条件。
 - 没有逐条验收记录的任务，不得标记为完成。
+- 任何 Agent 执行阶段任务前，必须读取当前阶段开发文档里的“本阶段必须引用的蓝图章节”，包括数据结构、API、算法、Prompt、RLS、安全、环境变量和 CI/CD 约束。
 - 任何 Agent 变更当前阶段、Sprint、任务编号或阻塞状态，必须同步更新 `docs/CURRENT_WORK.md`。
 - 如果只做评估、不改文件，也要在最终回复里说明没有新增任务追踪记录的原因。
 

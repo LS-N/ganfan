@@ -4,6 +4,25 @@
 
 本文件是蓝图任务映射，不得改写任务编号。开发时只能在对应任务下补充执行说明，不能新增脱离蓝图的任务。
 
+## 本阶段必须引用的蓝图章节
+
+开发 Phase 4 前必须同时读取 `docs/02-master-blueprint.md` 中这些章节：
+
+- `完整数据库 Schema`
+  - `Migration 004：4.0 预测表`
+  - 复用 `Migration 003：3.0 模式表`
+  - 复用 `health_data`、`predictions`、`prediction_accuracy`、`interventions`。
+- `API 接口规范`：`/v1/predict/meal`、`/v1/pattern/compute`、健康数据和预测相关接口。
+- `算法与大模型分工`：`predictor.py`、预测反馈回路、干预频率控制。
+- `核心 TypeScript 类型`：HealthData、Prediction、PredictionAccuracy、Insight 仪表盘数据类型。
+- `Zustand Store 接口定义`：健康数据、预测、仪表盘状态与既有 meal/plan/body pattern 数据的关系。
+- `完整 RLS 策略`：`health_data`、`predictions`、`prediction_accuracy`、`interventions` 的隐私边界。
+- `FastAPI 安全规范`：健康和预测接口的 JWT、限流、输入验证。
+- `环境变量规范`：健康数据、错误监控、外部服务配置不得泄露隐私或密钥。
+- `CI/CD 流水线`：涉及 Health Connect / 原生权限时必须考虑重新打包和真机验证。
+
+不得把本章节内容复制成新的权威；如有冲突，以 `docs/02-master-blueprint.md` 为准。
+
 ## 阶段目标
 
 健康数据接入，实现饭前预测，用户能看到多维度健康关联。

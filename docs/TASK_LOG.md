@@ -2,6 +2,38 @@
 
 本文件记录所有 Agent 或人工开发的开始与结束。任何正式开发都必须先写开始记录，结束前补结束记录。
 
+## 2026-05-14 10:47:51 +08:00 - Codex - START
+
+- 阶段：文档治理 / 阶段蓝图依赖补齐
+- Sprint：无
+- 任务编号：DOCS-phase-blueprint-dependencies
+- 任务目标：在每个阶段开发文档中补齐必须引用的总蓝图片段，包括数据结构、API、算法、Prompt、RLS、安全、UserContext 等，避免 Agent 只读阶段任务表而漏掉总蓝图约束。
+- 预计触碰范围：`AGENTS.md`、`docs/01-ai-working-manual.md`、`docs/phases/*.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 需要用户批准：不需要；用户已明确要求一次性补周全。
+- 开始前状态：阶段开发文档已严格映射蓝图 1819-2624 行任务编号，但尚未显式列出各阶段必须读取的蓝图前置章节；`docs/TASK_LOG.md` 中存在 Phase 1 验收推进的进行中记录，本次为插队文档治理任务，不处理业务代码。
+
+## 2026-05-14 10:51:26 +08:00 - Codex - END
+
+- 阶段：文档治理 / 阶段蓝图依赖补齐
+- Sprint：无
+- 任务编号：DOCS-phase-blueprint-dependencies
+- 完成内容：为 `docs/phases/phase-0-foundation.md` 到 `phase-5-mvp-5-fulfillment-community.md` 补充“本阶段必须引用的蓝图章节”，覆盖 Schema、API、算法、Prompt、RLS、安全、UserContext、环境变量、CI/CD 等约束；更新 `AGENTS.md` 和 `docs/01-ai-working-manual.md`，强制 Agent 执行阶段任务前读取该引用清单；恢复 `docs/CURRENT_WORK.md` 到 Phase 1 验收推进交接状态。
+- 修改文件：`AGENTS.md`、`docs/01-ai-working-manual.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`、`docs/phases/phase-0-foundation.md`、`docs/phases/phase-1-mvp-1-record-awareness.md`、`docs/phases/phase-2-mvp-2-plan-recommendation.md`、`docs/phases/phase-3-mvp-3-goal-intervention.md`、`docs/phases/phase-4-mvp-4-health-integration.md`、`docs/phases/phase-5-mvp-5-fulfillment-community.md`
+- 验收文档：N/A，本次为文档治理任务，不属于 Phase 0-5 产品实现；验收依据为用户要求“一次性考虑周全”，补齐阶段文档对总蓝图中算法和数据结构的显式引用。
+- 验收结果：
+  - PASS：6 个阶段开发文档均包含“本阶段必须引用的蓝图章节”；Phase 1-5 明确引用相关 Schema/API/算法/RLS/安全；Phase 1-2 明确引用 Prompt/UserContext；Phase 4-5 明确引用原生/外部服务/环境变量/CI/CD 约束；`AGENTS.md` 和 AI 工作手册已强制读取引用清单。
+  - PARTIAL：无。
+  - FAIL：无。
+  - N/A：业务功能、真机、Supabase、FastAPI、AI 服务验收不适用于本次文档治理。
+- 已运行命令：`rg` 检查阶段引用清单通过；`git diff --check -- AGENTS.md docs\01-ai-working-manual.md docs\phases docs\CURRENT_WORK.md docs\TASK_LOG.md` 通过；`npm run typecheck` 通过；`npm run lint` 通过。
+- 未能验证的项目：无。
+- 需要人工/真机/外部服务验证的项目：无。
+- Android/iOS 影响：无，文档治理。
+- 热更新影响：无。
+- 是否需要重新打包：不需要。
+- 遗留问题：`_archive/docs-restructure-20260512/image.png` 仍为既有未跟踪文件；Phase 1 真实环境验收推进仍需恢复执行。
+- 下一步：恢复 Phase 1 验收推进，并按更新后的 Phase 1 阶段文档先读取总蓝图 Schema/API/算法/Prompt/RLS/安全章节。
+
 ## 2026-05-13 22:57:12 +08:00 - Codex - START
 
 - 阶段：文档治理 / 蓝图任务映射修正
@@ -79,6 +111,16 @@
 - 预计触碰范围：`app/`、`src/`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`，确认后可能涉及 Phase 1 数据模型、仓储、页面闭环、测试与文档；暂不迁移 monorepo。
 - 需要用户批准：新增原生依赖、Supabase migrations、FastAPI 服务、真实 AI secret、EAS 原生打包配置变化均需单独确认；在确认前不执行这些事项。
 - 开始前状态：Phase 0 已通过最近 commit `af833cb chore: complete phase 0 foundation` 完成；当前仅有既有未跟踪文件 `_archive/docs-restructure-20260512/image.png`；Phase 1 仍需先复核审计差异并与用户确认补齐计划。
+
+## 2026-05-14 10:42:59 +08:00 - Codex - START
+
+- 阶段：Phase 1 / MVP 1.0 记录感知
+- Sprint：Sprint 1-6 真实环境验收执行
+- 任务编号：Phase 1 / MVP 1.0 验收推进
+- 任务目标：按 `docs/acceptance/phase-1-mvp-1-acceptance.md` 执行 Phase 1 剩余验收：Supabase migrations/Storage、FastAPI 启动与接口、必跑命令、Web 基础验证、EAS/真机可用性检查，并明确不能自动完成的外部阻塞项。
+- 预计触碰范围：`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`，必要时修复 Phase 1 验收中发现的代码、配置或脚本问题。
+- 需要用户批准：已获用户“批准”执行真实产品 Phase 1；不会写入真实 AI secret，不会伪造 Supabase/EAS/真机验收结果。
+- 开始前状态：最近 Phase 1 commit 为 `173da16 feat(phase-1): add real product record awareness foundation`；工作区仅有既有未跟踪 `_archive/docs-restructure-20260512/image.png`。
 
 ## 2026-05-13 23:11:13 +08:00 - Codex - END
 

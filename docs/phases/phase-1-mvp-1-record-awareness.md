@@ -4,6 +4,31 @@
 
 本文件是蓝图任务映射，不得改写任务编号。开发时只能在对应任务下补充执行说明，不能新增脱离蓝图的任务。
 
+## 本阶段必须引用的蓝图章节
+
+开发 Phase 1 前必须同时读取 `docs/02-master-blueprint.md` 中这些章节：
+
+- `完整数据库 Schema`
+  - `Migration 000：营养向量库（pgvector）`
+  - `Migration 001：1.0 核心表`
+- `API 接口规范`：`/v1/meal/analyze`、`/v1/nutrition/search`、`/v1/insight/generate` 等 1.0 相关接口。
+- `功能解锁阈值`：7 天记录、身体拼图、洞察解锁等门槛。
+- `省份数据常量`：美食版图和 `meals.province` 映射。
+- `算法与大模型分工`：Vision 识别、营养匹配、规则引擎、首批洞察边界。
+- `核心 TypeScript 类型`：Meal、MealAnalysis、Feedback、Checkin、Profile 等类型。
+- `Zustand Store 接口定义`：meal/profile/checkin 等 store 约束。
+- `完整 RLS 策略`：1.0 表必须受用户隔离保护。
+- `FastAPI 安全规范`：JWT、速率限制、输入验证。
+- `UserContext 构建逻辑（builder.py）`：AI 分析和建议必须使用的上下文。
+- `Claude Prompt 模板`
+  - `Prompt 1：Vision 识别`
+  - `Prompt 2：个性化建议生成`
+  - `Prompt 3：首批洞察生成（T5-05）`
+- `环境变量规范`：移动端只使用 `EXPO_PUBLIC_*`，客户端不得保存 AI provider secret。
+- `CI/CD 流水线`：移动端质量门禁和 EAS 构建边界。
+
+不得把本章节内容复制成新的权威；如有冲突，以 `docs/02-master-blueprint.md` 为准。
+
 ## 阶段目标
 
 用户能完整记录餐次：拍照 -> 分析 -> 反馈 -> 回访，连续 7 天后看到第一条个人规律。

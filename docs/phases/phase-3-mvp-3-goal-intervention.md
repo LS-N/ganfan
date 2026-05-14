@@ -4,6 +4,25 @@
 
 本文件是蓝图任务映射，不得改写任务编号。开发时只能在对应任务下补充执行说明，不能新增脱离蓝图的任务。
 
+## 本阶段必须引用的蓝图章节
+
+开发 Phase 3 前必须同时读取 `docs/02-master-blueprint.md` 中这些章节：
+
+- `完整数据库 Schema`
+  - `Migration 003：3.0 模式表`
+  - 复用 `Migration 002：2.0 计划表`
+  - 复用 `weight_logs`、`daily_checkins`、`meal_feedback` 等 1.0 数据。
+- `API 接口规范`：`/v1/pattern/compute`、`/v1/plan/generate`、目标干预相关接口。
+- `功能解锁阈值`：`complete_meals >= 21`、`checkin_rate >= 0.6` 等解锁条件。
+- `算法与大模型分工`：`body_pattern.py`、`fasting.py`、目标偏离干预、规律反哺计划。
+- `核心 TypeScript 类型`：BodyPattern、Correlation、Intervention、Fasting 状态等阶段类型。
+- `Zustand Store 接口定义`：身体规律、断食、计划状态与现有数据的关系。
+- `完整 RLS 策略`：`body_patterns`、`weekly_reports`、`interventions` 及相关表的访问控制。
+- `UserContext 构建逻辑（builder.py）`：规律计算和干预生成必须使用的上下文。
+- `FastAPI 安全规范`：模式计算、计划生成、干预接口的鉴权和限流。
+
+不得把本章节内容复制成新的权威；如有冲突，以 `docs/02-master-blueprint.md` 为准。
+
 ## 阶段目标
 
 用户看到可解释的个人饮食规律，断食/减重干预可用。
