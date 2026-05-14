@@ -6,7 +6,7 @@
 
 | 字段 | 内容 |
 |---|---|
-| 更新时间 | 2026-05-14 11:08:51 +08:00 |
+| 更新时间 | 2026-05-14 11:39:01 +08:00 |
 | 当前负责人 | Codex |
 | 当前阶段 | Phase 1 / MVP 1.0 记录感知 |
 | 当前 Sprint | Sprint 1-6 真实环境验收执行 |
@@ -31,5 +31,7 @@
 3. 注入后端 AI env，替换 FastAPI mock provider，并补真实营养库 seed（>=1000 条 + embedding）。
 
 ## 最近一次交接摘要
+
+2026-05-14 11:39:01 +08:00 已新增通用开发 SOP 方案库：`docs/development-sop/README.md` 和 `docs/development-sop/LATEST.md`。后续新需求应先按该 SOP 完成需求澄清、原型确认、产品评估和前置资源 Gate，再进入阶段开发。
 
 已执行 Phase 1 真实验收推进：FastAPI 使用 bundled Python 3.12 + 临时依赖启动成功，`/health`、`/v1/meal/analyze`、`/v1/nutrition/search` 通过；`npm run lint`、`npm run typecheck`、`npm test` 均通过；Expo Web 在 `8082` 返回 200；EAS Android preview build 已完成并产出 APK。Phase 1 仍不能标记完整完成，原因是 Supabase migrations 未真实执行、真实 AI provider 未接、Android 真机安装和稳定性未验收。

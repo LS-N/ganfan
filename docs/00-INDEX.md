@@ -11,6 +11,11 @@
 - `docs/01-ai-working-manual.md`：AI 开发流程、文档使用顺序、禁止事项、交付检查。
 - `AGENTS.md`：仓库根级强约束，保持精简，指向本工作手册。
 
+## 开发 SOP
+
+- `docs/development-sop/LATEST.md`：项目无关的“需求到开发交付”标准 SOP，包含需求澄清、原型确认、产品评估、工程入场、前置资源 Gate、阶段开发、验收、交接和提交规则。
+- `docs/development-sop/README.md`：SOP 方案库说明和更新规则。
+
 ## 当前工作与追踪
 
 - `docs/CURRENT_WORK.md`：当前阶段、当前 Sprint、当前任务、阻塞项和下一步。

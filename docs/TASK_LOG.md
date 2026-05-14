@@ -2,6 +2,38 @@
 
 本文件记录所有 Agent 或人工开发的开始与结束。任何正式开发都必须先写开始记录，结束前补结束记录。
 
+## 2026-05-14 11:37:04 +08:00 - Codex - START
+
+- 阶段：开发流程治理 / 通用开发 SOP
+- Sprint：无
+- 任务编号：SOP-development-process-v1
+- 任务目标：建立开发 SOP 方案文件夹，写入第一版标准 AI 协作开发方案，并规定后续每次更新必须记录更新时间、更新人员、更新背景和更新内容。
+- 预计触碰范围：`docs/development-sop/`、`docs/00-INDEX.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 需要用户批准：不需要；用户已明确要求建立方案文件夹和第一版开发方案。
+- 开始前状态：仓库已有《干饭》项目蓝图、AI 工作手册、任务日志和阶段验收文档，但缺少一份项目无关的“需求到开发交付”标准 SOP；当前工作区仅有既有未跟踪 `_archive/docs-restructure-20260512/image.png`。
+
+## 2026-05-14 11:39:01 +08:00 - Codex - END
+
+- 阶段：开发流程治理 / 通用开发 SOP
+- Sprint：无
+- 任务编号：SOP-development-process-v1
+- 完成内容：新增 `docs/development-sop/` 方案库；写入第一版最新 SOP `docs/development-sop/LATEST.md`；在 SOP 顶部建立“更新记录”，要求每次更新写明更新时间、更新人员、更新背景和更新内容；新增 `docs/development-sop/README.md` 说明当前最新方案和更新规则；更新 `docs/00-INDEX.md` 增加 SOP 入口。
+- 修改文件：`docs/development-sop/README.md`、`docs/development-sop/LATEST.md`、`docs/00-INDEX.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
+- 验收文档：N/A，本次为通用流程文档治理，不属于 Phase 0-5 产品实现。
+- 验收结果：
+  - PASS：已建立开发 SOP 方案文件夹；已建立第一版最新开发方案；SOP 已覆盖需求澄清、原型确认、产品评估、开发蓝图、工程入场、前置资源 Gate、阶段开发、阶段验收、日志交接和提交归档；方案内已包含更新时间、更新人员、更新背景、更新内容；索引已指向最新方案。
+  - PARTIAL：无。
+  - FAIL：无。
+  - N/A：业务功能、Supabase、AI Key、Android/iOS 真机、热更新验收不适用于本次流程文档任务。
+- 已运行命令：`git diff --check -- docs/00-INDEX.md docs/development-sop docs/CURRENT_WORK.md docs/TASK_LOG.md` 通过，仅有 LF/CRLF 工作区提示；`Get-ChildItem docs/development-sop` 确认 `LATEST.md` 和 `README.md` 已创建；`Select-String docs/00-INDEX.md -Pattern 'development-sop|开发 SOP'` 确认索引入口存在。
+- 未能验证的项目：无。
+- 需要人工/真机/外部服务验证的项目：无。
+- Android/iOS 影响：无，文档治理。
+- 热更新影响：无。
+- 是否需要重新打包：不需要。
+- 遗留问题：既有未跟踪 `_archive/docs-restructure-20260512/image.png` 仍未处理。
+- 下一步：后续新需求先按 `docs/development-sop/LATEST.md` 从需求澄清、原型确认、产品评估和前置资源 Gate 开始；《干饭》当前开发仍回到 Phase 1 真实环境验收阻塞项。
+
 ## 2026-05-14 10:47:51 +08:00 - Codex - START
 
 - 阶段：文档治理 / 阶段蓝图依赖补齐
