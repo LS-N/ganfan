@@ -1,4 +1,5 @@
 import type { Analysis, AnalysisCorrection, Level, MealRecord, OilLevel } from "../types/meal"
+import { inferCuisineFromDish } from "../constants/provinces"
 import { makeMockId, nowIso } from "./mockSeedData"
 
 export type MockAnalysisMode = "success" | "low_confidence" | "failed"
@@ -10,6 +11,7 @@ export function buildMockAnalysis(meal: Pick<MealRecord, "id" | "mealType" | "me
 
   const lowConfidence = mode === "low_confidence"
   const dishName = meal.mealCategory ?? (meal.mealType === "breakfast" ? "早餐组合" : "外卖餐")
+  const cuisine = inferCuisineFromDish(dishName)
   const oilLevel: OilLevel = dishName.includes("炸") || dishName.includes("盖饭") ? "heavy" : "medium"
   const oilBurdenLevel: Exclude<Level, "unknown"> = oilLevel === "heavy" ? "high" : "medium"
 
@@ -17,6 +19,8 @@ export function buildMockAnalysis(meal: Pick<MealRecord, "id" | "mealType" | "me
     id: makeMockId("analysis"),
     mealId: meal.id,
     dishName,
+    cuisine: cuisine.cuisine,
+    province: cuisine.province,
     structureSummary: "这餐主食存在感较强，蛋白质中等，蔬菜纤维偏少。结果用于结构判断，不代表精确营养计算。",
     stapleLevel: "high",
     proteinLevel: "medium",
@@ -40,11 +44,14 @@ export function buildSeedAnalyses(meals: MealRecord[]): Analysis[] {
     const heavyMeal = index === 1 || index === 5
     const oilLevel: OilLevel = heavyMeal ? "heavy" : "medium"
     const oilBurdenLevel: Exclude<Level, "unknown"> = heavyMeal ? "high" : "medium"
+    const dishCuisine = inferCuisineFromDish(meal.mealCategory)
 
     return {
       id: meal.analysisId ?? `seed-analysis-${index + 1}`,
       mealId: meal.id,
       dishName: meal.mealCategory ?? "模拟餐",
+      cuisine: meal.cuisine ?? dishCuisine.cuisine,
+      province: meal.province ?? dishCuisine.province,
       structureSummary: heavyMeal ? "主食和油脂偏高，建议用饭后反馈验证困倦和胀感。" : "蛋白质和蔬菜相对更稳，适合作为后续安全餐参考。",
       stapleLevel: heavyMeal ? "high" : "medium",
       proteinLevel: "medium",

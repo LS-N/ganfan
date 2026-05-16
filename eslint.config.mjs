@@ -43,12 +43,22 @@ export default [
     }
   },
   {
+    files: ["scripts/**/*.{js,mjs}"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly"
+      }
+    }
+  },
+  {
     files: ["**/__tests__/**/*.test.js"],
     languageOptions: {
       globals: {
         beforeEach: "readonly",
         describe: "readonly",
         expect: "readonly",
+        jest: "readonly",
         require: "readonly",
         test: "readonly"
       }

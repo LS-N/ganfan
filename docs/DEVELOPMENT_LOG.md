@@ -229,3 +229,27 @@ This document is the reusable development log template for the Ganfan project. I
 - Git/GitHub: Branch `codex/V0.1`; no upstream configured; `origin` is `https://github.com/LS-N/ganfan.git`; HEAD at `ca3abb6` (also `origin/claude/meal-agent-ux-improvements`); staging is blocked by `.git` write permissions.
 - Next step: Run stage/commit/push from an environment that can write `.git` and has GitHub credentials; when pushing, decide whether to publish `codex/V0.1` (set upstream with `git push -u origin codex/V0.1`) or fast-forward/merge into the intended remote branch.
 - Reusable lesson: On Windows with restricted PowerShell policies, prefer `npm.cmd` (or `cmd /c npm ...`) to reliably run checks in automations.
+
+## 2026-05-14 17:03 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only verified changes (excluding secrets, env files, caches, and backup outputs).
+- Work done: Inspected `git status`, current branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; confirmed `package.json` + `node_modules` presence; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`.
+- Result: Lint, typecheck, and tests are green in this environment; repo has multiple modified/untracked paths, but this automation did not change any project files besides this log entry.
+- Problems: PowerShell blocks `npm.ps1` due to execution policy (used `npm.cmd` instead); branch `codex/V0.1` still has no upstream configured; untracked cache/backup-like paths exist (e.g. `services/ai/nutrition/__pycache__/`) and must not be committed.
+- Fixes: None applied in this run (kept conservative); used `npm.cmd` to bypass PowerShell script execution policy for checks.
+- Checks: `npm.cmd run lint` passed; `npm.cmd run typecheck` passed; `npm.cmd test` passed (7 suites, 12 tests).
+- Git/GitHub: No upstream configured for `codex/V0.1`; `origin` is `https://github.com/LS-N/ganfan.git`; attempted to stage/commit only `docs/DEVELOPMENT_LOG.md`, but Git metadata writes failed with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied`, so no commit SHA or push was produced.
+- Next step: From a fully-permissioned environment, review the pending changeset, ensure secrets/caches/backups are excluded, then decide whether to publish `codex/V0.1` by setting upstream (`git push -u origin codex/V0.1`) or to merge/rebase into the intended remote branch before pushing.
+- Reusable lesson: On Windows automations, call `npm.cmd` (not `npm`) to avoid PowerShell execution policy issues with `npm.ps1`.
+
+## 2026-05-16 09:02 - 09:00 automation run
+
+- Goal: Conservative GitHub sync on `codex/V0.1` with safe checks, then publish only verified changes (excluding secrets/env/keys/caches/build outputs).
+- Work done: Inspected `git status`, branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; confirmed `node_modules` present; ran `npm run lint`, `npm run typecheck`, and `npm test`.
+- Result: Lint/typecheck/tests are green; working tree contains many modified tracked files plus multiple untracked paths (including cache-like folders and an Android debug keystore) requiring careful staging.
+- Problems: Untracked paths include items that must never be committed (e.g. `android/app/debug.keystore`, `services/ai/**/__pycache__/`, `.tmp/`).
+- Fixes: None applied in this run (kept conservative); only this log entry was authored by the automation.
+- Checks: `npm run lint` PASS; `npm run typecheck` PASS; `npm test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; `origin` is `https://github.com/LS-N/ganfan.git`; commit/push outcome recorded by this run after staging decisions.
+- Next step: Decide whether to publish the full pending tracked changeset now, or to commit only the log entry and leave the rest for an explicit reviewed PR.
+- Reusable lesson: Treat untracked artifacts as hostile by default; whitelist only intended source/docs changes for automated commits.

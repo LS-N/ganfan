@@ -12,6 +12,8 @@ from providers.mock import analyze_meal_mock
 
 REQUIRED_KEYS = {
     "dishName",
+    "cuisine",
+    "province",
     "structureSummary",
     "stapleLevel",
     "proteinLevel",
@@ -121,7 +123,7 @@ def analyze_meal_with_siliconflow(payload: Any) -> dict[str, Any]:
     user_text = (
         "你是《干饭》Phase 1 餐图分析服务。只返回 JSON 对象，不要 Markdown，不要解释。"
         "字段必须包含 dishName, structureSummary, stapleLevel, proteinLevel, vegetableFiberLevel, "
-        "oilLevel, portionLevel, nutrition, nutrition_source, matched_nutrition_id, match_confidence, "
+        "oilLevel, portionLevel, cuisine, province, nutrition, nutrition_source, matched_nutrition_id, match_confidence, "
         "riskHints, eatingAdvice, feedbackFocus, confidence, imageQualityNote。"
         "level 字段使用 low/medium/high；confidence 使用 low/medium/high；nutrition 使用 calories, "
         "protein_g, fat_g, carb_g, fiber_g, sodium_mg。用户上下文："

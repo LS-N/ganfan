@@ -20,6 +20,12 @@
 
 - `docs/CURRENT_WORK.md`：当前阶段、当前 Sprint、当前任务、阻塞项和下一步。
 - `docs/TASK_LOG.md`：所有 Agent 开始/结束开发记录。任何开发都必须先登记、结束时补记录。
+- `docs/lessons/LESSONS_INDEX.md`：可复用经验教训索引。后续 AI 遇到问题时先按关键词检索，确认同类问题后复用已验证方案。
+
+## 资源与密钥索引
+
+- `docs/resources/RESOURCE_REGISTRY.md`：当前唯一资源索引，记录外部账号、密钥、token、设备、数据集、本机工具的变量名、存放位置、状态和验证方式，但不记录真实密钥。
+- `docs/resources/README.md`：资源索引目录说明和安全规则。
 
 ## 默认原型
 

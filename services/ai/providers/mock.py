@@ -1,6 +1,8 @@
 def analyze_meal_mock() -> dict:
     return {
         "dishName": "这一餐",
+        "cuisine": "家常菜",
+        "province": "全国",
         "structureSummary": "已收到餐图，当前使用后端 mock provider 输出结构化结果。",
         "stapleLevel": "medium",
         "proteinLevel": "medium",

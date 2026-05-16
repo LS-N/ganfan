@@ -1,8 +1,11 @@
 import type { Analysis, AnalysisConfidence, Level, OilLevel } from "../types/meal"
+import { inferCuisineFromDish } from "../constants/provinces"
 import { makeMockId, nowIso } from "./mockSeedData"
 
 type AiAnalysisJson = {
   dishName?: unknown
+  cuisine?: unknown
+  province?: unknown
   structureSummary?: unknown
   stapleLevel?: unknown
   proteinLevel?: unknown
@@ -26,11 +29,15 @@ export function parseAiAnalysisJson(value: unknown, mealId: string): Analysis {
   const oilLevel = normalizeOil(json.oilLevel)
   const oilBurdenLevel = oilLevel === "heavy" ? "high" : oilLevel === "light" ? "low" : "medium"
   const eatingAdvice = normalizeTextArray(json.eatingAdvice)
+  const dishName = sanitizeText(json.dishName, "这一餐")
+  const inferred = inferCuisineFromDish(dishName)
 
   return {
     id: makeMockId("analysis"),
     mealId,
-    dishName: sanitizeText(json.dishName, "这一餐"),
+    dishName,
+    cuisine: sanitizeText(json.cuisine, inferred.cuisine),
+    province: sanitizeText(json.province, inferred.province),
     structureSummary: sanitizeText(json.structureSummary, "这餐可以做结构参考，结果不代表精确营养计算。"),
     stapleLevel: normalizeLevel(json.stapleLevel),
     proteinLevel: normalizeLevel(json.proteinLevel),

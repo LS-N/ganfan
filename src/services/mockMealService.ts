@@ -1,4 +1,5 @@
-import type { Feedback, MealRecord, MealSource, MealType } from "../types/meal"
+import type { Analysis, Feedback, MealRecord, MealSource, MealType } from "../types/meal"
+import { inferCuisineFromDish } from "../constants/provinces"
 import { makeMockId, nowIso } from "./mockSeedData"
 
 export type CreateMockMealInput = {
@@ -7,6 +8,8 @@ export type CreateMockMealInput = {
   source?: MealSource
   photoUri?: string
   mealCategory?: string
+  cuisine?: string
+  province?: string
   drawCardId?: string
 }
 
@@ -25,6 +28,8 @@ export function getTodayMockMeals(meals = mockMeals): MealRecord[] {
 export function createMockMeal(input: CreateMockMealInput): MealRecord {
   const id = makeMockId("meal")
   const createdAt = nowIso()
+  const mealCategory = input.mealCategory ?? "外卖午餐"
+  const cuisine = input.cuisine && input.province ? { cuisine: input.cuisine, province: input.province } : inferCuisineFromDish(mealCategory)
 
   return {
     id,
@@ -33,6 +38,8 @@ export function createMockMeal(input: CreateMockMealInput): MealRecord {
     status: "photo_ready",
     photoUri: input.photoUri ?? "mock://meal-photo",
     source: input.source ?? "photo",
+    cuisine: input.cuisine ?? cuisine.cuisine,
+    province: input.province ?? cuisine.province,
     createdAt,
     photoTakenAt: createdAt,
     updatedAt: createdAt,
@@ -40,14 +47,17 @@ export function createMockMeal(input: CreateMockMealInput): MealRecord {
     drawCardId: input.drawCardId,
     mealTime: createdAt,
     imageId: "mock-meal-photo",
-    mealCategory: input.mealCategory ?? "外卖午餐"
+    mealCategory
   }
 }
 
-export function attachAnalysisToMeal(meal: MealRecord, analysisId: string): MealRecord {
+export function attachAnalysisToMeal(meal: MealRecord, analysisId: string, analysis?: Pick<Analysis, "dishName" | "cuisine" | "province">): MealRecord {
   return {
     ...meal,
     analysisId,
+    mealCategory: analysis?.dishName ?? meal.mealCategory,
+    cuisine: analysis?.cuisine ?? meal.cuisine,
+    province: analysis?.province ?? meal.province,
     status: "analyzed",
     updatedAt: nowIso()
   }

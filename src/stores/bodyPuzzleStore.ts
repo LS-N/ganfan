@@ -24,6 +24,10 @@ import type { Analysis, ComfortTag, DailyCheckin, Feedback, Fullness, MealRecord
 type SeedScenario = 0 | 3 | 7
 
 type BodyPuzzleState = {
+  authUserId?: string
+  authLoading: boolean
+  authError?: string
+  guestMode: boolean
   profile?: Profile
   meals: MealRecord[]
   analyses: Analysis[]
@@ -33,8 +37,12 @@ type BodyPuzzleState = {
   report?: Report
   activeMealId?: string
   hydratePersistedData: () => Promise<void>
+  sendPhoneOtp: (phone: string) => Promise<void>
+  verifyPhoneOtp: (phone: string, token: string) => Promise<string>
+  signOut: () => Promise<void>
+  enterGuestMode: () => void
   setActiveMeal: (mealId: string) => void
-  completeMockProfile: (input?: { goal?: string; avoid?: string; budget?: string; feeling?: string }) => void
+  completeMockProfile: (input?: { goal?: string; avoid?: string; budget?: string; feeling?: string }) => Promise<void>
   createMockMeal: (mealType?: MealType, source?: MealRecord["source"], photoUri?: string) => string
   analyzeActiveMeal: (mode?: MockAnalysisMode) => void
   startActiveMeal: () => void
@@ -49,6 +57,8 @@ type BodyPuzzleState = {
 }
 
 export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
+  authLoading: false,
+  guestMode: false,
   meals: [],
   analyses: [],
   feedbacks: [],
@@ -56,28 +66,92 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
   weightLogs: [],
   hydratePersistedData: async () => {
     if (!shouldPersistProductData()) return
-    const profile = await getProfileRepository().getCurrentProfile()
-    const meals = await getMealRepository().listMeals()
-    const dailyCheckins = await getDailyCheckinRepository().listDailyCheckins()
-    const weightLogs = await getWeightRepository().listWeightLogs()
-    if (!meals.length && !profile) return
+    if (get().guestMode) return
+    set({ authLoading: true, authError: undefined })
+    try {
+      const previousActiveMealId = get().activeMealId
+      const authUserId = await authService.getSessionUserId()
+      if (!authUserId) {
+        set({ ...emptySignedOutState(), authLoading: false })
+        return
+      }
+      set({ ...emptySignedOutState(), authUserId, authLoading: true, authError: undefined })
+      const profile = await getProfileRepository().getCurrentProfile()
+      const meals = await getMealRepository().listMeals(authUserId)
+      const dailyCheckins = await getDailyCheckinRepository().listDailyCheckins(authUserId)
+      const weightLogs = await getWeightRepository().listWeightLogs(authUserId)
+      const activeMealId = meals.some((meal) => meal.id === previousActiveMealId) ? previousActiveMealId : meals[0]?.id
+      set({
+        authUserId,
+        profile,
+        meals,
+        analyses: meals.flatMap((meal) => (meal.analysis ? [meal.analysis] : [])),
+        feedbacks: meals.flatMap((meal) => (meal.feedback ? [meal.feedback] : [])),
+        dailyCheckins,
+        weightLogs,
+        activeMealId,
+        authLoading: false
+      })
+    } catch (error) {
+      set({ authLoading: false, authError: getErrorMessage(error) })
+    }
+  },
+  sendPhoneOtp: async (phone) => {
+    set({ authLoading: true, authError: undefined })
+    try {
+      await authService.sendPhoneOtp(phone)
+      set({ authLoading: false })
+    } catch (error) {
+      set({ authLoading: false, authError: getErrorMessage(error) })
+      throw error
+    }
+  },
+  verifyPhoneOtp: async (phone, token) => {
+    set({ authLoading: true, authError: undefined })
+    try {
+      const authUserId = await authService.verifyPhoneOtp(phone, token)
+      set({ authUserId, authLoading: true, authError: undefined })
+      await get().hydratePersistedData()
+      return authUserId
+    } catch (error) {
+      set({ authLoading: false, authError: getErrorMessage(error) })
+      throw error
+    }
+  },
+  signOut: async () => {
+    set({ authLoading: true, authError: undefined })
+    try {
+      await authService.signOut()
+      set({ ...emptySignedOutState(), authLoading: false })
+    } catch (error) {
+      set({ authLoading: false, authError: getErrorMessage(error) })
+      throw error
+    }
+  },
+  enterGuestMode: () => {
     set({
-      profile,
-      meals,
-      analyses: meals.flatMap((meal) => (meal.analysis ? [meal.analysis] : [])),
-      feedbacks: meals.flatMap((meal) => (meal.feedback ? [meal.feedback] : [])),
-      dailyCheckins,
-      weightLogs,
-      activeMealId: get().activeMealId ?? meals[0]?.id
+      ...emptySignedOutState(),
+      guestMode: true,
+      authUserId: mockUserId,
+      profile: {
+        ...mockProfile,
+        id: mockUserId,
+        updatedAt: nowIso()
+      },
+      authLoading: false,
+      authError: undefined
     })
   },
   setActiveMeal: (mealId) => {
     set({ activeMealId: mealId })
   },
-  completeMockProfile: (input) => {
+  completeMockProfile: async (input) => {
     const updatedAt = nowIso()
+    const sessionUserId = shouldPersistProductData() ? await authService.getSessionUserId() : mockUserId
+    const userId = sessionUserId ?? mockUserId
     const profile = {
         ...mockProfile,
+        id: userId,
         goal: mapGoal(input?.goal),
         budgetLevel: mapBudget(input?.budget),
         avoidances: mapAvoidances(input?.avoid),
@@ -85,14 +159,16 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
         commonFeelings: mapFeelings(input?.feeling),
         updatedAt
       }
-    set({ profile })
+    set({ profile, authUserId: userId })
     if (shouldPersistProductData()) {
-      void getProfileRepository().saveProfile(profile)
+      const saved = await getProfileRepository().saveProfile(profile)
+      set({ profile: saved, authUserId: saved.id })
     }
   },
   createMockMeal: (mealType = "lunch", source = "photo", photoUri?: string) => {
+    const userId = get().authUserId ?? mockUserId
     const meal = createMockMeal({
-      userId: mockUserId,
+      userId,
       mealType,
       source,
       photoUri,
@@ -113,7 +189,7 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
       const analysis = buildMockAnalysis(meal, mode)
       set((state) => ({
         analyses: [analysis, ...state.analyses.filter((item) => item.mealId !== meal.id)],
-        meals: state.meals.map((item) => (item.id === meal.id ? attachAnalysisToMeal({ ...item, analysis }, analysis.id) : item))
+        meals: state.meals.map((item) => (item.id === meal.id ? attachAnalysisToMeal({ ...item, analysis }, analysis.id, analysis) : item))
       }))
       if (shouldPersistProductData()) {
         void persistAnalysis(meal)
@@ -239,16 +315,7 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
     })
   },
   resetMockData: () => {
-    set({
-      profile: undefined,
-      meals: [],
-      analyses: [],
-      feedbacks: [],
-      dailyCheckins: [],
-      weightLogs: [],
-      report: undefined,
-      activeMealId: undefined
-    })
+    set(emptySignedOutState())
   }
 }))
 
@@ -303,7 +370,7 @@ function mapFeelings(value?: string) {
 }
 
 function shouldPersistProductData() {
-  return getServiceMode() !== "mock"
+  return getServiceMode() !== "mock" && !useBodyPuzzleStore.getState().guestMode
 }
 
 function localDateKey(date: Date) {
@@ -312,6 +379,26 @@ function localDateKey(date: Date) {
 
 function makeCheckinId(date: string) {
   return `checkin-${date}`
+}
+
+function emptySignedOutState() {
+  return {
+    authUserId: undefined,
+    guestMode: false,
+    profile: undefined,
+    meals: [],
+    analyses: [],
+    feedbacks: [],
+    dailyCheckins: [],
+    weightLogs: [],
+    report: undefined,
+    activeMealId: undefined
+  }
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message
+  return "操作失败，请稍后再试"
 }
 
 async function persistCreatedMeal(localMeal: MealRecord) {
@@ -358,9 +445,18 @@ async function persistAnalysis(meal: MealRecord) {
     }))
   })
   const saved = await getAnalysisRepository().saveAnalysis(analysis)
+  const enrichedMeal: MealRecord = {
+    ...meal,
+    status: "analyzed",
+    mealCategory: saved.dishName,
+    cuisine: saved.cuisine,
+    province: saved.province,
+    updatedAt: nowIso()
+  }
+  await getMealRepository().updateMeal(enrichedMeal)
   useBodyPuzzleStore.setState((current) => ({
     analyses: [saved, ...current.analyses.filter((item) => item.mealId !== meal.id)],
-    meals: current.meals.map((item) => (item.id === meal.id ? attachAnalysisToMeal({ ...item, analysis: saved }, saved.id) : item))
+    meals: current.meals.map((item) => (item.id === meal.id ? attachAnalysisToMeal({ ...item, ...enrichedMeal, analysis: saved }, saved.id, saved) : item))
   }))
 }
 

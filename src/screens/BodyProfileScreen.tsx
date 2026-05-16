@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Link } from "expo-router"
+import { Link, router } from "expo-router"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { Input, PrimaryButton } from "../components"
 import { useBodyPuzzleStore } from "../stores/bodyPuzzleStore"
@@ -10,6 +10,8 @@ export function BodyProfileScreen() {
   const meals = useBodyPuzzleStore((state) => state.meals)
   const weightLogs = useBodyPuzzleStore((state) => state.weightLogs)
   const saveWeightLog = useBodyPuzzleStore((state) => state.saveWeightLog)
+  const signOut = useBodyPuzzleStore((state) => state.signOut)
+  const authLoading = useBodyPuzzleStore((state) => state.authLoading)
   const [weightInput, setWeightInput] = useState(profile?.weightKg ? String(profile.weightKg) : "")
 
   if (!profile) {
@@ -73,6 +75,16 @@ export function BodyProfileScreen() {
 
       <View style={styles.dataBlock}>
         <Text style={styles.dataLabel}>数据管理</Text>
+        <Pressable
+          style={styles.dangerRow}
+          disabled={authLoading}
+          onPress={async () => {
+            await signOut()
+            router.replace("/")
+          }}
+        >
+          <Text style={styles.dangerText}>{authLoading ? "正在退出..." : "退出登录"}</Text>
+        </Pressable>
         <View style={styles.dangerRow}><Text style={styles.dangerText}>🗑️  清空所有饮食记录</Text></View>
         <View style={[styles.dangerRow, styles.deleteRow]}><Text style={styles.deleteText}>⚠️  注销账户 & 删除全部数据</Text></View>
       </View>

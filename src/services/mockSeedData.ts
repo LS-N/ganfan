@@ -1,4 +1,5 @@
 import type { AnalysisCorrection, Feedback, MealRecord, Profile } from "../types/meal"
+import { inferCuisineFromDish } from "../constants/provinces"
 
 export const mockUserId = "mock-user-001"
 
@@ -57,6 +58,7 @@ export function createMockMealSeed(count: 0 | 3 | 7): MealRecord[] {
     const heavyMeal = index === 1 || index === 5
     const mealStartedAt = createdAt
     const completedAt = daysAgoIso(count - index - 1, index % 2 === 0 ? 14 : 21)
+    const cuisine = inferCuisineFromDish(names[index])
 
     return {
       id: mealId,
@@ -65,6 +67,8 @@ export function createMockMealSeed(count: 0 | 3 | 7): MealRecord[] {
       status: "feedback_completed",
       photoUri: `mock://meal-photo-${index + 1}`,
       source: "photo",
+      cuisine: cuisine.cuisine,
+      province: cuisine.province,
       createdAt,
       photoTakenAt: createdAt,
       mealStartedAt,

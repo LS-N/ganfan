@@ -66,9 +66,10 @@ export function createProfileRepository(): ProfileRepository {
       const client = getSupabaseClient()
       if (!client) return mockProfileRepository.getCurrentProfile()
 
-      const userId = await authService.getUserId()
+      const userId = await authService.getSessionUserId()
+      if (!userId) return undefined
       const { data, error } = await client.from("profiles").select("*").eq("user_id", userId).maybeSingle<ProfileRow>()
-      if (error || !data) return mockProfileRepository.getCurrentProfile()
+      if (error || !data) return undefined
       return profileFromRow(data)
     },
     async saveProfile(profile) {
@@ -78,7 +79,7 @@ export function createProfileRepository(): ProfileRepository {
       const userId = await authService.getUserId()
       const row = profileToRow({ ...profile, id: userId, updatedAt: new Date().toISOString() }, userId)
       const { data, error } = await client.from("profiles").upsert(row).select("*").single<ProfileRow>()
-      if (error || !data) return mockProfileRepository.saveProfile({ ...profile, id: userId })
+      if (error || !data) throw new Error(error?.message || "profile_save_failed")
       return profileFromRow(data)
     }
   }

@@ -8,6 +8,8 @@ export type CreateMealInput = {
   photoUri?: string
   photoPath?: string
   mealCategory?: string
+  cuisine?: string
+  province?: string
   drawCardId?: string
 }
 
@@ -106,6 +108,9 @@ export type AiMealAnalysisService = {
 }
 
 export type AuthService = {
+  getSessionUserId(): Promise<string | undefined>
   getUserId(): Promise<string>
-  signInAnonymously(): Promise<string>
+  sendPhoneOtp(phone: string): Promise<void>
+  verifyPhoneOtp(phone: string, token: string): Promise<string>
+  signOut(): Promise<void>
 }

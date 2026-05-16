@@ -29,11 +29,20 @@ export function getMockRepositoryState() {
 }
 
 export const mockAuthService: AuthService = {
+  async getSessionUserId() {
+    return mockUserId
+  },
   async getUserId() {
     return mockUserId
   },
-  async signInAnonymously() {
+  async sendPhoneOtp() {
+    return undefined
+  },
+  async verifyPhoneOtp() {
     return mockUserId
+  },
+  async signOut() {
+    return undefined
   }
 }
 
@@ -71,7 +80,11 @@ export const mockMealRepository: MealRepository = {
 export const mockAnalysisRepository: AnalysisRepository = {
   async saveAnalysis(input: Analysis) {
     mockState.analyses = [input, ...mockState.analyses.filter((analysis) => analysis.mealId !== input.mealId)]
-    mockState.meals = mockState.meals.map((meal) => (meal.id === input.mealId ? { ...meal, analysis: input, analysisId: input.id, status: "analyzed", updatedAt: nowIso() } : meal))
+    mockState.meals = mockState.meals.map((meal) =>
+      meal.id === input.mealId
+        ? { ...meal, analysis: input, analysisId: input.id, mealCategory: input.dishName, cuisine: input.cuisine, province: input.province, status: "analyzed", updatedAt: nowIso() }
+        : meal
+    )
     return input
   },
   async saveCorrection(input: AnalysisCorrection & { mealId: string }) {

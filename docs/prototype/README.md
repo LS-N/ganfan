@@ -5,6 +5,7 @@
 ## 当前有效文件
 
 - `meal-agent-product-prototype.html`：唯一活原型 HTML。
+- `meal-agent-product-prototype-home-multi-meal-20260515.html`：首页多餐状态机对齐原型，用于确认 30 分钟主卡、当天未反馈提示、同餐追加和打卡日历定位；确认后再合并到正式实现。
 - `page-flow.md`：页面流转与核心路径。
 - `prototype-assets.md`：原型图、设计稿、截图、Figma 链接记录。
 - `confirmed-screens.md`：已确认页面说明。

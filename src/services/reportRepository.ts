@@ -62,14 +62,15 @@ export function createReportRepository(): ReportRepository {
 
       const userId = await authService.getUserId()
       const { data, error } = await client.from("body_puzzle_reports").insert(reportToRow(report, userId)).select("*").single<ReportRow>()
-      if (error || !data) return mockReportRepository.saveReport(report)
+      if (error || !data) throw new Error(error?.message || "report_save_failed")
       return reportFromRow(data, report.drawCards)
     },
-    async getLatestReport() {
+    async getLatestReport(userIdInput) {
       const client = getSupabaseClient()
       if (!client) return mockReportRepository.getLatestReport()
 
-      const userId = await authService.getUserId()
+      const userId = userIdInput ?? (await authService.getSessionUserId())
+      if (!userId) return undefined
       const { data, error } = await client
         .from("body_puzzle_reports")
         .select("*")
@@ -77,7 +78,7 @@ export function createReportRepository(): ReportRepository {
         .order("generated_at", { ascending: false })
         .limit(1)
         .maybeSingle<ReportRow>()
-      if (error || !data) return mockReportRepository.getLatestReport()
+      if (error || !data) return undefined
       return reportFromRow(data)
     }
   }

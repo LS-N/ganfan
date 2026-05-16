@@ -1,40 +1,88 @@
 import React, { useEffect, useState } from "react"
 import { router } from "expo-router"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
-import { PrimaryButton } from "../components"
+import { Input, PrimaryButton } from "../components"
 import { getMealTypeLabel, useBodyPuzzleStore } from "../stores/bodyPuzzleStore"
 import { colors, radius, size, spacing, typography } from "../theme"
 import type { MealType } from "../types/meal"
 
-type LoginMode = "role" | "new" | "returning"
-
 export function HomeScreen() {
   const profile = useBodyPuzzleStore((state) => state.profile)
+  const authUserId = useBodyPuzzleStore((state) => state.authUserId)
+  const authLoading = useBodyPuzzleStore((state) => state.authLoading)
+  const authError = useBodyPuzzleStore((state) => state.authError)
   const meals = useBodyPuzzleStore((state) => state.meals)
   const feedbacks = useBodyPuzzleStore((state) => state.feedbacks)
   const dailyCheckins = useBodyPuzzleStore((state) => state.dailyCheckins)
   const hydratePersistedData = useBodyPuzzleStore((state) => state.hydratePersistedData)
-  const loadSeedScenario = useBodyPuzzleStore((state) => state.loadSeedScenario)
+  const sendPhoneOtp = useBodyPuzzleStore((state) => state.sendPhoneOtp)
+  const verifyPhoneOtp = useBodyPuzzleStore((state) => state.verifyPhoneOtp)
+  const enterGuestMode = useBodyPuzzleStore((state) => state.enterGuestMode)
   const createMockMeal = useBodyPuzzleStore((state) => state.createMockMeal)
   const startActiveMeal = useBodyPuzzleStore((state) => state.startActiveMeal)
-  const [loginMode, setLoginMode] = useState<LoginMode>("role")
+  const [authMethod, setAuthMethod] = useState<"select" | "phone">("phone")
+  const [phone, setPhone] = useState("")
+  const [token, setToken] = useState("")
+  const [otpSent, setOtpSent] = useState(false)
   const [agreed, setAgreed] = useState(false)
+  const [loginError, setLoginError] = useState<string>()
   const recentMeal = meals[0]
   const homeStatus = getHomeStatus(recentMeal)
   const needsCheckin = feedbacks.length > 0 && !dailyCheckins.some((item) => item.date === new Date().toISOString().slice(0, 10))
+  const authMessage = loginError || authError ? formatAuthError(loginError ?? authError, "验证码发送失败") : undefined
 
   useEffect(() => {
     void hydratePersistedData()
   }, [hydratePersistedData])
 
-  function enterReturningUser() {
-    loadSeedScenario(7)
-    router.replace("/")
+  async function handleSendOtp() {
+    if (!agreed || !phone.trim()) return
+    setLoginError(undefined)
+    try {
+      await sendPhoneOtp(phone)
+      setOtpSent(true)
+    } catch (error) {
+      setLoginError(formatAuthError(error, "验证码发送失败"))
+    }
   }
 
-  function enterNewUserProfile() {
-    if (!agreed) return
-    router.push("/profile")
+  async function handleVerifyOtp() {
+    if (!phone.trim() || !token.trim()) return
+    setLoginError(undefined)
+    try {
+      await verifyPhoneOtp(phone, token)
+      const nextProfile = useBodyPuzzleStore.getState().profile
+      router.replace(nextProfile ? "/" : "/profile")
+    } catch (error) {
+      setLoginError(formatAuthError(error, "验证码校验失败"))
+    }
+  }
+
+  function handleSelectPhoneAuth() {
+    setLoginError(undefined)
+    if (!agreed) {
+      setLoginError("请先阅读并同意用户协议与隐私政策")
+      return
+    }
+    setAuthMethod("phone")
+    setOtpSent(false)
+    setToken("")
+  }
+
+  function handleWechatPlaceholder() {
+    setLoginError("微信登录需要开放平台 AppID、Universal Link 和后端换绑逻辑，本轮先占位")
+  }
+
+  function resetAuthSelection() {
+    setAuthMethod("select")
+    setOtpSent(false)
+    setToken("")
+    setLoginError(undefined)
+  }
+
+  function handleSkipLogin() {
+    enterGuestMode()
+    router.replace("/")
   }
 
   function startBackfillFromHome() {
@@ -45,7 +93,7 @@ export function HomeScreen() {
 
   if (!profile) {
     return (
-      <View style={styles.loginShell}>
+      <ScrollView style={styles.loginShell} contentContainerStyle={styles.loginShellContent} keyboardShouldPersistTaps="handled">
         <View style={styles.loginHero}>
           <Text style={styles.loginIcon}>🍽️</Text>
           <Text style={styles.loginTitle}>干饭</Text>
@@ -53,53 +101,91 @@ export function HomeScreen() {
           <Text style={styles.loginText}>用 AI 识别每一餐{"\n"}看见身体的反馈</Text>
         </View>
         <View style={styles.loginPanel}>
-          {loginMode === "role" ? (
+          <Pressable style={styles.skipLoginPrimaryButton} onPress={handleSkipLogin}>
+            <Text style={styles.skipLoginPrimaryText}>跳过登录，先体验</Text>
+            <Text style={styles.skipLoginPrimaryHint}>临时测试入口，不写入真实账号</Text>
+          </Pressable>
+          {authUserId ? (
             <>
-              <Pressable style={styles.primaryRole} onPress={() => setLoginMode("new")}>
-                <Text style={styles.primaryRoleTitle}>我是新用户</Text>
-                <Text style={styles.primaryRoleText}>先登录或注册，再完成建档和第一餐记录。</Text>
-              </Pressable>
-              <Pressable style={styles.secondaryRole} onPress={() => setLoginMode("returning")}>
-                <Text style={styles.secondaryRoleTitle}>我是老用户</Text>
-                <Text style={styles.secondaryRoleText}>带历史记录进入首页，直接查看身体拼图、周报和继续记录。</Text>
-              </Pressable>
-              <Text style={styles.prototypeHint}>1.0 原型演示入口 · 先选身份，再进入对应路径</Text>
+              <Text style={styles.authTitle}>继续完成建档</Text>
+              <Text style={styles.authDesc}>已登录手机号账号，完成身体档案后就能开始记录第一餐。</Text>
+              <PrimaryButton title="去建档 →" onPress={() => router.push("/profile")} />
             </>
-          ) : loginMode === "new" ? (
+          ) : authMethod === "select" ? (
             <>
-              <Text style={styles.authTitle}>新用户登录</Text>
-              <Text style={styles.authDesc}>登录后完成身体档案，开始记录第一餐。</Text>
-              <Pressable disabled={!agreed} style={[styles.wechatButton, !agreed && styles.disabledButton]} onPress={enterNewUserProfile}>
-                <Text style={styles.wechatButtonText}>💬 微信登录</Text>
+              <Text style={styles.authTitle}>手机号验证即登录</Text>
+              <Text style={styles.authDesc}>未注册手机号验证后会自动创建干饭账号，后续饮食记录才会写入你的云端档案。</Text>
+              <View style={styles.maskedPhoneBlock}>
+                <Text style={styles.maskedPhone}>手机号</Text>
+                <Text style={styles.maskedPhoneDesc}>验证码会发送到手机号；未注册会自动创建账号。</Text>
+              </View>
+              {authMessage ? <Text style={styles.authError}>{authMessage}</Text> : null}
+              <PrimaryButton title="手机号验证码登录" disabled={!agreed || authLoading} loading={authLoading} size="lg" onPress={handleSelectPhoneAuth} />
+              <Pressable style={styles.skipLoginButton} onPress={handleSkipLogin}>
+                <Text style={styles.skipLoginText}>跳过登录，先体验</Text>
               </Pressable>
-              <Pressable disabled={!agreed} style={[styles.phoneButton, !agreed && styles.disabledButton]} onPress={enterNewUserProfile}>
-                <Text style={styles.phoneButtonText}>手机号登录</Text>
+              <Pressable style={({ pressed }) => [styles.wechatAuthButton, pressed && styles.pressedButton]} onPress={handleWechatPlaceholder}>
+                <Text style={styles.wechatIcon}>💬</Text>
+                <Text style={styles.wechatAuthText}>微信登录</Text>
               </Pressable>
+              <Pressable style={styles.agreementRow} onPress={() => setAgreed((value) => !value)}>
+                <Text style={[styles.checkbox, agreed && styles.checkboxChecked]}>{agreed ? "✓" : ""}</Text>
+                <Text style={styles.agreementText}>我已阅读并同意《用户协议》、《隐私政策》和《手机号认证服务条款》，未注册手机号验证后将创建干饭账号</Text>
+              </Pressable>
+              <View style={styles.loginFooterRow}>
+                <Pressable onPress={handleSelectPhoneAuth}>
+                  <Text style={styles.loginFooterText}>其他登录方式</Text>
+                </Pressable>
+                <Text style={styles.loginFooterDivider}>|</Text>
+                <Pressable onPress={() => setLoginError("请联系测试管理员检查短信配置或 Supabase Auth 状态")}>
+                  <Text style={styles.loginFooterText}>登录遇到问题</Text>
+                </Pressable>
+              </View>
+            </>
+          ) : (
+            <>
+              <Text style={styles.authTitle}>输入手机号</Text>
+              <Text style={styles.authDesc}>手机号验证码校验通过即登录；如果这个手机号还没有账号，后台会自动创建。</Text>
+              <Input
+                label="手机号"
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                placeholder="输入手机号，国内号码可直接填 11 位"
+                editable={!authLoading}
+              />
+              {otpSent ? (
+                <Input
+                  label="验证码"
+                  value={token}
+                  onChangeText={setToken}
+                  keyboardType="number-pad"
+                  placeholder="输入短信验证码"
+                  editable={!authLoading}
+                />
+              ) : null}
+              {authMessage ? <Text style={styles.authError}>{authMessage}</Text> : null}
               <Pressable style={styles.agreementRow} onPress={() => setAgreed((value) => !value)}>
                 <Text style={[styles.checkbox, agreed && styles.checkboxChecked]}>{agreed ? "✓" : ""}</Text>
                 <Text style={styles.agreementText}>我已阅读并同意用户协议与隐私政策</Text>
               </Pressable>
-              <Pressable style={styles.returnButton} onPress={() => setLoginMode("role")}>
-                <Text style={styles.returnButtonText}>返回身份选择</Text>
-              </Pressable>
-            </>
-          ) : (
-            <>
-              <Text style={styles.authTitle}>老用户演示登录</Text>
-              <Text style={styles.authDesc}>进入带历史记录的演示账号，查看身体拼图、周报和继续记录。</Text>
-              <Pressable style={styles.wechatButton} onPress={enterReturningUser}>
-                <Text style={styles.wechatButtonText}>💬 微信登录</Text>
-              </Pressable>
-              <Pressable style={styles.phoneButton} onPress={enterReturningUser}>
-                <Text style={styles.phoneButtonText}>手机号登录</Text>
-              </Pressable>
-              <Pressable style={styles.returnButton} onPress={() => setLoginMode("role")}>
-                <Text style={styles.returnButtonText}>返回身份选择</Text>
+              {otpSent ? (
+                <PrimaryButton title={authLoading ? "校验中..." : "登录并继续 →"} disabled={!agreed || !token.trim() || authLoading} onPress={handleVerifyOtp} />
+              ) : (
+                <PrimaryButton title={authLoading ? "发送中..." : "获取验证码"} disabled={!agreed || !phone.trim() || authLoading} onPress={handleSendOtp} />
+              )}
+              {otpSent ? (
+                <Pressable style={styles.returnButton} onPress={() => setOtpSent(false)}>
+                  <Text style={styles.returnButtonText}>重新填写手机号</Text>
+                </Pressable>
+              ) : null}
+              <Pressable style={styles.returnButton} onPress={resetAuthSelection}>
+                <Text style={styles.returnButtonText}>返回登录方式</Text>
               </Pressable>
             </>
           )}
         </View>
-      </View>
+      </ScrollView>
     )
   }
 
@@ -249,6 +335,17 @@ function getHomeStatus(meal?: { status: string; feedbackDueAt?: string }) {
   return "empty"
 }
 
+function formatAuthError(error: unknown, fallback: string) {
+  const message = typeof error === "string" ? error : error instanceof Error ? error.message : fallback
+  if (/unsupported phone provider/i.test(message)) return "短信通道未配置或不可达，请联系管理员检查 Supabase Send SMS Hook"
+  if (/phone_otp_send_failed/i.test(message)) return "验证码发送失败，请稍后重试"
+  if (/phone_otp_verify_failed/i.test(message)) return "验证码校验失败，请确认短信验证码后重试"
+  if (/sms_provider_failed/i.test(message)) return "短信发送失败，请检查 Spug 发送地址"
+  if (/unauthorized_auth_hook/i.test(message)) return "短信回调鉴权失败，请检查 Hook token"
+  if (/auth_required/i.test(message)) return "请先完成手机号登录"
+  return message
+}
+
 function getGreeting() {
   const hour = new Date().getHours()
   if (hour >= 5 && hour < 10) return "早上好"
@@ -282,6 +379,9 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
     backgroundColor: colors.brandSurface
+  },
+  loginShellContent: {
+    flexGrow: 1
   },
   loginHero: {
     flex: 1,
@@ -368,6 +468,50 @@ const styles = StyleSheet.create({
     fontSize: typography.size.md,
     lineHeight: 20
   },
+  authError: {
+    color: colors.danger,
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+    lineHeight: 18
+  },
+  maskedPhoneBlock: {
+    alignItems: "center",
+    gap: spacing.xs,
+    marginVertical: spacing.md
+  },
+  maskedPhone: {
+    color: colors.textPrimary,
+    fontSize: typography.size.displaySm,
+    fontWeight: typography.weight.regular,
+    letterSpacing: 0
+  },
+  maskedPhoneDesc: {
+    color: colors.textMuted,
+    fontSize: typography.size.sm,
+    textAlign: "center"
+  },
+  wechatAuthButton: {
+    minHeight: size.controlLg,
+    borderWidth: 1.5,
+    borderColor: colors.borderStrong,
+    borderRadius: radius.pill,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceRaised
+  },
+  pressedButton: {
+    opacity: 0.86
+  },
+  wechatIcon: {
+    fontSize: 22
+  },
+  wechatAuthText: {
+    color: colors.textPrimary,
+    fontSize: typography.size.lg,
+    fontWeight: typography.weight.semibold
+  },
   wechatButton: {
     minHeight: 54,
     borderRadius: radius.pill,
@@ -421,6 +565,21 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
     lineHeight: 18
   },
+  loginFooterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.md,
+    marginTop: spacing.md
+  },
+  loginFooterText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.md
+  },
+  loginFooterDivider: {
+    color: colors.borderStrong,
+    fontSize: typography.size.md
+  },
   returnButton: {
     alignItems: "center",
     padding: spacing.sm
@@ -428,6 +587,38 @@ const styles = StyleSheet.create({
   returnButtonText: {
     color: colors.textSecondary,
     fontSize: typography.size.md,
+    fontWeight: typography.weight.semibold
+  },
+  skipLoginButton: {
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    padding: spacing.md,
+    backgroundColor: colors.surface
+  },
+  skipLoginText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.bold
+  },
+  skipLoginPrimaryButton: {
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: colors.brand,
+    borderRadius: radius.pill,
+    padding: spacing.md,
+    backgroundColor: colors.brandSurface
+  },
+  skipLoginPrimaryText: {
+    color: colors.brand,
+    fontSize: typography.size.lg,
+    fontWeight: typography.weight.black
+  },
+  skipLoginPrimaryHint: {
+    marginTop: spacing.xs,
+    color: colors.textMuted,
+    fontSize: typography.size.xs,
     fontWeight: typography.weight.semibold
   },
   container: {

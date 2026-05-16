@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react"
 import { router, useLocalSearchParams } from "expo-router"
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { CameraView, useCameraPermissions } from "expo-camera"
+import * as ImagePicker from "expo-image-picker"
 import { PrimaryButton } from "../components"
 import { prepareMealImage } from "../services/imageService"
 import { useBodyPuzzleStore } from "../stores/bodyPuzzleStore"
@@ -23,8 +24,9 @@ export function RecordScreen() {
   const [permission, requestPermission] = useCameraPermissions()
   const [captureMode, setCaptureMode] = useState<"camera" | "gallery">("camera")
   const [mealType, setMealType] = useState<MealType>("lunch")
-  const [recordMode, setRecordMode] = useState<"mode" | "shoot" | "selected">(params.mode === "shoot" ? "shoot" : "mode")
+  const [recordMode, setRecordMode] = useState<"mode" | "shoot" | "selected">(params.mode === "mode" ? "mode" : "shoot")
   const [photoUri, setPhotoUri] = useState<string>()
+  const [photoSource, setPhotoSource] = useState<"photo" | "album">("photo")
 
   useEffect(() => {
     if (params.mode === "shoot") {
@@ -33,7 +35,7 @@ export function RecordScreen() {
   }, [params.mode])
 
   function submit(uri = photoUri) {
-    createMockMeal(mealType, uri ? "photo" : "backfill", uri)
+    createMockMeal(mealType, uri ? photoSource : "backfill", uri)
     router.push("/analysis")
   }
 
@@ -49,7 +51,26 @@ export function RecordScreen() {
     }
     const photo = await cameraRef.current?.takePictureAsync({ quality: 0.8 })
     if (!photo?.uri) return
-    const preparedUri = await prepareMealImage(photo.uri)
+    const preparedUri = await prepareMealImage(photo.uri, { width: photo.width, height: photo.height })
+    setPhotoSource("photo")
+    setPhotoUri(preparedUri)
+    setRecordMode("selected")
+  }
+
+  async function pickFromGallery() {
+    setCaptureMode("gallery")
+    const mediaPermission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!mediaPermission.granted) return
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: false,
+      mediaTypes: "images",
+      quality: 1
+    })
+    if (result.canceled || !result.assets[0]?.uri) return
+
+    const preparedUri = await prepareMealImage(result.assets[0].uri, { width: result.assets[0].width, height: result.assets[0].height })
+    setPhotoSource("album")
     setPhotoUri(preparedUri)
     setRecordMode("selected")
   }
@@ -91,7 +112,7 @@ export function RecordScreen() {
           </View>
         </View>
         <View style={styles.previewBox}>
-          <Text style={styles.previewIcon}>🍱</Text>
+          {photoUri ? <Image source={{ uri: photoUri }} style={styles.previewImage} /> : <Text style={styles.previewIcon}>🍱</Text>}
           <Text style={styles.previewTitle}>{photoUri ? "已保存餐食照片" : "无照片记录"}</Text>
           <Pressable style={styles.retakePill} onPress={() => setRecordMode("shoot")}>
             <Text style={styles.retakeText}>重拍/重选</Text>
@@ -117,7 +138,7 @@ export function RecordScreen() {
           <Pressable style={[styles.modeButton, captureMode === "camera" && styles.modeButtonActive]} onPress={() => setCaptureMode("camera")}>
             <Text style={[styles.modeText, captureMode === "camera" && styles.modeTextActive]}>拍照</Text>
           </Pressable>
-          <Pressable style={[styles.modeButton, captureMode === "gallery" && styles.modeButtonActive]} onPress={() => setCaptureMode("gallery")}>
+          <Pressable style={[styles.modeButton, captureMode === "gallery" && styles.modeButtonActive]} onPress={pickFromGallery}>
             <Text style={[styles.modeText, captureMode === "gallery" && styles.modeTextActive]}>图片</Text>
           </Pressable>
         </View>
@@ -130,7 +151,7 @@ export function RecordScreen() {
         {captureMode === "camera" && permission?.granted ? (
           <CameraView ref={cameraRef} style={styles.cameraPreview} facing="back" />
         ) : (
-          <Pressable style={styles.lensBox} onPress={permission?.granted ? () => setRecordMode("selected") : requestPermission}>
+          <Pressable style={styles.lensBox} onPress={captureMode === "gallery" ? pickFromGallery : permission?.granted ? capturePhoto : requestPermission}>
             <View style={styles.lensCircle}>
               <Text style={styles.lensIcon}>{permission?.granted ? "🍽️" : "📷"}</Text>
             </View>
@@ -140,8 +161,10 @@ export function RecordScreen() {
 
         <View style={styles.shutterRow}>
           <View />
-          <Pressable style={styles.shutter} onPress={capturePhoto} />
-          <Text style={styles.galleryIcon}>▧</Text>
+          <Pressable style={styles.shutter} onPress={captureMode === "gallery" ? pickFromGallery : capturePhoto} />
+          <Pressable onPress={pickFromGallery} hitSlop={10}>
+            <Text style={styles.galleryIcon}>▧</Text>
+          </Pressable>
         </View>
         <Text style={styles.captureHint}>{captureMode === "camera" ? "拍食物" : "选择后会立即开始分析"}</Text>
       </View>
@@ -380,7 +403,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
     backgroundColor: colors.brandSurface
+  },
+  previewImage: {
+    width: "100%",
+    height: 320
   },
   previewIcon: {
     fontSize: 52

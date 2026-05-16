@@ -73,7 +73,7 @@ export function createAnalysisRepository(): AnalysisRepository {
 
       const userId = await authService.getUserId()
       const { data, error } = await client.from("analyses").insert(analysisToRow(input, userId)).select("*").single<AnalysisRow>()
-      if (error || !data) return mockAnalysisRepository.saveAnalysis(input)
+      if (error || !data) throw new Error(error?.message || "analysis_save_failed")
       return analysisFromRow(data)
     },
     async saveCorrection(input: AnalysisCorrection & { mealId: string; analysisId?: string }) {
@@ -93,18 +93,39 @@ export function createAnalysisRepository(): AnalysisRepository {
         })
         .select("id, field, ai_value, user_value, corrected_at")
         .single<{ id: string; field: string; ai_value: string; user_value: string; corrected_at: string }>()
-      if (error || !data) return mockAnalysisRepository.saveCorrection(input)
+      if (error || !data) throw new Error(error?.message || "analysis_correction_save_failed")
       return { id: data.id, field: data.field, aiValue: data.ai_value, userValue: data.user_value, correctedAt: data.corrected_at }
     },
-    async listAnalyses() {
-      return mockAnalysisRepository.listAnalyses()
+    async listAnalyses(userIdInput) {
+      const client = getSupabaseClient()
+      if (!client) return mockAnalysisRepository.listAnalyses()
+
+      const userId = userIdInput ?? (await authService.getSessionUserId())
+      if (!userId) return []
+      const { data, error } = await client
+        .from("analyses")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .returns<AnalysisRow[]>()
+      if (error || !data) return []
+      return data.map(analysisFromRow)
     },
     async getAnalysisByMeal(mealId) {
       const client = getSupabaseClient()
       if (!client) return mockAnalysisRepository.getAnalysisByMeal(mealId)
 
-      const { data, error } = await client.from("analyses").select("*").eq("meal_id", mealId).order("created_at", { ascending: false }).limit(1).maybeSingle<AnalysisRow>()
-      if (error || !data) return mockAnalysisRepository.getAnalysisByMeal(mealId)
+      const userId = await authService.getSessionUserId()
+      if (!userId) return undefined
+      const { data, error } = await client
+        .from("analyses")
+        .select("*")
+        .eq("meal_id", mealId)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<AnalysisRow>()
+      if (error || !data) return undefined
       return analysisFromRow(data)
     }
   }

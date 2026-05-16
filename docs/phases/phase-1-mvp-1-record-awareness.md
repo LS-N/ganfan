@@ -48,7 +48,7 @@
 | 任务 | 产出 | 关键逻辑 | 验收 |
 |---|---|---|---|
 | T1-01 执行 Supabase Migration 001 | `supabase/migrations/001_core_tables.sql` 执行成功 | 创建 1.0 核心表并启用完整 RLS | Supabase Dashboard 中存在所有 1.0 表，完整 RLS 策略已启用 |
-| T1-02 Supabase Auth 集成 | `api/supabase.ts`、登录/注册界面、`app/onboarding/index.tsx` | 邮箱 + 密码注册登录，token 持久化 | 能注册新账户，登录后跳转主界面 |
+| T1-02 Supabase Auth 集成 | `api/supabase.ts`、登录/注册界面、`app/onboarding/index.tsx` | 手机号 OTP 注册/登录，验证码发送后自动建号，token 持久化 | 能注册新账户，登录后跳转主界面 |
 | T1-03 用户建档流程 | `app/onboarding/basic-info.tsx`、`goals.tsx` | 写入 `profiles` 表并同步本地 SQLite；字段：age、gender、height_cm、goal、health_background[]、avoid | 首次登录后进入建档流程，完成后 `profiles` 表有数据 |
 | T1-04 本地 SQLite 初始化 | `db/schema.ts`、`db/migrations/001.ts` | App 启动自动创建 SQLite，表结构与 Supabase 一致 | App 启动时 SQLite 数据库自动创建 |
 | T1-05 营养向量库初始化 | `supabase/migrations/000_pgvector_nutrition.sql`、`nutrition_seed/cn_nutrition_db.csv`、`services/ai/nutrition/embedder.py` | 建 nutrition_items + pgvector 索引；导入 >=1000 条数据；OpenAI `text-embedding-3-small` 批量生成向量 | nutrition_items >=1000 条；embedding 非空；红烧肉精确查询有结果；东坡肉向量搜索命中红烧肉且 score >= 0.8 |

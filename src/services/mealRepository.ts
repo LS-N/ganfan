@@ -10,6 +10,9 @@ type MealRow = {
   meal_type: MealType
   status: MealStatus
   source: MealSource
+  dish: string | null
+  cuisine: string | null
+  province: string | null
   photo_path: string | null
   photo_taken_at: string | null
   meal_started_at: string | null
@@ -74,6 +77,8 @@ export function mealFromRow(row: MealRow): MealRecord {
     status: row.status,
     photoUri: row.photo_path ?? undefined,
     source: row.source,
+    cuisine: row.cuisine ?? analysis?.cuisine,
+    province: row.province ?? analysis?.province,
     createdAt: row.created_at,
     photoTakenAt: row.photo_taken_at ?? undefined,
     mealStartedAt: row.meal_started_at ?? undefined,
@@ -88,7 +93,7 @@ export function mealFromRow(row: MealRow): MealRecord {
     feedbackId: feedback?.id,
     mealTime: row.created_at,
     imageId: row.photo_path ?? undefined,
-    mealCategory: analysis?.dishName ?? "这一餐"
+    mealCategory: row.dish ?? analysis?.dishName ?? "这一餐"
   }
 }
 
@@ -99,6 +104,9 @@ export function mealToRow(input: CreateMealInput, userId: string) {
     meal_type: input.mealType ?? "lunch",
     status: "draft" as MealStatus,
     source: input.source ?? "photo",
+    dish: input.mealCategory ?? null,
+    cuisine: input.cuisine ?? null,
+    province: input.province ?? null,
     photo_path: input.photoPath ?? input.photoUri ?? null,
     photo_taken_at: input.photoUri ? now : null,
     meal_started_at: null,
@@ -116,24 +124,29 @@ export function createMealRepository(): MealRepository {
 
       const userId = await authService.getUserId()
       const { data, error } = await client.from("meals").insert(mealToRow(input, userId)).select("*").single<MealRow>()
-      if (error || !data) return mockMealRepository.createMeal(input)
+      if (error || !data) throw new Error(error?.message || "meal_create_failed")
       return mealFromRow(data)
     },
     async updateMealStatus(mealId, status) {
       const client = getSupabaseClient()
       if (!client) return mockMealRepository.updateMealStatus(mealId, status)
 
-      const { error } = await client.from("meals").update({ status, updated_at: new Date().toISOString() }).eq("id", mealId)
-      if (error) await mockMealRepository.updateMealStatus(mealId, status)
+      const userId = await authService.getUserId()
+      const { error } = await client.from("meals").update({ status, updated_at: new Date().toISOString() }).eq("id", mealId).eq("user_id", userId)
+      if (error) throw new Error(error.message || "meal_status_update_failed")
     },
     async updateMeal(meal) {
       const client = getSupabaseClient()
       if (!client) return mockMealRepository.updateMeal(meal)
 
+      const userId = await authService.getUserId()
       const { data, error } = await client
         .from("meals")
         .update({
           status: meal.status,
+          dish: meal.mealCategory ?? meal.analysis?.dishName ?? null,
+          cuisine: meal.cuisine ?? meal.analysis?.cuisine ?? null,
+          province: meal.province ?? meal.analysis?.province ?? null,
           photo_path: meal.photoUri ?? null,
           meal_started_at: meal.mealStartedAt ?? null,
           feedback_due_at: meal.feedbackDueAt ?? null,
@@ -141,31 +154,40 @@ export function createMealRepository(): MealRepository {
           updated_at: new Date().toISOString()
         })
         .eq("id", meal.id)
+        .eq("user_id", userId)
         .select("*")
         .single<MealRow>()
-      if (error || !data) return mockMealRepository.updateMeal(meal)
+      if (error || !data) throw new Error(error?.message || "meal_update_failed")
       return mealFromRow(data)
     },
-    async listMeals() {
+    async listMeals(userIdInput) {
       const client = getSupabaseClient()
       if (!client) return mockMealRepository.listMeals()
 
-      const userId = await authService.getUserId()
+      const userId = userIdInput ?? (await authService.getSessionUserId())
+      if (!userId) return []
       const { data, error } = await client
         .from("meals")
         .select("*, analyses(*), analysis_corrections(*), feedbacks(*)")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .returns<MealRow[]>()
-      if (error || !data) return mockMealRepository.listMeals()
+      if (error || !data) return []
       return data.map(mealFromRow)
     },
     async getMeal(mealId) {
       const client = getSupabaseClient()
       if (!client) return mockMealRepository.getMeal(mealId)
 
-      const { data, error } = await client.from("meals").select("*, analyses(*), analysis_corrections(*), feedbacks(*)").eq("id", mealId).maybeSingle<MealRow>()
-      if (error || !data) return mockMealRepository.getMeal(mealId)
+      const userId = await authService.getSessionUserId()
+      if (!userId) return undefined
+      const { data, error } = await client
+        .from("meals")
+        .select("*, analyses(*), analysis_corrections(*), feedbacks(*)")
+        .eq("id", mealId)
+        .eq("user_id", userId)
+        .maybeSingle<MealRow>()
+      if (error || !data) return undefined
       return mealFromRow(data)
     }
   }

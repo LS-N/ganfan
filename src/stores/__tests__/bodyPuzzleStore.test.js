@@ -28,4 +28,21 @@ describe("bodyPuzzleStore", () => {
     expect(state.meals[0].corrections).toHaveLength(1)
     expect(state.meals[0].status).toBe("feedback_completed")
   })
+
+  test("lets testers enter guest mode without real auth", () => {
+    process.env.EXPO_PUBLIC_SERVICE_MODE = "hybrid"
+    process.env.EXPO_PUBLIC_SUPABASE_URL = "https://example.supabase.co"
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = "anon-key"
+
+    useBodyPuzzleStore.getState().enterGuestMode()
+    const mealId = useBodyPuzzleStore.getState().createMockMeal("dinner", "photo")
+    useBodyPuzzleStore.getState().analyzeActiveMeal()
+
+    const state = useBodyPuzzleStore.getState()
+    expect(state.guestMode).toBe(true)
+    expect(state.profile).toBeTruthy()
+    expect(state.activeMealId).toBe(mealId)
+    expect(state.meals).toHaveLength(1)
+    expect(state.analyses).toHaveLength(1)
+  })
 })

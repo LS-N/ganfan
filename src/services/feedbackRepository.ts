@@ -62,16 +62,17 @@ export function createFeedbackRepository(): FeedbackRepository {
 
       const userId = await authService.getUserId()
       const { data, error } = await client.from("feedbacks").insert(feedbackToRow(input, userId)).select("*").single<FeedbackRow>()
-      if (error || !data) return mockFeedbackRepository.saveFeedback(input)
+      if (error || !data) throw new Error(error?.message || "feedback_save_failed")
       return feedbackFromRow(data)
     },
-    async listFeedbacks() {
+    async listFeedbacks(userIdInput) {
       const client = getSupabaseClient()
       if (!client) return mockFeedbackRepository.listFeedbacks()
 
-      const userId = await authService.getUserId()
+      const userId = userIdInput ?? (await authService.getSessionUserId())
+      if (!userId) return []
       const { data, error } = await client.from("feedbacks").select("*").eq("user_id", userId).order("submitted_at", { ascending: false }).returns<FeedbackRow[]>()
-      if (error || !data) return mockFeedbackRepository.listFeedbacks()
+      if (error || !data) return []
       return data.map(feedbackFromRow)
     }
   }

@@ -46,6 +46,12 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "允许干饭从相册选择餐食照片，用于饮食记录和分析。"
+        }
+      ],
+      [
         "expo-notifications",
         {
           "color": "#2D6A4F"

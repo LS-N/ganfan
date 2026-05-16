@@ -17,12 +17,12 @@
 | 任务 | 验收项 |
 |---|---|
 | T1-01 | Supabase Dashboard 中存在所有 1.0 表；RLS 策略已启用 |
-| T1-02 | 能注册新账户；登录后跳转主界面；token 持久化 |
+| T1-02 | 手机号 OTP 能注册新账户；验证码校验后登录并跳转主界面；token 持久化 |
 | T1-03 | 首次登录进入建档流程；完成后 `profiles` 表有数据 |
 | T1-04 | App 启动时 SQLite 数据库自动创建；表结构与 Supabase 一致 |
 | T1-05 | `nutrition_items` >=1000 条；embedding 非空；红烧肉精确查询有结果；东坡肉向量搜索命中红烧肉且 score >=0.8 |
 
-Sprint 1 总验收：能注册登录，能填写个人档案，数据同时写入 SQLite 和 Supabase，营养向量库已初始化。
+Sprint 1 总验收：手机号 OTP 能完成注册登录，能填写个人档案，数据同时写入 SQLite 和 Supabase，营养向量库已初始化。
 
 ## Sprint 2 验收
 

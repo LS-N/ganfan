@@ -16,22 +16,32 @@ export function ProfileScreen() {
   const completeMockProfile = useBodyPuzzleStore((state) => state.completeMockProfile)
   const [stepIndex, setStepIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string>()
   const step = steps[stepIndex]
   const selected = answers[step.key]
 
-  function handleNext() {
-    if (!selected) return
+  async function handleNext() {
+    if (!selected || saving) return
     if (stepIndex < steps.length - 1) {
       setStepIndex((current) => current + 1)
       return
     }
-    completeMockProfile({
-      goal: answers.goal,
-      avoid: answers.avoid,
-      budget: answers.budget,
-      feeling: answers.feeling
-    })
-    router.replace("/")
+    setSaving(true)
+    setError(undefined)
+    try {
+      await completeMockProfile({
+        goal: answers.goal,
+        avoid: answers.avoid,
+        budget: answers.budget,
+        feeling: answers.feeling
+      })
+      router.replace("/")
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "建档失败，请稍后再试")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -55,7 +65,8 @@ export function ProfileScreen() {
         })}
       </View>
 
-      <PrimaryButton title={stepIndex < steps.length - 1 ? "继续 →" : "开始记录 →"} disabled={!selected} onPress={handleNext} />
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      <PrimaryButton title={saving ? "保存中..." : stepIndex < steps.length - 1 ? "继续 →" : "开始记录 →"} disabled={!selected || saving} onPress={handleNext} />
     </ScrollView>
   )
 }
@@ -98,6 +109,11 @@ const styles = StyleSheet.create({
   options: {
     gap: spacing.md,
     marginBottom: spacing.sm
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: "700"
   },
   option: {
     minHeight: 56,

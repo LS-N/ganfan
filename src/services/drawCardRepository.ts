@@ -55,20 +55,22 @@ export function createDrawCardRepository(): DrawCardRepository {
 
       const userId = userIdInput ?? (await authService.getUserId())
       const { data, error } = await client.from("draw_cards").insert(cards.map((card) => drawCardToRow(card, userId, reportId))).select("*").returns<DrawCardRow[]>()
-      if (error || !data) return mockDrawCardRepository.saveDrawCards(cards, userId, reportId)
+      if (error || !data) throw new Error(error?.message || "draw_cards_save_failed")
       return data.map(drawCardFromRow)
     },
     async updateDecision(cardId, accepted) {
       const client = getSupabaseClient()
       if (!client) return mockDrawCardRepository.updateDecision(cardId, accepted)
 
+      const userId = await authService.getUserId()
       const { data, error } = await client
         .from("draw_cards")
         .update({ accepted, decided_at: new Date().toISOString() })
         .eq("id", cardId)
+        .eq("user_id", userId)
         .select("*")
         .single<DrawCardRow>()
-      if (error || !data) return mockDrawCardRepository.updateDecision(cardId, accepted)
+      if (error || !data) throw new Error(error?.message || "draw_card_update_failed")
       return drawCardFromRow(data)
     }
   }

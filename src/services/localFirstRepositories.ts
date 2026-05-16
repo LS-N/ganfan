@@ -12,6 +12,7 @@ import type {
   SaveMealImageInput,
   WeightRepository
 } from "./repositoryTypes"
+import { authService } from "./authService"
 import { mockProfile, mockUserId, nowIso, makeMockId } from "./mockSeedData"
 import { createMockMeal, attachFeedbackToMeal, createMockFeedback } from "./mockMealService"
 
@@ -23,6 +24,8 @@ type MealDbRow = {
   source: MealRecord["source"]
   photo_uri: string | null
   dish: string | null
+  cuisine: string | null
+  province: string | null
   meal_started_at: string | null
   feedback_due_at: string | null
   completed_at: string | null
@@ -56,6 +59,8 @@ type FeedbackDbRow = {
 export const localProfileRepository: ProfileRepository = {
   async getCurrentProfile() {
     const db = await getDatabase()
+    const userId = await authService.getSessionUserId()
+    if (!userId) return undefined
     const row = await db.getFirstAsync<{
       user_id: string
       age_range: Profile["ageRange"] | null
@@ -69,7 +74,7 @@ export const localProfileRepository: ProfileRepository = {
       common_feelings: string
       created_at: string
       updated_at: string
-    }>("SELECT * FROM profiles LIMIT 1")
+    }>("SELECT * FROM profiles WHERE user_id = ? LIMIT 1", userId)
     if (!row) return undefined
     const height = row.height_cm ?? mockProfile.height
     const weight = row.weight_kg ?? mockProfile.weight
@@ -137,18 +142,22 @@ export const localMealRepository: MealRepository = {
       source: input.source,
       photoUri: input.photoUri ?? input.photoPath,
       mealCategory: input.mealCategory,
+      cuisine: input.cuisine,
+      province: input.province,
       drawCardId: input.drawCardId
     })
     const saved = input.id ? { ...meal, id: input.id } : meal
     await db.runAsync(
-      `INSERT OR REPLACE INTO meals (id, user_id, ts, meal_type, status, dish, source, photo_uri, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO meals (id, user_id, ts, meal_type, status, dish, cuisine, province, source, photo_uri, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       saved.id,
       saved.userId ?? mockUserId,
       new Date(saved.createdAt).getTime(),
       saved.mealType,
       saved.status,
       saved.mealCategory ?? null,
+      saved.cuisine ?? null,
+      saved.province ?? null,
       saved.source,
       saved.photoUri ?? null,
       saved.createdAt,
@@ -160,27 +169,37 @@ export const localMealRepository: MealRepository = {
   async updateMealStatus(mealId, status) {
     const db = await getDatabase()
     const updatedAt = nowIso()
-    await db.runAsync("UPDATE meals SET status = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?", status, updatedAt, mealId)
+    const userId = await authService.getSessionUserId()
+    if (!userId) return
+    await db.runAsync("UPDATE meals SET status = ?, updated_at = ?, sync_status = 'pending' WHERE id = ? AND user_id = ?", status, updatedAt, mealId, userId)
     await enqueue("meal", mealId, "status", { status, updatedAt })
   },
   async updateMeal(meal) {
     const db = await getDatabase()
+    const userId = await authService.getSessionUserId()
+    if (!userId) return meal
     await db.runAsync(
-      `UPDATE meals SET status=?, photo_uri=?, meal_started_at=?, feedback_due_at=?, completed_at=?, daily_checkin_id=?, updated_at=?, sync_status='pending' WHERE id=?`,
+      `UPDATE meals SET status=?, dish=?, cuisine=?, province=?, photo_uri=?, meal_started_at=?, feedback_due_at=?, completed_at=?, daily_checkin_id=?, updated_at=?, sync_status='pending' WHERE id=? AND user_id=?`,
       meal.status,
+      meal.mealCategory ?? meal.analysis?.dishName ?? null,
+      meal.cuisine ?? meal.analysis?.cuisine ?? null,
+      meal.province ?? meal.analysis?.province ?? null,
       meal.photoUri ?? null,
       meal.mealStartedAt ?? null,
       meal.feedbackDueAt ?? null,
       meal.completedAt ?? null,
       null,
       meal.updatedAt,
-      meal.id
+      meal.id,
+      userId
     )
     await enqueue("meal", meal.id, "upsert", meal)
     return meal
   },
-  async listMeals(userId = mockUserId) {
+  async listMeals(userIdInput?: string) {
     const db = await getDatabase()
+    const userId = userIdInput ?? (await authService.getSessionUserId())
+    if (!userId) return []
     const rows = await db.getAllAsync<MealDbRow>("SELECT * FROM meals WHERE user_id = ? ORDER BY created_at DESC", userId)
     const analyses = await localAnalysisRepository.listAnalyses(userId)
     const feedbacks = await localFeedbackRepository.listFeedbacks(userId)
@@ -193,7 +212,9 @@ export const localMealRepository: MealRepository = {
   },
   async getMeal(mealId) {
     const db = await getDatabase()
-    const row = await db.getFirstAsync<MealDbRow>("SELECT * FROM meals WHERE id = ?", mealId)
+    const userId = await authService.getSessionUserId()
+    if (!userId) return undefined
+    const row = await db.getFirstAsync<MealDbRow>("SELECT * FROM meals WHERE id = ? AND user_id = ?", mealId, userId)
     if (!row) return undefined
     const analysis = await localAnalysisRepository.getAnalysisByMeal(mealId)
     const feedbacks = await localFeedbackRepository.listFeedbacks(row.user_id)
@@ -222,12 +243,25 @@ export const localAnalysisRepository: AnalysisRepository = {
         portionLevel: input.portionLevel,
         feedbackFocus: input.feedbackFocus,
         confidence: input.confidence,
+        cuisine: input.cuisine,
+        province: input.province,
         imageQualityNote: input.imageQualityNote
       }),
       input.source,
       input.createdAt
     )
-    await db.runAsync("UPDATE meals SET status='analyzed', dish=?, updated_at=?, sync_status='pending' WHERE id=?", input.dishName, nowIso(), input.mealId)
+    const userId = await authService.getSessionUserId()
+    if (userId) {
+      await db.runAsync(
+        "UPDATE meals SET status='analyzed', dish=?, cuisine=?, province=?, updated_at=?, sync_status='pending' WHERE id=? AND user_id=?",
+        input.dishName,
+        input.cuisine ?? null,
+        input.province ?? null,
+        nowIso(),
+        input.mealId,
+        userId
+      )
+    }
     await enqueue("meal_analysis", input.mealId, "upsert", input)
     return input
   },
@@ -247,14 +281,32 @@ export const localAnalysisRepository: AnalysisRepository = {
     await enqueue("meal_correction", correction.id, "upsert", correction)
     return correction
   },
-  async listAnalyses() {
+  async listAnalyses(userIdInput?: string) {
     const db = await getDatabase()
-    const rows = await db.getAllAsync<AnalysisDbRow>("SELECT * FROM meal_analysis ORDER BY created_at DESC")
+    const userId = userIdInput ?? (await authService.getSessionUserId())
+    if (!userId) return []
+    const rows = await db.getAllAsync<AnalysisDbRow>(
+      `SELECT meal_analysis.*
+       FROM meal_analysis
+       JOIN meals ON meals.id = meal_analysis.meal_id
+       WHERE meals.user_id = ?
+       ORDER BY meal_analysis.created_at DESC`,
+      userId
+    )
     return rows.map(analysisFromDbRow)
   },
   async getAnalysisByMeal(mealId) {
     const db = await getDatabase()
-    const row = await db.getFirstAsync<AnalysisDbRow>("SELECT * FROM meal_analysis WHERE meal_id = ?", mealId)
+    const userId = await authService.getSessionUserId()
+    if (!userId) return undefined
+    const row = await db.getFirstAsync<AnalysisDbRow>(
+      `SELECT meal_analysis.*
+       FROM meal_analysis
+       JOIN meals ON meals.id = meal_analysis.meal_id
+       WHERE meal_analysis.meal_id = ? AND meals.user_id = ?`,
+      mealId,
+      userId
+    )
     return row ? analysisFromDbRow(row) : undefined
   }
 }
@@ -288,13 +340,31 @@ export const localFeedbackRepository: FeedbackRepository = {
       feedback.submittedAt,
       feedback.createdAt
     )
-    await db.runAsync("UPDATE meals SET status='feedback_completed', completed_at=?, updated_at=?, sync_status='pending' WHERE id=?", feedback.submittedAt, feedback.submittedAt, input.mealId)
+    const userId = await authService.getSessionUserId()
+    if (userId) {
+      await db.runAsync(
+        "UPDATE meals SET status='feedback_completed', completed_at=?, updated_at=?, sync_status='pending' WHERE id=? AND user_id=?",
+        feedback.submittedAt,
+        feedback.submittedAt,
+        input.mealId,
+        userId
+      )
+    }
     await enqueue("meal_feedback", input.mealId, "upsert", feedback)
     return feedback
   },
-  async listFeedbacks() {
+  async listFeedbacks(userIdInput?: string) {
     const db = await getDatabase()
-    const rows = await db.getAllAsync<FeedbackDbRow>("SELECT * FROM meal_feedback ORDER BY submitted_at DESC")
+    const userId = userIdInput ?? (await authService.getSessionUserId())
+    if (!userId) return []
+    const rows = await db.getAllAsync<FeedbackDbRow>(
+      `SELECT meal_feedback.*
+       FROM meal_feedback
+       JOIN meals ON meals.id = meal_feedback.meal_id
+       WHERE meals.user_id = ?
+       ORDER BY meal_feedback.submitted_at DESC`,
+      userId
+    )
     return rows.map(feedbackFromDbRow)
   }
 }
@@ -346,13 +416,17 @@ export const localDailyCheckinRepository: DailyCheckinRepository = {
     await enqueue("daily_checkin", checkin.id, "upsert", checkin)
     return checkin
   },
-  async listDailyCheckins(userId = mockUserId) {
+  async listDailyCheckins(userIdInput?: string) {
     const db = await getDatabase()
+    const userId = userIdInput ?? (await authService.getSessionUserId())
+    if (!userId) return []
     const rows = await db.getAllAsync<DailyCheckinRow>("SELECT * FROM daily_checkins WHERE user_id = ? ORDER BY date DESC", userId)
     return rows.map(checkinFromRow)
   },
-  async getDailyCheckin(date, userId = mockUserId) {
+  async getDailyCheckin(date, userIdInput?: string) {
     const db = await getDatabase()
+    const userId = userIdInput ?? (await authService.getSessionUserId())
+    if (!userId) return undefined
     const row = await db.getFirstAsync<DailyCheckinRow>("SELECT * FROM daily_checkins WHERE user_id = ? AND date = ?", userId, date)
     return row ? checkinFromRow(row) : undefined
   }
@@ -366,8 +440,10 @@ export const localWeightRepository: WeightRepository = {
     await enqueue("weight_log", log.id, "upsert", log)
     return log
   },
-  async listWeightLogs(userId = mockUserId) {
+  async listWeightLogs(userIdInput?: string) {
     const db = await getDatabase()
+    const userId = userIdInput ?? (await authService.getSessionUserId())
+    if (!userId) return []
     return db.getAllAsync<WeightLog>("SELECT id, user_id as userId, value_kg as valueKg, recorded_at as recordedAt FROM weight_logs WHERE user_id = ? ORDER BY recorded_at DESC", userId)
   }
 }
@@ -390,9 +466,16 @@ export const localMealImageRepository: MealImageRepository = {
   },
   async listMealImages(mealId) {
     const db = await getDatabase()
+    const userId = await authService.getSessionUserId()
+    if (!userId) return []
     const rows = await db.getAllAsync<{ id: string; meal_id: string; image_type: MealImage["imageType"]; local_uri: string | null; storage_url: string | null; created_at: string }>(
-      "SELECT * FROM meal_images WHERE meal_id = ? ORDER BY created_at ASC",
-      mealId
+      `SELECT meal_images.*
+       FROM meal_images
+       JOIN meals ON meals.id = meal_images.meal_id
+       WHERE meal_images.meal_id = ? AND meals.user_id = ?
+       ORDER BY meal_images.created_at ASC`,
+      mealId,
+      userId
     )
     return rows.map((row) => ({ id: row.id, mealId: row.meal_id, imageType: row.image_type, localUri: row.local_uri ?? undefined, storageUrl: row.storage_url ?? undefined, createdAt: row.created_at }))
   }
@@ -422,6 +505,8 @@ function mealFromDbRow(row: MealDbRow, analysis?: Analysis, feedback?: Feedback)
     status: row.status,
     photoUri: row.photo_uri ?? undefined,
     source: row.source,
+    cuisine: row.cuisine ?? analysis?.cuisine,
+    province: row.province ?? analysis?.province,
     createdAt: row.created_at,
     photoTakenAt: row.photo_uri ? row.created_at : undefined,
     mealStartedAt: row.meal_started_at ?? undefined,
@@ -449,6 +534,8 @@ function analysisFromDbRow(row: AnalysisDbRow): Analysis {
     portionLevel?: Analysis["portionLevel"]
     feedbackFocus?: string[]
     confidence?: Analysis["confidence"]
+    cuisine?: string
+    province?: string
     imageQualityNote?: string
   }>(row.analysis_meta, {})
   const oilLevel = meta.oilLevel ?? "unknown"
@@ -456,6 +543,8 @@ function analysisFromDbRow(row: AnalysisDbRow): Analysis {
     id: row.id,
     mealId: row.meal_id,
     dishName: row.dish ?? "这一餐",
+    cuisine: meta.cuisine,
+    province: meta.province,
     structureSummary: meta.structureSummary ?? "已保存本餐分析。",
     stapleLevel: meta.stapleLevel ?? "unknown",
     proteinLevel: meta.proteinLevel ?? "unknown",

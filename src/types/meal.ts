@@ -74,6 +74,8 @@ export type MealAnalysis = {
   id: string
   mealId: string
   dishName: string
+  cuisine?: string
+  province?: string
   structureSummary: string
   stapleLevel: Level
   proteinLevel: Level
@@ -177,6 +179,8 @@ export type Meal = {
   status: MealStatus
   photoUri?: string
   source: MealSource
+  cuisine?: string
+  province?: string
   createdAt: string
   photoTakenAt?: string
   mealStartedAt?: string
