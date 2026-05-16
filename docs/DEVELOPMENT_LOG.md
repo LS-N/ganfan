@@ -253,3 +253,15 @@ This document is the reusable development log template for the Ganfan project. I
 - Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; `origin` is `https://github.com/LS-N/ganfan.git`; commit/push outcome recorded by this run after staging decisions.
 - Next step: Decide whether to publish the full pending tracked changeset now, or to commit only the log entry and leave the rest for an explicit reviewed PR.
 - Reusable lesson: Treat untracked artifacts as hostile by default; whitelist only intended source/docs changes for automated commits.
+
+## 2026-05-16 17:02 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only verified changes (excluding secrets/env/keys/caches/build outputs).
+- Work done: Inspected `git status`, current branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; confirmed `node_modules` presence; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`; reviewed untracked list for forbidden artifacts.
+- Result: Lint/typecheck/tests are green; repo has many untracked paths, so this automation only stages the development log entry for a safe sync.
+- Problems: Working tree contains untracked items that must not be committed (notably `android/app/debug.keystore`, `services/ai/**/__pycache__/`, `.tmp/` and various screenshots).
+- Fixes: None applied (kept conservative); no staging performed for untracked artifacts.
+- Checks: `npm.cmd run lint` PASS; `npm.cmd run typecheck` PASS; `npm.cmd test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; HEAD `e1d5678`; plan is to commit only `docs/DEVELOPMENT_LOG.md` and push to upstream without force-push.
+- Next step: Manually review the pending untracked set; decide which are intended to be added, and add `.gitignore` entries (e.g. `__pycache__/`, `.tmp/`, screenshots) in a separate reviewed change.
+- Reusable lesson: When the repo has mixed “real work” + local artifacts, automated commits should be restricted to docs/logs until staging rules are explicitly codified.
