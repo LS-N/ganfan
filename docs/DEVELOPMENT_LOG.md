@@ -265,3 +265,15 @@ This document is the reusable development log template for the Ganfan project. I
 - Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; HEAD `e1d5678`; plan is to commit only `docs/DEVELOPMENT_LOG.md` and push to upstream without force-push.
 - Next step: Manually review the pending untracked set; decide which are intended to be added, and add `.gitignore` entries (e.g. `__pycache__/`, `.tmp/`, screenshots) in a separate reviewed change.
 - Reusable lesson: When the repo has mixed “real work” + local artifacts, automated commits should be restricted to docs/logs until staging rules are explicitly codified.
+
+## 2026-05-17 09:02 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only safe, verified changes.
+- Work done: Inspected `git status`, current branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; confirmed `package.json` + `node_modules` presence; ran `npm run lint`, `npm run typecheck`, and `npm test`.
+- Result: Lint/typecheck/tests are green; repo contains many untracked paths, so this run only records the state in the development log for a conservative sync.
+- Problems: Untracked files include forbidden artifacts (notably `services/ai/.env`, log outputs, `__pycache__/`, screenshots, and `android/`), so auto-staging project files would be unsafe.
+- Fixes: None applied (kept conservative); no project files staged besides the development log entry.
+- Checks: `npm run lint` PASS; `npm run typecheck` PASS; `npm test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; HEAD `09f3518`; commit/push outcome recorded by this run after staging.
+- Next step: Manually review and explicitly whitelist intended files to add; ensure secrets/logs/caches are ignored before enabling broader auto-commit.
+- Reusable lesson: When untracked paths include potential secrets (e.g. `.env`) or generated artifacts, restrict automation commits to logs/docs only.
