@@ -277,3 +277,14 @@ This document is the reusable development log template for the Ganfan project. I
 - Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; HEAD `09f3518`; commit/push outcome recorded by this run after staging.
 - Next step: Manually review and explicitly whitelist intended files to add; ensure secrets/logs/caches are ignored before enabling broader auto-commit.
 - Reusable lesson: When untracked paths include potential secrets (e.g. `.env`) or generated artifacts, restrict automation commits to logs/docs only.
+## 2026-05-17 17:06 - 17:00 automation run
+
+- Goal: Conservative GitHub sync + record repo health at 17:00.
+- Work done: Inspected git status/branch/remote/recent commits; read `docs/PROJECT_STATUS.md`; ran `npm run lint`, `npm run typecheck`, `npm test`; fetched remotes (`git fetch --prune`).
+- Result: Lint PASS; typecheck PASS; tests FAIL (Jest workers OOM / spawn UNKNOWN). No user files staged due to failing checks and many untracked paths present.
+- Problems: `npm test` terminated with JavaScript heap OOM and jest-worker SIGTERM; Node reported `spawn UNKNOWN`.
+- Fixes: None applied (automation policy: no source/deps changes; only log update).
+- Checks: `npm.cmd run lint` PASS; `npm.cmd run typecheck` PASS; `npm.cmd test` FAIL (OOM).
+- Git/GitHub: Branch `codex/V0.1` tracks `origin/codex/V0.1`; `git fetch --prune` OK; working tree has untracked paths (not staged); automation will commit/push only this log entry.
+- Next step: Re-run tests with lower parallelism (e.g. Jest `--runInBand`) or increase available memory/pagefile; then decide which untracked changes are intended to add.
+- Reusable lesson: When Windows memory/pagefile is constrained, Jest parallel workers can OOM; prefer `--runInBand` or raising available memory before trusting test results.
