@@ -121,3 +121,182 @@ This document is the reusable development log template for the Ganfan project. I
 - Git/GitHub: Pending branch is `main` with remote `origin https://github.com/LS-N/ganfan.git`; recent commits are `8ecea34 docs: require timestamps in development log`, `529d209 docs: add development log workflow`, and `f1d1f5b chore: complete mvp0 engineering entry`; next action is to commit and push this verified change set.
 - Next step: Commit the current safe docs and dependency updates, then continue with Android preview verification, Expo project ID replacement, Expo/EAS login, and EAS preview validation.
 - Reusable lesson: On locked-down Windows shells, treat `npm.ps1` execution-policy failures as environment entry issues first; rerun the same package checks via `npm.cmd` and log the distinction clearly.
+
+## 2026-04-30 17:03 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync, record repository health, and only publish safe verified changes.
+- Work done: Inspected `git status`, branch, `origin`, upstream tracking, and recent commits; reviewed `docs/PROJECT_STATUS.md`; attempted `git fetch --prune`; scanned the changed Markdown files for likely secret strings; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd run test`.
+- Result: Repository remains on `main` tracking `origin/main` with 13 pending documentation updates; local lint, typecheck, and test checks passed, but Git cannot stage/commit from this sandbox.
+- Problems: `git fetch --prune` reports `error: cannot open '.git/FETCH_HEAD': Permission denied`, and `git add` fails with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied`, so remote sync and commits are blocked from this environment.
+- Fixes: No permission/ACL changes were applied during this automation run; only recorded the blocker and validated local checks.
+- Checks: `npm.cmd run lint` passed; `npm.cmd run typecheck` passed; `npm.cmd run test` passed with `No tests found`; no `.env`, keys, tokens, certificates, build outputs, or caches were detected in the staged change set.
+- Git/GitHub: Branch is `main` (upstream `origin/main`), remote is `origin https://github.com/LS-N/ganfan.git`; current HEAD is `a0f0d4e` and working tree remains dirty with documentation changes because staging/commit is blocked by `.git` write permissions.
+- Next step: Commit and push the pending documentation updates; then resolve the `.git/FETCH_HEAD` permission issue so `git fetch/pull` is reliable in future automations.
+- Reusable lesson: Treat Git metadata write failures as first-class automation blockers; log them early so sync/CI outcomes are not misattributed to code changes.
+
+## 2026-05-06 17:50 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync, record repository health, and publish only verified safe changes.
+- Work done: Inspected `git status`, current branch, `origin`, recent commits, and `docs/PROJECT_STATUS.md`; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd run test`; attempted `git fetch --prune` and `git add -A`.
+- Result: Local lint, typecheck, and test checks passed; working tree remains dirty with pending doc + app changes, and no commit/push was possible from this environment.
+- Problems: `git fetch --prune` failed with `error: cannot open '.git/FETCH_HEAD': Permission denied`; staging failed with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied`.
+- Fixes: None applied in this run; recorded the Git sandbox permission blocker.
+- Checks: `npm.cmd run lint` passed; `npm.cmd run typecheck` passed; `npm.cmd run test` passed with `No tests found`.
+- Git/GitHub: On `main` tracking `origin/main` at `a0f0d4e`; `origin` is `https://github.com/LS-N/ganfan.git`; fetch/stage/commit/push blocked by `.git` write permissions.
+- Next step: Run the same commit/push from an environment that can write `.git` (or adjust sandbox/ACL) to publish the current verified changeset.
+- Reusable lesson: In automations, test `.git` writeability early; when blocked, still run app checks and keep the dev log as the source of truth.
+
+## 2026-05-07 17:04 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync, record repository health, and publish only safe verified changes.
+- Work done: Inspected `git status`, current branch, `origin`, recent commits, and `docs/PROJECT_STATUS.md`; ran `npm.cmd run lint` and `npm.cmd run typecheck`; attempted `npm.cmd test`; attempted `git add -- docs/DEVELOPMENT_LOG.md`.
+- Result: Lint and typecheck passed; tests failed to execute in this environment; no staging/commit/push was possible from this sandbox.
+- Problems: `npm.cmd test` failed with `spawn EPERM` (Jest cannot spawn worker processes); `git add` failed with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied`.
+- Fixes: None applied in this run; recorded the environment limitations instead of bypassing checks.
+- Checks: `npm.cmd run lint` passed; `npm.cmd run typecheck` passed; `npm.cmd test` failed with `spawn EPERM`.
+- Git/GitHub: On `main` tracking `origin/main` at `a0f0d4e`; working tree contains many pending changes; staging/commit/push blocked by `.git` write restrictions in this environment.
+- Next step: Re-run `npm test` in a local environment that allows process spawning (or configure Jest to `--runInBand` for this runner) and then stage/commit/push the pending safe change set.
+- Reusable lesson: Treat sandbox limitations (process spawn, `.git` write locks) as first-class blockers; never mark checks as passed when the runner cannot execute them.
+
+## 2026-05-10 19:11 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync, record repository health, and publish only verified safe changes.
+- Work done: Inspected `git status`, current branch and upstream, `origin` remote, recent commits, and `docs/PROJECT_STATUS.md`; enumerated untracked files; scanned the repo for obvious secret patterns (`EXPO_TOKEN`, Supabase, OpenAI key markers) and found only documented references (no actual secrets).
+- Result: Repo is on `main` tracking `origin/main` at `a0f0d4e` with a large pending change set (docs + app code + prototypes); checks are not fully green because lint currently fails in this environment.
+- Problems: `npm.cmd run lint` fails because ESLint traverses `.claude/worktrees/**` and hits a `tsconfigRootDir` ambiguity when multiple TS config roots exist.
+- Fixes: No code/config changes applied in this automation run; recorded the lint failure and its root cause instead of bypassing checks.
+- Checks: `npm.cmd run lint` failed (`No tsconfigRootDir was set ... multiple candidate TSConfigRootDirs`); `npm.cmd run typecheck` passed; `npm.cmd test` passed (`No tests found, exiting with code 0`).
+- Git/GitHub: Branch `main` upstream `origin/main`; remote `origin` is `https://github.com/LS-N/ganfan.git`; due to lint failure, this run should only commit/push the development log (if Git staging is possible) and avoid publishing the broader pending change set.
+- Next step: Update lint configuration to ignore `.claude/` (or set an explicit `tsconfigRootDir`), rerun lint to green, then stage/commit/push the pending app + docs changes from a Git environment that can write `.git`.
+- Reusable lesson: When a repo contains tool worktrees (`.claude/`, etc.), lint should explicitly ignore them; otherwise automation checks will fail even if product code is healthy.
+
+## 2026-05-10 19:11 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync, record repository health, and publish only verified safe changes.
+- Work done: Inspected `git status`, current branch (`main`), upstream (`origin/main`), `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; enumerated changed/untracked files; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`.
+- Result: Typecheck passed; tests exited 0 (no tests found) but reported a `.claude` haste collision; lint failed, so no staging/commit/push was performed.
+- Problems: `npm.cmd run lint` fails with `@typescript-eslint/parser` error about multiple `TSConfigRootDir` candidates caused by `.claude/worktrees/*` being inside the repo; repository has a large dirty working tree including untracked `.claude/` and `.netlify-publish/` paths that should not be committed.
+- Fixes: None in this run; only recorded the failure and current repo state.
+- Checks: `npm.cmd run lint` failed (tsconfigRootDir ambiguity); `npm.cmd run typecheck` passed; `npm.cmd test` exited 0 with `jest-haste-map` naming collision warning referencing `.claude/worktrees/*/package.json`.
+- Git/GitHub: On `main` tracking `origin/main` at `a0f0d4e`; working tree has modified tracked files (docs + app) and many untracked prototype/backups; no commit created; no push attempted.
+- Next step: Decide whether to (a) remove `.claude/worktrees/*` from the repo working directory, or (b) add ignores (ESLint + Jest) so local tooling does not traverse `.claude/`; then rerun `npm.cmd run lint` and commit/push the intended changeset excluding local caches/backups.
+- Reusable lesson: Keep tool worktrees/caches out of the repo tree (or explicitly ignore them) to prevent lint/test false failures and to keep automated sync conservative.
+
+## 2026-05-11 09:43 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync, record repository health, and publish only verified safe changes.
+- Work done: Inspected `git status`, current branch and upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; enumerated untracked files; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`.
+- Result: Repo remains on `claude/meal-agent-ux-improvements` tracking `origin/claude/meal-agent-ux-improvements` at `ca3abb6` with a large pending change set; lint is not green due to `.claude/worktrees/**` traversal; staging/commit/push is blocked in this environment.
+- Problems: `npm.cmd run lint` fails because ESLint traverses `.claude/worktrees/**` and hits a `tsconfigRootDir` ambiguity when multiple TS config roots exist; `git add` fails with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied`; `git push` fails with `schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS`.
+- Fixes: No code/config changes applied in this automation run; recorded the lint failure and its root cause instead of bypassing checks.
+- Checks: `npm.cmd run lint` failed (`No tsconfigRootDir was set ... multiple candidate TSConfigRootDirs`); `npm.cmd run typecheck` passed; `npm.cmd test` passed (`No tests found, exiting with code 0`).
+- Git/GitHub: Due to lint failure, stage/commit/push should be limited to `docs/DEVELOPMENT_LOG.md` only; however this run could not stage/commit/push because `.git/index.lock` cannot be created and the runner lacks GitHub credentials.
+- Next step: Update lint configuration to ignore `.claude/` (or set an explicit `tsconfigRootDir`), rerun lint to green, then stage/commit/push the intended changeset excluding `.claude/`, `.netlify-publish/`, and prototype backup outputs.
+- Reusable lesson: When a repo contains tool worktrees (`.claude/`, etc.), lint/test should explicitly ignore them; otherwise automation checks will fail even if product code is healthy.
+
+## 2026-05-11 17:05 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `claude/meal-agent-ux-improvements`, record repository health, and publish only verified safe changes (preferably just this log if checks fail).
+- Work done: Inspected `git status`, branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; enumerated modified/untracked files; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`.
+- Result: Repo is still on `claude/meal-agent-ux-improvements` tracking `origin/claude/meal-agent-ux-improvements` at `ca3abb6` with a large pending change set; typecheck and tests pass, but lint is not green due to `.claude/worktrees/**` traversal; staging/commit/push is blocked in this environment.
+- Problems: `npm.cmd run lint` fails with `@typescript-eslint/parser` complaining `No tsconfigRootDir was set` because multiple TS config roots are detected (repo root + `.claude/worktrees/*`); `git add` fails with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied`; `git push` fails with `schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS`.
+- Fixes: No code/config changes applied in this run; kept sync conservative by recording the failure and avoiding staging/pushing the broader changeset.
+- Checks: `npm.cmd run lint` failed (tsconfigRootDir ambiguity); `npm.cmd run typecheck` passed; `npm.cmd test` exited 0 (`No tests found`).
+- Git/GitHub: Branch `claude/meal-agent-ux-improvements` upstream `origin/claude/meal-agent-ux-improvements`; attempted to stage/commit/push only `docs/DEVELOPMENT_LOG.md`, but Git metadata writes (`.git/index.lock`) and GitHub auth are not available in this runner.
+- Next step: Decide on the repo policy for `.claude/` (remove from repo tree vs ignore in ESLint/Jest), fix lint to green, then stage/commit/push the intended change set excluding tool caches and backup outputs.
+- Reusable lesson: Tool worktrees inside the repo (`.claude/worktrees/**`) can poison automated checks; proactively exclude them from lint/test globs to keep CI-like checks meaningful.
+
+## 2026-05-12 10:12 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `claude/meal-agent-ux-improvements`, verify repo health with safe checks, and publish only verified safe changes.
+- Work done: Inspected `git status`, branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; enumerated modified/untracked paths; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`.
+- Result: Typecheck and tests pass, but lint is not green due to `.claude/worktrees/**` traversal; to keep the sync conservative, only `docs/DEVELOPMENT_LOG.md` is eligible for staging/commit in this run.
+- Problems: `npm.cmd run lint` fails with `@typescript-eslint/parser` error `No tsconfigRootDir was set` because multiple TS config roots are detected (repo root + `.claude/worktrees/*`); untracked `.netlify-publish/` and prototype backup outputs exist and must not be committed.
+- Fixes: None applied in this run (no config changes); recorded the exact failure mode and current repository state.
+- Checks: `npm.cmd run lint` failed (tsconfigRootDir ambiguity); `npm.cmd run typecheck` passed; `npm.cmd test` exited 0 (`No tests found, exiting with code 0`).
+- Git/GitHub: Branch `claude/meal-agent-ux-improvements` upstream `origin/claude/meal-agent-ux-improvements`; attempted to stage only `docs/DEVELOPMENT_LOG.md`, but `git add` failed with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied`, so no commit/push was created.
+- Next step: Update tooling config so ESLint/Jest ignore `.claude/` (or set an explicit `tsconfigRootDir`), then rerun lint to green and commit/push the intended changeset excluding `.claude/`, `.netlify-publish/`, and backup outputs.
+- Reusable lesson: Keep tool worktrees/caches out of the repo tree (or explicitly ignore them) so local checks reflect product code health and automation can safely sync.
+
+## 2026-05-13 17:03 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only verified changes (excluding secrets, caches, and backup outputs).
+- Work done: Inspected `git status`, current branch, `origin` remote, recent commits, and `docs/PROJECT_STATUS.md`; verified `node_modules` presence; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`.
+- Result: Lint, typecheck, and tests are green in this environment; staging/commit/push could not be performed due to `.git` write restrictions, so no GitHub sync was published.
+- Problems: `git add` fails with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied` (cannot write `.git`); branch `codex/V0.1` has no upstream configured; untracked backup directories exist (must remain uncommitted).
+- Fixes: Used `npm.cmd` / `cmd /c npm ...` to bypass PowerShell `npm.ps1` execution policy; no changes applied to Git permissions or upstream configuration in this run.
+- Checks: `npm.cmd run lint` passed; `npm.cmd run typecheck` passed; `npm.cmd run test` passed (`No tests found`).
+- Git/GitHub: Branch `codex/V0.1`; no upstream configured; `origin` is `https://github.com/LS-N/ganfan.git`; HEAD at `ca3abb6` (also `origin/claude/meal-agent-ux-improvements`); staging is blocked by `.git` write permissions.
+- Next step: Run stage/commit/push from an environment that can write `.git` and has GitHub credentials; when pushing, decide whether to publish `codex/V0.1` (set upstream with `git push -u origin codex/V0.1`) or fast-forward/merge into the intended remote branch.
+- Reusable lesson: On Windows with restricted PowerShell policies, prefer `npm.cmd` (or `cmd /c npm ...`) to reliably run checks in automations.
+
+## 2026-05-14 17:03 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only verified changes (excluding secrets, env files, caches, and backup outputs).
+- Work done: Inspected `git status`, current branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; confirmed `package.json` + `node_modules` presence; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`.
+- Result: Lint, typecheck, and tests are green in this environment; repo has multiple modified/untracked paths, but this automation did not change any project files besides this log entry.
+- Problems: PowerShell blocks `npm.ps1` due to execution policy (used `npm.cmd` instead); branch `codex/V0.1` still has no upstream configured; untracked cache/backup-like paths exist (e.g. `services/ai/nutrition/__pycache__/`) and must not be committed.
+- Fixes: None applied in this run (kept conservative); used `npm.cmd` to bypass PowerShell script execution policy for checks.
+- Checks: `npm.cmd run lint` passed; `npm.cmd run typecheck` passed; `npm.cmd test` passed (7 suites, 12 tests).
+- Git/GitHub: No upstream configured for `codex/V0.1`; `origin` is `https://github.com/LS-N/ganfan.git`; attempted to stage/commit only `docs/DEVELOPMENT_LOG.md`, but Git metadata writes failed with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied`, so no commit SHA or push was produced.
+- Next step: From a fully-permissioned environment, review the pending changeset, ensure secrets/caches/backups are excluded, then decide whether to publish `codex/V0.1` by setting upstream (`git push -u origin codex/V0.1`) or to merge/rebase into the intended remote branch before pushing.
+- Reusable lesson: On Windows automations, call `npm.cmd` (not `npm`) to avoid PowerShell execution policy issues with `npm.ps1`.
+
+## 2026-05-16 09:02 - 09:00 automation run
+
+- Goal: Conservative GitHub sync on `codex/V0.1` with safe checks, then publish only verified changes (excluding secrets/env/keys/caches/build outputs).
+- Work done: Inspected `git status`, branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; confirmed `node_modules` present; ran `npm run lint`, `npm run typecheck`, and `npm test`.
+- Result: Lint/typecheck/tests are green; working tree contains many modified tracked files plus multiple untracked paths (including cache-like folders and an Android debug keystore) requiring careful staging.
+- Problems: Untracked paths include items that must never be committed (e.g. `android/app/debug.keystore`, `services/ai/**/__pycache__/`, `.tmp/`).
+- Fixes: None applied in this run (kept conservative); only this log entry was authored by the automation.
+- Checks: `npm run lint` PASS; `npm run typecheck` PASS; `npm test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; `origin` is `https://github.com/LS-N/ganfan.git`; commit/push outcome recorded by this run after staging decisions.
+- Next step: Decide whether to publish the full pending tracked changeset now, or to commit only the log entry and leave the rest for an explicit reviewed PR.
+- Reusable lesson: Treat untracked artifacts as hostile by default; whitelist only intended source/docs changes for automated commits.
+
+## 2026-05-16 17:02 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only verified changes (excluding secrets/env/keys/caches/build outputs).
+- Work done: Inspected `git status`, current branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; confirmed `node_modules` presence; ran `npm.cmd run lint`, `npm.cmd run typecheck`, and `npm.cmd test`; reviewed untracked list for forbidden artifacts.
+- Result: Lint/typecheck/tests are green; repo has many untracked paths, so this automation only stages the development log entry for a safe sync.
+- Problems: Working tree contains untracked items that must not be committed (notably `android/app/debug.keystore`, `services/ai/**/__pycache__/`, `.tmp/` and various screenshots).
+- Fixes: None applied (kept conservative); no staging performed for untracked artifacts.
+- Checks: `npm.cmd run lint` PASS; `npm.cmd run typecheck` PASS; `npm.cmd test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; HEAD `e1d5678`; plan is to commit only `docs/DEVELOPMENT_LOG.md` and push to upstream without force-push.
+- Next step: Manually review the pending untracked set; decide which are intended to be added, and add `.gitignore` entries (e.g. `__pycache__/`, `.tmp/`, screenshots) in a separate reviewed change.
+- Reusable lesson: When the repo has mixed “real work” + local artifacts, automated commits should be restricted to docs/logs until staging rules are explicitly codified.
+
+## 2026-05-17 09:02 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only safe, verified changes.
+- Work done: Inspected `git status`, current branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; confirmed `package.json` + `node_modules` presence; ran `npm run lint`, `npm run typecheck`, and `npm test`.
+- Result: Lint/typecheck/tests are green; repo contains many untracked paths, so this run only records the state in the development log for a conservative sync.
+- Problems: Untracked files include forbidden artifacts (notably `services/ai/.env`, log outputs, `__pycache__/`, screenshots, and `android/`), so auto-staging project files would be unsafe.
+- Fixes: None applied (kept conservative); no project files staged besides the development log entry.
+- Checks: `npm run lint` PASS; `npm run typecheck` PASS; `npm test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; HEAD `09f3518`; commit/push outcome recorded by this run after staging.
+- Next step: Manually review and explicitly whitelist intended files to add; ensure secrets/logs/caches are ignored before enabling broader auto-commit.
+- Reusable lesson: When untracked paths include potential secrets (e.g. `.env`) or generated artifacts, restrict automation commits to logs/docs only.
+## 2026-05-17 17:06 - 17:00 automation run
+
+- Goal: Conservative GitHub sync + record repo health at 17:00.
+- Work done: Inspected git status/branch/remote/recent commits; read `docs/PROJECT_STATUS.md`; ran `npm run lint`, `npm run typecheck`, `npm test`; fetched remotes (`git fetch --prune`).
+- Result: Lint PASS; typecheck PASS; tests FAIL (Jest workers OOM / spawn UNKNOWN). No user files staged due to failing checks and many untracked paths present.
+- Problems: `npm test` terminated with JavaScript heap OOM and jest-worker SIGTERM; Node reported `spawn UNKNOWN`.
+- Fixes: None applied (automation policy: no source/deps changes; only log update).
+- Checks: `npm.cmd run lint` PASS; `npm.cmd run typecheck` PASS; `npm.cmd test` FAIL (OOM).
+- Git/GitHub: Branch `codex/V0.1` tracks `origin/codex/V0.1`; `git fetch --prune` OK; working tree has untracked paths (not staged); automation will commit/push only this log entry.
+- Next step: Re-run tests with lower parallelism (e.g. Jest `--runInBand`) or increase available memory/pagefile; then decide which untracked changes are intended to add.
+- Reusable lesson: When Windows memory/pagefile is constrained, Jest parallel workers can OOM; prefer `--runInBand` or raising available memory before trusting test results.
+
+## 2026-05-18 09:03 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only safe, verified changes.
+- Work done: Inspected `git status`, branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; fetched remotes (`git fetch --prune`); ran `npm run lint`, `npm run typecheck`, and `npm test`.
+- Result: Lint/typecheck/tests are green; repo contains many untracked paths, so this run only commits the development log entry for a conservative sync.
+- Problems: Working tree has extensive untracked items including potentially-forbidden artifacts (e.g. `android/`, `services/ai/**/__pycache__/`, `.tmp/`, screenshots) and additional untracked source/test files; auto-staging project files would be unsafe without an explicit whitelist.
+- Fixes: None applied (automation policy: do not modify source/deps); recorded current state and check results.
+- Checks: `npm run lint` PASS; `npm run typecheck` PASS; `npm test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; `git fetch --prune` OK; staging/commit restricted to `docs/DEVELOPMENT_LOG.md` only; push outcome recorded by this run after commit.
+- Next step: Manually review the untracked set; decide what is intended to add, and add `.gitignore`/staging rules to exclude caches, screenshots, keystores, and other generated artifacts before enabling broader auto-commit.
+- Reusable lesson: When untracked content includes potential secrets or generated artifacts, keep automation commits to a narrow allowlist (e.g. docs/logs) until explicit ignore + staging rules exist.

@@ -1,6 +1,6 @@
 import React from "react"
 import { StyleSheet, Text, View } from "react-native"
-import { colors, spacing } from "../styles/tokens"
+import { colors, spacing, typography } from "../theme"
 import { PrimaryButton } from "./PrimaryButton"
 
 type EmptyStateProps = {
@@ -29,12 +29,13 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: "600"
+    fontSize: typography.size.titleSm,
+    fontWeight: typography.weight.semibold
   },
   description: {
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: typography.size.base,
+    lineHeight: typography.lineHeight.md,
     textAlign: "center"
   }
 })

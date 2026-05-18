@@ -8,3 +8,16 @@ build/
 .DS_Store
 coverage/
 *.log
+expo-*.log
+
+# Local Netlify folder
+.netlify/
+.netlify-publish/
+
+# Local AI agent workspaces and caches
+.claude/
+.codex/
+
+# Supabase CLI local state and generated seed outputs
+supabase/.temp/
+supabase/generated/

@@ -1,6 +1,6 @@
 import React from "react"
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native"
-import { colors, spacing } from "../styles/tokens"
+import { colors, spacing, typography } from "../theme"
 
 type LoadingStateProps = {
   text?: string
@@ -24,6 +24,6 @@ const styles = StyleSheet.create({
   },
   text: {
     color: colors.textSecondary,
-    fontSize: 14
+    fontSize: typography.size.base
   }
 })

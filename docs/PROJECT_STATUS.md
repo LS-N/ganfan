@@ -1,102 +1,63 @@
 # Project Status
 
-## Current Stage
+## Current Authority
 
-Current stage: MVP 0.1 specification preparation.
+The complete implementation blueprint is now the single source of truth:
 
-The MVP 0.0 engineering baseline is ready for continued development. Full MVP 0.1 business coding should still wait for prototype confirmation and PRD V1 completion.
+```text
+docs/02-master-blueprint.md
+```
 
-## Stage Plan
+All phase development documents and acceptance documents are derived from that blueprint.
 
-| Stage | Goal | Main Work | Exit Criteria |
-|---|---|---|---|
-| MVP 0.0 Engineering Entry | Build the mobile engineering baseline | Expo + TypeScript app, Expo Router, page shells, base components, design tokens, CI, EAS config, preview OTA flow | App opens on phone, at least 5 page entries exist, CI runs, preview OTA can update phone |
-| MVP 0.1 Diet Logging Loop | Let users record meals and see today's diet state | Home, record, detail, history, profile pages; local/mock data flow; meal record types; today's intake summary | Prototype confirmed, PRD V1 filled, meal can be saved, home state updates, tests pass |
-| MVP 0.2 AI Meal Advice | Turn meal data into actionable next-meal advice | Single-meal analysis, next-meal recommendation, AI JSON schema, prompt rules, fallback output | AI advice is specific, safe, parseable, and has fallback when AI fails |
-| MVP 0.3 Trends and Review | Help users understand longer-term eating patterns | Weekly trends, diet structure review, behavior recap, history summaries | User can review trends and get non-anxious adjustment suggestions |
-| MVP 1.0 Personal Diet Decision System | Complete the record-analysis-advice-review loop | Stable account/data model, production release process, long-term personalization, analytics, reliability | Production-ready mobile product with a sustainable decision loop |
+## Current Documentation Structure
 
-## MVP 0.0 Checklist
+```text
+docs/00-INDEX.md
+docs/01-ai-working-manual.md
+docs/02-master-blueprint.md
+docs/phases/
+docs/acceptance/
+docs/prototype/
+```
 
-- [x] GitHub repository exists.
-- [x] Root project structure is cleaned up.
-- [x] Expo project files exist.
-- [x] TypeScript is configured.
-- [x] Expo Router entry exists.
-- [x] Base `src/` structure exists.
-- [x] Base design tokens exist.
-- [x] Base components exist.
-- [x] Home page shell is connected.
-- [x] Five page entries are connected through `app/`.
-- [x] Local lint, typecheck, and test commands pass.
-- [x] Expo config is readable.
-- [x] `npm start` starts the Expo Metro Bundler locally.
-- [ ] Android preview is verified on a device or emulator.
-- [x] CI is verified on GitHub.
-- [x] EAS preview update is verified locally.
-- [x] GitHub Actions EAS preview update is verified on `dev`.
-- [x] README contains current run and release commands.
+Older temporary phase docs and pre-restructure planning docs are archived under:
 
-Deferred device validation:
+```text
+_archive/
+```
 
-- [ ] Android preview and preview OTA should be verified on a physical device or stable emulator before any external tester release.
+## Unique Workspace
 
-## MVP 0.1 Entry Conditions
+Formal development must happen only in:
 
-Do not begin full MVP 0.1 business development until these are true:
+```text
+F:\ganfan
+```
 
-- [ ] Home prototype confirmed.
-- [ ] Record page prototype confirmed.
-- [ ] Detail page prototype confirmed.
-- [ ] History page prototype confirmed.
-- [ ] Profile page prototype confirmed.
-- [ ] Page flow confirmed.
-- [ ] Component usage confirmed.
-- [ ] State model confirmed.
-- [ ] `03_prd/mvp-0.1/mvp-0.1-prd-v1-coding.md` is filled with final page specs.
+The following paths are tool worktrees or caches and must not be used as the project root:
 
-Allowed before MVP 0.1 entry:
+```text
+F:\ganfan\.claude\worktrees\*
+C:\Users\a\.codex\worktrees\*
+```
 
-- Engineering baseline.
-- Page shells.
-- Base components.
-- Mock data.
-- Tests and CI.
-- EAS Update pipeline.
+## Current Decision State
 
-Not allowed before MVP 0.1 entry:
+Before implementing blueprint stages, confirm whether the next task requires:
 
-- Complete diet logging business loop.
-- Real AI service integration.
-- Real payment.
-- Complex user system.
-- Native plugin expansion.
-- Unconfirmed pages, fields, or components.
+- Migrating from root Expo App to `apps/mobile`.
+- Introducing `services/ai` FastAPI.
+- Introducing `supabase/migrations`.
+- Adding native dependencies such as `expo-sqlite`, `expo-camera`, `expo-image-manipulator`, and `expo-notifications`.
+- Connecting real Supabase, AI endpoint, or deployment secrets.
 
-## Immediate Next Work
-
-1. Fill `03_prd/mvp-0.1/mvp-0.1-prd-v1-coding.md` with a development-ready MVP 0.1 spec.
-2. Confirm page flow, state model, component usage, and MVP 0.1 acceptance criteria.
-3. Start MVP 0.1 implementation only after the PRD V1 spec is approved.
-
-## Backlog
-
-- Verify Android preview on a physical device or stable emulator.
-- Verify that a phone or emulator receives the preview OTA update.
-
-## Key Commands
+## Commands
 
 ```powershell
 npm install
 npm run lint
 npm run typecheck
 npm test
-npm start
-npm run eas:update:preview
+npm run web
 ```
-
-## Manual Configuration Still Needed
-
-- Expo project is linked as `@ls-n/ganfan`.
-- GitHub Actions EAS preview update is configured with `EXPO_TOKEN` and verified from `dev`.
-- Configure Supabase and OpenAI secrets only when the project reaches the relevant MVP stage.
