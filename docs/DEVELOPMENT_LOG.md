@@ -288,3 +288,15 @@ This document is the reusable development log template for the Ganfan project. I
 - Git/GitHub: Branch `codex/V0.1` tracks `origin/codex/V0.1`; `git fetch --prune` OK; working tree has untracked paths (not staged); automation will commit/push only this log entry.
 - Next step: Re-run tests with lower parallelism (e.g. Jest `--runInBand`) or increase available memory/pagefile; then decide which untracked changes are intended to add.
 - Reusable lesson: When Windows memory/pagefile is constrained, Jest parallel workers can OOM; prefer `--runInBand` or raising available memory before trusting test results.
+
+## 2026-05-18 09:03 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/V0.1`, verify repo health with safe checks, and publish only safe, verified changes.
+- Work done: Inspected `git status`, branch/upstream, `origin` remote, and recent commits; reviewed `docs/PROJECT_STATUS.md`; fetched remotes (`git fetch --prune`); ran `npm run lint`, `npm run typecheck`, and `npm test`.
+- Result: Lint/typecheck/tests are green; repo contains many untracked paths, so this run only commits the development log entry for a conservative sync.
+- Problems: Working tree has extensive untracked items including potentially-forbidden artifacts (e.g. `android/`, `services/ai/**/__pycache__/`, `.tmp/`, screenshots) and additional untracked source/test files; auto-staging project files would be unsafe without an explicit whitelist.
+- Fixes: None applied (automation policy: do not modify source/deps); recorded current state and check results.
+- Checks: `npm run lint` PASS; `npm run typecheck` PASS; `npm test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; `git fetch --prune` OK; staging/commit restricted to `docs/DEVELOPMENT_LOG.md` only; push outcome recorded by this run after commit.
+- Next step: Manually review the untracked set; decide what is intended to add, and add `.gitignore`/staging rules to exclude caches, screenshots, keystores, and other generated artifacts before enabling broader auto-commit.
+- Reusable lesson: When untracked content includes potential secrets or generated artifacts, keep automation commits to a narrow allowlist (e.g. docs/logs) until explicit ignore + staging rules exist.
