@@ -300,3 +300,27 @@ This document is the reusable development log template for the Ganfan project. I
 - Git/GitHub: Branch `codex/V0.1` tracking `origin/codex/V0.1`; `git fetch --prune` OK; staging/commit restricted to `docs/DEVELOPMENT_LOG.md` only; push outcome recorded by this run after commit.
 - Next step: Manually review the untracked set; decide what is intended to add, and add `.gitignore`/staging rules to exclude caches, screenshots, keystores, and other generated artifacts before enabling broader auto-commit.
 - Reusable lesson: When untracked content includes potential secrets or generated artifacts, keep automation commits to a narrow allowlist (e.g. docs/logs) until explicit ignore + staging rules exist.
+
+## 2026-05-18 17:02 - 17:00 automation run
+
+- Goal: Perform a conservative GitHub sync on the current branch, run safe checks, and publish only safe changes.
+- Work done: Inspected `git status`, branch, `origin` remotes, and recent commits; reviewed `docs/PROJECT_STATUS.md`; attempted `git fetch --prune`; ran `npm run lint`, `npm run typecheck`, and `npm test`.
+- Result: Lint FAIL; typecheck PASS; tests PASS. No project files staged by this run (checks failed).
+- Problems: `git fetch --prune` failed with `error: cannot open '.git/FETCH_HEAD': Permission denied`. `npm run lint` failed because ESLint scanned `docs/prototype/assets/china-echarts-4.0.2.js` and reported `window is not defined`.
+- Fixes: None applied (automation policy: no source/deps changes during sync runs).
+- Checks: `npm run lint` FAIL (no-undef `window` in `docs/prototype/assets/china-echarts-4.0.2.js`); `npm run typecheck` PASS; `npm test` PASS (9 suites / 19 tests).
+- Git/GitHub: Branch `codex/prototype` (no upstream configured); remote `origin` set; `git add docs/DEVELOPMENT_LOG.md` failed with `fatal: Unable to create 'F:/ganfan/.git/index.lock': Permission denied` (no commit/push).
+- Next step: Decide whether `docs/prototype/assets/` should be excluded from ESLint or lint should be scoped to `src/`/`app/`; then re-run `npm run lint` and retry conservative commit/push.
+- Reusable lesson: Keep lint scope aligned with product code; vendor assets should not break CI or automation sync.
+
+## 2026-05-20 10:48 - 09:00 automation run
+
+- Goal: Perform a conservative GitHub sync on `codex/prototype`, verify repo health with safe checks, and publish only safe/verified changes.
+- Work done: Inspected `git status`, current branch, `origin` remote, recent commits; reviewed `docs/PROJECT_STATUS.md`; verified `package.json` + `node_modules` present; ran `npm run lint`, `npm run typecheck`, and `npm test`.
+- Result: Lint FAIL; typecheck PASS; tests PASS. Committed only `docs/DEVELOPMENT_LOG.md` (log-only commit); push failed due to pre-push lint failure.
+- Problems: `npm run lint` fails because ESLint scans `docs/prototype/assets/china-echarts-4.0.2.js` (`window` is not defined).
+- Fixes: None applied (automation policy: do not change source/deps/config during a conservative sync).
+- Checks: `npm run lint` FAIL; `npm run typecheck` PASS; `npm test` PASS (10 suites / 21 tests).
+- Git/GitHub: Commit `e276636` created on `codex/prototype`; `origin` is `https://github.com/LS-N/ganfan.git`; `git push -u origin codex/prototype` blocked by Husky pre-push (ESLint failure on `docs/prototype/assets/china-echarts-4.0.2.js`).
+- Next step: Decide whether to exclude `docs/prototype/assets/` from ESLint (or scope lint to product code only), then re-run `npm run lint` and retry a conservative commit/push of the log entry.
+- Reusable lesson: Keep lint scope aligned with product code; vendor assets should not break automation sync.
