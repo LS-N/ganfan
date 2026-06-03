@@ -21,3 +21,12 @@ expo-*.log
 # Supabase CLI local state and generated seed outputs
 supabase/.temp/
 supabase/generated/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Temp scratch and debug screenshots
+.tmp/
+/ganfan-*.png
+_archive/docs-restructure-20260512/image.png

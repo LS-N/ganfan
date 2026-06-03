@@ -15,6 +15,13 @@ type DrawCardRow = {
   accepted: boolean | null
   decided_at: string | null
   created_at: string
+  // Phase 2+ 槽位字段（card_actions 对齐字段）
+  slot: string | null
+  slot_label: string | null
+  badge: string | null
+  dish: string | null
+  advice: string | null
+  recommendation_stage: string | null
 }
 
 export function drawCardToRow(card: DrawCard, userId: string, reportId?: string) {
@@ -28,7 +35,14 @@ export function drawCardToRow(card: DrawCard, userId: string, reportId?: string)
     source: card.source,
     action: card.action,
     accepted: card.accepted ?? null,
-    decided_at: card.decidedAt ?? null
+    decided_at: card.decidedAt ?? null,
+    // 槽位系统字段（Phase 2 DishScore 和 body_puzzle 推荐质量追踪必需）
+    slot: card.slot ?? null,
+    slot_label: card.slotLabel ?? null,
+    badge: card.badge ?? null,
+    dish: card.dish ?? null,
+    advice: card.advice ?? null,
+    recommendation_stage: card.recommendationStage ?? null
   }
 }
 
@@ -43,7 +57,13 @@ export function drawCardFromRow(row: DrawCardRow): DrawCard {
     action: row.action,
     accepted: row.accepted ?? undefined,
     decidedAt: row.decided_at ?? undefined,
-    description: row.action
+    description: row.action,
+    slot: (row.slot as DrawCard["slot"]) ?? undefined,
+    slotLabel: (row.slot_label as DrawCard["slotLabel"]) ?? undefined,
+    badge: row.badge ?? undefined,
+    dish: row.dish ?? undefined,
+    advice: row.advice ?? undefined,
+    recommendationStage: (row.recommendation_stage as DrawCard["recommendationStage"]) ?? undefined
   }
 }
 
@@ -56,7 +76,7 @@ export function createDrawCardRepository(): DrawCardRepository {
       const userId = userIdInput ?? (await authService.getUserId())
       const { data, error } = await client.from("draw_cards").insert(cards.map((card) => drawCardToRow(card, userId, reportId))).select("*").returns<DrawCardRow[]>()
       if (error || !data) throw new Error(error?.message || "draw_cards_save_failed")
-      return data.map(drawCardFromRow)
+      return data.map((row, index) => ({ ...cards[index], ...drawCardFromRow(row) }))
     },
     async updateDecision(cardId, accepted) {
       const client = getSupabaseClient()

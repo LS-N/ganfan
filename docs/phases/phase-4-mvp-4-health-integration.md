@@ -12,7 +12,8 @@
   - `Migration 004：4.0 预测表`
   - 复用 `Migration 003：3.0 模式表`
   - 复用 `health_data`、`predictions`、`prediction_accuracy`、`interventions`。
-- `API 接口规范`：`/v1/predict/meal`、`/v1/pattern/compute`、健康数据和预测相关接口。
+- `API 接口规范`：`/v1/predict/meal`、`/v1/pattern/compute`、`/v1/insight/generate?trigger=draw_card`、健康数据和预测相关接口。
+- `饭前抽卡功能规范`：`body_structure` 阶段规则（健康数据过滤+加权）、`get_recommendation_stage` 新增 `has_health_data_authorized` 判断逻辑。
 - `算法与大模型分工`：`predictor.py`、预测反馈回路、干预频率控制。
 - `核心 TypeScript 类型`：HealthData、Prediction、PredictionAccuracy、Insight 仪表盘数据类型。
 - `Zustand Store 接口定义`：健康数据、预测、仪表盘状态与既有 meal/plan/body pattern 数据的关系。
@@ -51,12 +52,13 @@
 |---|---|---|---|
 | T17-01 饭前预测算法 | `algorithms/predictor.py predict_meal(user_id, candidate_dish, context)` | 提取候选菜 features；匹配 body_pattern；健康数据调节；多证据聚合 | 已知相关性 + 候选菜，预测方向正确 |
 | T17-02 饭前预测展示 | 分析结果页预测标签 | 有 4.0 解锁且预测置信度 >0.5 时展示；低置信度隐藏 | 置信度低不显示，高时正确显示 |
+| T17-03 饭前抽卡 body_structure 阶段 | 升级 `draw_card.py buildCardPoolForState` + `get_recommendation_stage` | Health Connect 授权后 `get_recommendation_stage` 返回 `body_structure`；`buildCardPoolForState` 新增健康数据调节层：睡眠<6h→排除高油高碳菜，步数≥8000→可接受高碳水，运动日→高蛋白+2；只使用已授权且当天有值的字段，无数据字段不参与评分；`card_actions.recommendation_stage` 写入 `body_structure` | Health Connect 授权后抽卡 stage 变为 body_structure；昨晚睡眠<6h 时，stable/alt 槽位无高油高碳菜；无睡眠数据时不触发该过滤；reason 文案引用今日身体状态 |
 
 ## Sprint 18: 预测反馈回路
 
 | 任务 | 产出 | 关键逻辑 | 测试/验收 |
 |---|---|---|---|
-| T18-01 PredictionAccuracy 计算 | 写 `prediction_accuracy` | daily_checkin 提交后对比当天预测，正确 confidence +0.05，错误 -0.08 | 预测正确上升，错误下降 |
+| T18-01 PredictionAccuracy 计算 | 写 `prediction_accuracy` | meal_feedback 提交后对比本餐预测，正确 confidence +0.05，错误 -0.08 | 预测正确上升，错误下降 |
 | T18-02 干预频率控制 | 干预去重逻辑 | 检查 `interventions` 最近记录，同类干预 72 小时内不重复 | 连续触发同类干预，第 2 次在 72 小时内不显示 |
 
 ## Sprint 19: 全流程仪表盘

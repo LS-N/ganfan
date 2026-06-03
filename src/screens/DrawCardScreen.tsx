@@ -54,17 +54,24 @@ function CardRule({ card, onAccept, onSkip }: CardRuleProps) {
       <BaseCard style={[styles.flipCard, card.type === "risk" && styles.riskCard]}>
         {!flipped ? (
           <View style={styles.cardFace}>
-            <Text style={[styles.badge, card.type === "risk" && styles.riskBadge]}>{badge}</Text>
+            <View style={styles.badgeRow}>
+              <Text style={[styles.badge, card.type === "risk" && styles.riskBadge]}>{badge}</Text>
+              <Text style={styles.stageLabel}>{card.recommendationStageLabel ?? "通用推荐"}</Text>
+            </View>
             <Text style={styles.cardTitle}>{card.title}</Text>
             <Text style={styles.tapHint}>点击翻开</Text>
           </View>
         ) : (
           <View style={styles.cardFace}>
-            <Text style={[styles.badge, card.type === "risk" && styles.riskBadge]}>{badge}</Text>
+            <View style={styles.badgeRow}>
+              <Text style={[styles.badge, card.type === "risk" && styles.riskBadge]}>{badge}</Text>
+              <Text style={styles.stageLabel}>{card.recommendationStageLabel ?? "通用推荐"}</Text>
+            </View>
             <Text style={styles.cardText}>{card.action}</Text>
-            <Text style={styles.reason}>{card.reason}</Text>
+            <Text style={styles.reason}>{card.recommendationReason ?? card.reason}</Text>
             {card.risk ? <Text style={styles.riskText}>不确定性：{card.risk}</Text> : null}
-            <Text style={styles.source}>{card.source}</Text>
+            <Text style={styles.meta}>置信度：{card.confidenceLevel === "high" ? "高" : card.confidenceLevel === "medium" ? "中" : "低"} · 解锁条件：{card.unlockRequirement ?? "记录后可用"}</Text>
+            <Text style={styles.source}>{(card.recommendationSources ?? [card.source]).join(" · ")}</Text>
             {card.accepted === undefined ? (
               <View style={styles.actions}>
                 <PrimaryButton title="采纳" onPress={onAccept} />
@@ -112,10 +119,19 @@ const styles = StyleSheet.create({
     lineHeight: 22
   },
   badge: {
-    alignSelf: "flex-start",
     color: colors.brand,
     fontSize: 13,
     fontWeight: "700"
+  },
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm
+  },
+  stageLabel: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "600"
   },
   flipCard: {
     minHeight: 250,
@@ -150,6 +166,12 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: 13,
     lineHeight: 20
+  },
+  meta: {
+    marginTop: spacing.sm,
+    color: colors.textSecondary,
+    fontSize: 12,
+    lineHeight: 18
   },
   riskText: {
     marginTop: spacing.sm,

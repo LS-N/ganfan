@@ -9,7 +9,6 @@ const titles: Record<string, string> = {
   "/record": "记录这一餐",
   "/analysis": "识别结果",
   "/feedback": "饭后打分",
-  "/checkin": "每日回访",
   "/detail": "本餐详情",
   "/history": "我的记录",
   "/report": "身体",

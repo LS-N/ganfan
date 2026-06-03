@@ -1,6 +1,797 @@
 # 干饭 App 全栈开发实施方案
 
-**版本：** v1.0 | **适用：** Codex 自主开发 | **覆盖：** MVP 1.0 → 5.0
+**版本：** v1.1 | **适用：** Codex 自主开发 | **覆盖：** MVP 1.0 → 6.0
+
+---
+
+# 产品最高原则
+
+《干饭》不是单纯的饮食记录 App，而是以饮食为首个垂直场景的履约率优化 Agent。App 是第一客户端，长期能力形态是可被多端和外部系统调用的履约决策引擎。
+
+所有功能都必须服务于同一个北极星：
+
+```text
+有效履约率 = 用户接受建议后，实际完成饮食 / 采购 / 配餐 / 反馈 / 复购 / 会员闭环的比例
+```
+
+产品取舍规则：
+
+- 不能提升履约率的功能，不做。
+- 不能解释如何提升履约率的功能，先不做。
+- 能提升履约率但增加用户负担的功能，优先让 AI、规则和后台任务承担负担。
+- 用户动作必须拆到可度量颗粒度；每个关键动作都要能进入事件链，最终用于验证是否提升履约率。
+- 架构可以有平台野心，但产品必须从单人饮食履约这个极窄场景打穿。
+
+## 履约飞轮
+
+《干饭》的可持续增长来自同一个飞轮：
+
+```
+低使用成本 → 高履约率（每顿都记）→ 数据连续性 → 算法优化 → 高质量反馈 → 用户感受到价值 → 继续履约
+```
+
+**飞轮的唯一脆弱点：任何一个环节让用户觉得"麻烦"，飞轮从这里断掉。**
+
+数据的连续性（每顿都愿意记）比单次数据精度（这顿记得特别准）更有价值。在基础误差已有 ±20% 的营养估算体系里，把填写精度从粗粒度提升到细粒度的边际收益，低于因为增加操作步骤而损失的履约频次。
+
+## 功能取舍过滤器
+
+任何新字段、新追问、新功能，必须同时通过以下两条才能进入主流程：
+
+1. **用户有动机填**：用户理解为什么被问，填写阻力低（≤5 秒，无需思考）。
+2. **算法有增益用**：这条数据能直接改善推荐或洞察质量，且当前 Phase 已经可以消费。
+
+| 满足条件 | 处理方式 |
+|---|---|
+| 两条都满足 | 进入主流程固定字段 |
+| 只满足一条 | 个性化触发（仅在相关场景出现，不进入主流程） |
+| 两条都不满足 | 不做，或等数据积累后重新评估 |
+
+## 阶段独立完整性
+
+每个 Phase（1.0–6.0）必须作为完整产品独立成立，不能依赖未来 Phase 才能为用户提供完整价值。产品迭代是一层层叠加的：也许我们永远迭代不到 3.0，但每个已发布的版本都必须是用户当下能用、用着不残的完整产品。
+
+判定标准：如果某个功能在 Phase N 必须假设 Phase N+1 会落地才合理，那这个功能不该在 Phase N 出现。
+
+工程约束：
+
+- **不在 UI 上暴露 Phase 号或 Stage 枚举名**。例如不向用户写「身体结构推荐 - 4.0 解锁」「计划履约推荐」这种带阶段名的标签；标签只能描述当前数据来源（如「基于你的 47 餐 + 12 晚睡眠」）。
+- **不显示"未来解锁"占位 UI**。当依赖的数据没有时，使用降级或隐藏，不要做灰色锁定卡来暗示「产品没做完」。身体拼图块在数据不足时显示「再积累几次就出来了」是合理的（依赖的是用户自己的数据积累，不是产品版本），但「健康集成功能将在 4.0 解锁」这类占位禁止出现。
+- **Schema 不为未来 Phase 预留具体字段**。每个 Phase 只建该 Phase 真正用得上的字段；扩展性通过 JSONB 类型留扩展位实现，不预先定义未来字段名。这样即使 4.0–6.0 永远不来，1.0–3.0 的代码也不背技术债。
+- **横切系统在每个 Phase 内部都是完整版本**。身体洞察、推荐理由等横切产物，在 1.0 就是完整的当前版本，只是基于的数据更薄；不要让 1.0 用户觉得「现在的洞察是临时版，4.0 才有真的」。
+
+## 模块独立 + 横切层架构
+
+产品由两类东西组成：纵向独立的功能模块，加横向沉淀的身体洞察。两者**独立又相关**——模块负责解决具体生活问题，身体洞察作为副产品被持续沉淀，反过来让模块算法更准。
+
+### 纵向独立的功能模块
+
+| Phase | 模块 | 主目标 |
+|---|---|---|
+| 1.0 | 记录感知 | 捕获食物 + 反馈 |
+| 2.0 | 计划推荐 | 给出下一餐建议 |
+| 3.0 | 目标干预 | 让用户达成目标 |
+| 4.0 | 健康集成 | 接入真实生理信号 |
+| 5.0 | 履约 | 让计划真正执行 |
+| 6.0 | 食材记忆 | 管食材生命周期 |
+
+每个模块有自己的主功能、入口和 UI，独立可用；模块之间不互相依赖才能成立。
+
+### 横向沉淀的身体洞察
+
+身体洞察是从每个模块运行数据中持续提炼出「身体 × 食物」因果关系的横切层。它不是某个 Phase 的独立功能，而是产品长大过程中自然累积的"记忆系统"。
+
+每个模块的运行数据会同时被两个地方消费——模块自己的算法（用于优化主功能），和身体洞察（用于沉淀因果）：
+
+| 模块 | 副产品信号 | 反哺身体洞察的什么 |
+|---|---|---|
+| 1.0 记录 | comfort / fullness / energy 反馈 | 食物特征 ↔ 身体反应 |
+| 2.0 计划 | 接受 / 跳过 / 替换 | 用户对食物的真实偏好（用脚投票） |
+| 3.0 目标 | 体重 / 围度趋势 | 某类餐对目标的因果权重 |
+| 4.0 健康集成 | 睡眠 / HRV / 活动 | 比主观反馈更硬的生理证据 |
+| 5.0 履约 | 执行 / 失守模式 | 场景 × 食物的关联 |
+| 6.0 食材记忆 | 消耗速度 / 剩余 | 用户合适饭量的反推 |
+
+举例：用户总不按计划来 → 计划模块视角是「推荐算法要优化」；身体洞察视角是「他在用脚投票，告诉我们这类食物不适合他」。同一个信号，对模块自己是「待优化」，对身体洞察是「新证据」。
+
+### 身体洞察的唯一对外表达：身体拼图（4 块切面）
+
+身体洞察对外只有一个家——身体拼图页。4 块拼图不是 4 个并列功能，而是「身体 × 食物」关系的四个认知切面：
+
+| 块 | 切面 | 回答用户的问题 |
+|---|---|---|
+| 喜欢吃这个 😋 | 偏好 | 我喜欢什么？ |
+| 我的吃法 🥢 | 因果规律 | 我吃什么会舒服 / 不舒服？ |
+| 口味探索 🗺️ | 边界 | 我尝试过什么？ |
+| 越来越舒服 ✨ | 趋势 | 我在变好吗？ |
+
+四块合在一起构成完整的自我认知闭环——「我是谁、我适合什么、我去过哪、我在变好吗」。1.0–6.0 不新增拼图块，只让每块内容随数据变厚而变锋利。
+
+### UI 边界
+
+- 模块界面**可以引用**身体洞察作为推荐理由（如「基于你的身体规律」），但不重复展示洞察内容。
+- 身体拼图页**不嵌入**模块入口或推荐功能，它只展示沉淀下来的「我是谁」。
+- 首页、分析页等任何位置的洞察展示，都是**身体拼图同一份数据的不同密度切片**，不是独立计算的另一份洞察。
+
+## 产品数据架构（Data Architecture Specification）
+
+本节是干饭产品的**唯一数据架构权威定义**。所有 Phase 1-6 的设计、所有新功能新模块的加入、所有 AI 接入点的接入，都必须先回到这张架构上验证位置和接口。**任何绕过本节的"小算法 / 小数据源 / 小洞察"都是架构债，必须立即纠正。**
+
+### 三层架构
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Layer 1: 数据源层（Raw Data）                                │
+│  原则：append-only / immutable                               │
+│  作用：客观记录"用户做了什么 + AI 看到了什么"                  │
+└────────────────────────────┬─────────────────────────────────┘
+                             ↓ 派生（不可逆）
+┌──────────────────────────────────────────────────────────────┐
+│  Layer 2: 洞察引擎层（Insights Engine）                       │
+│  原则：idempotent（可重新计算）/ 不持久化为"真相"             │
+│  作用：归纳"我们对用户的理解"，每次都从 Layer 1 重新推导      │
+└────────────────────────────┬─────────────────────────────────┘
+                             ↓ 查询
+┌──────────────────────────────────────────────────────────────┐
+│  Layer 3: 消费层（Consumer Layer）                           │
+│  原则：read-only / 不写洞察                                  │
+│  作用：把洞察翻译成用户能感知的内容（文案 / 视觉 / 推荐）      │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### 核心设计原则
+
+| 原则 | 行业术语 | 在干饭里的实现 |
+|---|---|---|
+| 单一真相源 | Single Source of Truth (SSOT) | 每个数据只在一处写入，所有人引用同一份 |
+| 数据不可变 | Immutability | 原值留痕，修改 = 新增一条 correction 记录 |
+| 模式可演进 | Schema Evolution | 加字段不破坏旧数据；删字段先废弃再删 |
+| 数据血缘 | Data Lineage | 任何洞察能 sourceRefs 追到原始 meal_id |
+| 引擎幂等 | Idempotent | deriveInsights 任意时刻重跑，结果一致 |
+| 隐私设计 | Privacy by Design | RLS 用户级隔离；隐私字段独立加密 |
+| 横向扩展 | Horizontal Scalability | 加用户加 Phase 不改架构 |
+
+### Layer 1：数据源层
+
+**所有 Layer 1 表 append-only。** 没有 UPDATE，只有 INSERT。
+
+| Phase | 新增数据源 | 说明 |
+|---|---|---|
+| 1 | `meals` / `meal_analysis` / `meal_corrections` / `meal_feedback` / `meal_images` / `card_actions` / `profiles` | 餐次主链 + 反馈 + 抽卡 + 档案 |
+| 2 | `plans` / `plan_slots` / `plan_executions` / `fulfillment_actions` | 一周计划 + 执行追踪 |
+| 3 | `goals` / `goal_progress` / `interventions` | 健康目标 + 干预记录 |
+| 4 | `health_signals` (sleep/exercise/glucose/weight/heart_rate) | 健康数据接入 |
+| 5 | `purchases` / `shopping_lists` / `meal_prep_logs` / `community_actions` | 履约 + 采购 + 社区 |
+
+**接入规则（每条数据进入 Layer 1 的契约）：**
+
+| 数据类 | 触发时机 | 是否可改 | 留痕规则 |
+|---|---|---|---|
+| meal_images | 用户拍照 | 不可改 | 永久保留 |
+| meal_analysis | AI 识别完成 | 不可改 | 用户修改→写 meal_corrections |
+| meal_corrections | 用户修改分析 | 不可改 (append-only) | 每次修改都新增一条 |
+| meal_feedback | 用户提交反馈 | 不可改 | 重提交→新增一条 |
+| card_actions | 用户抽卡选择 | 不可改 | 每次选择独立记录 |
+
+**存储分层：** 本地 SQLite 离线优先 + Supabase 云端权威。冲突解决：服务端覆盖。
+
+### Layer 2：洞察引擎层
+
+**唯一的输出契约：**
+
+```typescript
+// ── 触发维度（2026-05-29 新增，替换原 triggers: string[]）────────────────
+type TriggerDimension = {
+  dimension: 'tag'          // meal_analysis.tags 包含某标签
+           | 'meal_type'    // 餐次类型：早饭/午饭/晚饭/加餐
+           | 'time_slot'    // 进食时段：morning/lunch/dinner/late_night
+           | 'scene'        // 就餐场景
+           | 'mood'         // 餐前情绪
+           | 'fullness'     // 饱腹状态（作为 P1 权重修正，不独立成规律）
+           | 'sleep_quality'// Phase 4+：睡眠质量
+           | 'hrv'          // Phase 4+：HRV 指标
+           | 'plan_slot'    // Phase 2+：计划槽位执行
+  value: string
+  required: boolean         // true = AND 条件；false = OR 条件
+}
+
+type Insight = {
+  id: string                    // 稳定哈希，相同 angle 永远同 id
+  category: 'preference' | 'avoid' | 'reaction' |
+            'fulfillment' | 'health_link'  // Phase 4+ 加新类
+  angle: string                 // 可读描述，如"高碳水午饭→困倦"
+  triggerDimensions: TriggerDimension[]   // 结构化触发条件（替代原 triggers: string[]）
+  triggers: string[]            // 兼容旧字段，保留为 dimension.value 的平铺列表
+  outcome?: string              // reaction 类才有
+  target?: string               // preference/avoid 类才有
+  evidence: {
+    sampleSize: number          // 命中样本数
+    hitRate: number             // 命中率 0-1
+    lastObservedAt: string
+    sourceRefs: string[]        // 引用的 meal_id 列表（数据血缘）
+    bioSignalRefs?: string[]    // Phase 4+ 预留：health_data id 列表（客观生理证据）
+  }
+  maturity: 'sparse' | 'forming' | 'mature'
+  confidence: number            // 0-1
+  confidencePenalty?: number    // AND 条件 ≥ 3 层时的置信度折扣（0-1，乘以 confidence）
+  triggerPhase: number          // 该规律最小可激活的 Phase（1-6）；Phase 1 引擎跳过 >1 的规律
+  requires: PhaseLevel[]        // 跨 Phase 标注
+  computedAt: string
+}
+```
+
+**maturity 全局统一阈值（不允许各模块自定义）：**
+
+| sampleSize | hitRate | maturity | 含义 |
+|---|---|---|---|
+| 0-2 | — | `sparse` | 数据不足，不显示 |
+| 3-4 | ≥ 50% | `forming` | 形成中，可展示"再记 N 次解锁" |
+| ≥ 5 | ≥ 60% | `mature` | 稳定，可作为推荐和预测依据 |
+
+**洞察类别按 Phase 演进：**
+
+| Phase | 新增 category | 说明 |
+|---|---|---|
+| 1 | preference / avoid / reaction | 食物 × 身体反应 |
+| 2 | fulfillment | 计划执行 × 替换偏好 |
+| 3 | goal_alignment | 目标偏差模式 |
+| 4 | health_link / cross_domain_reaction | 食物 × 健康指标 |
+| 5 | fulfillment_obstacle / social | 履约障碍 × 社交模式 |
+
+**部署形态：** Phase 1 客户端 JS 函数；Phase 2+ 服务端 Python 服务，触发式 + 定时双轨。
+
+**关键：引擎幂等。** 永远从 Layer 1 重算，不持久化"中间洞察"。算法升级后历史洞察自动迁移。
+
+**`deriveInsights` 注册式架构（2026-05-29）：**
+
+引擎由一组 `PatternDetector` 组成，每个 detector 独立注册，Phase 升级时纯追加，不改已有 detector：
+
+```typescript
+interface PatternDetector {
+  id: string
+  category: Insight['category']
+  triggerPhase: number          // < 当前 phase 才运行
+  maxAndDimensions: number      // AND 条件上限，超出自动降级置信度
+  detect(meals: Meal[], feedbacks: Feedback[], checkins?: Checkin[]): Insight[]
+}
+```
+
+**Phase 1 注册的 detector 集合（仅这些在客户端运行）：**
+
+| Detector | 触发维度上限 | 覆盖规律 |
+|---|---|---|
+| `StructureReactionDetector` | 2 | tags → comfort/satisfaction |
+| `TimingReactionDetector` | 2 | time_slot(+meal_type) → comfort |
+| `MealTypeStructureDetector` | 2 | meal_type + 最强 tag → comfort |
+| `PositivePatternDetector` | 1 | comfort=舒服 OR satisfaction=还不错 → 菜系/结构偏好 |
+
+**Phase 2+ 追加（服务端）：**
+
+| Detector | triggerPhase | 覆盖规律 |
+|---|---|---|
+| `MoodAmplifierDetector` | 2 | mood × tag 组合 → reaction 放大 |
+| `NextDaySignalDetector` | 2 | 晚饭/夜宵 → 次日 meal_feedback 归因（daily_checkins 已废弃） |
+| `FulfillmentPatternDetector` | 2 | plan_slot 执行率 → 行为规律 |
+| `HealthLinkDetector` | 4 | health_data × food → 生理关联（主观 comfort 被 HRV/血糖校准） |
+
+**AND 条件 ≥ 3 层的规律禁止在 Phase 1 生成**（样本坍塌风险）。
+
+### Layer 3：消费层
+
+**消费者分两类：**
+
+```
+A. AI 消费者（带 prompt 引用 insights）
+   - 输入：insights[] 子集 + 上下文
+   - 输出：自然语言文案
+   - 约束：必须引用 insights 具体条目，不得编造
+
+B. 非 AI 消费者（纯代码读 insights）
+   - 输入：insights[] 子集
+   - 输出：图标 / 进度条 / 标签 / 数值
+   - 约束：直接渲染，不再二次推导
+```
+
+**消费者注册规则：** 任何新功能加入消费层前，必须填写"洞察消费契约表"：
+
+| 字段 | 示例 |
+|---|---|
+| 消费者名 | 总结页洞察模块 |
+| 所属 Phase | 1 |
+| 消费 insights 子集 | category='reaction' && relevantToMeal(meal) |
+| 输出形式 | AI 文案 / 模板 / 进度条 / 标签 |
+| 降级策略 | 无 mature 时显示 forming，无 forming 时不显示 |
+| 跨 Phase 依赖 | 无 |
+
+### AI 在架构中的双重角色
+
+**AI 不是单一角色，它在 Layer 1 和 Layer 3 都出现，但 prompt 完全不同：**
+
+| AI 用途 | 位置 | 输入 | 输出 | 是否引用 insights |
+|---|---|---|---|---|
+| 看图识别食物 | 进入 Layer 1 | 照片 | 结构化菜名/营养 | ❌ 不需要 |
+| 看图对比剩余 | 进入 Layer 1 | 两张照片 + 食物列表 | 每项消耗百分比 | ❌ 不需要 |
+| 写饭前建议 | Layer 3 | 当前餐分析 + insights | 自然语言建议 | ✅ 必须，不得编造 |
+| 写抽卡 reason | Layer 3 | 候选菜 + insights | 一句话推荐理由 | ✅ 必须，引用具体洞察 |
+| 写总结洞察 | Layer 3 | 本餐 + 相关 insights | 一句话规律陈述 | ✅ 必须，数字真实 |
+
+### 完整数据流转图
+
+```
+USER ACTION (拍照 / 反馈 / 修正 / 抽卡选择)
+   ↓
+AI 生产者（PROMPT_MEAL_ANALYSIS / PROMPT_LEFTOVER_COMPARE）
+   ↓ 把原始照片转结构化数据
+LAYER 1: 数据源（SQLite + Supabase append-only）
+   ↓ 每次新增触发
+LAYER 2: 洞察引擎 deriveInsights()
+   ↓ 输出 insights[]
+LAYER 3: 消费层
+   ├─ AI 消费者：insights[] → AI Prompt 上下文 → 文案 → UI
+   └─ 非 AI 消费者：insights[] → 代码渲染 → UI
+   ↓ 用户感受到价值
+USER 继续记录（履约飞轮闭环）
+```
+
+### 架构污染信号（自检清单）
+
+发现任何一条立刻还债：
+
+| 信号 | 污染类型 |
+|---|---|
+| 同一个判断逻辑出现在两个文件 | 单一真相源被打破 |
+| 消费层直接读 Layer 1（绕过洞察引擎） | 层级被穿透 |
+| 加新功能要改 Layer 1 表结构 | Schema 演进违反"加而不改" |
+| 洞察的统计阈值在不同模块不一致 | 引擎实现不统一 |
+| AI Prompt 里有硬编码的用户规律 | AI 越权产生洞察 |
+| 同一 angle 在拼图和总结页结论不一致 | 多套引擎并存 |
+
+### 新功能进入架构的强制四问
+
+每次有人提"加个 XXX 功能"，PM / 架构师必须先问完这 4 个问题，答不上来就不许做：
+
+1. **数据源层**：是否需要新增数据？需要的话用户成本多大？
+2. **洞察引擎**：这个功能需要的洞察当前 maturity 够吗？不够要等多少数据？
+3. **消费层**：这个功能是 AI 消费者还是非 AI 消费者？现有架构能不能直接插入？
+4. **跨 Phase 依赖**：是否依赖未来 Phase 的数据？如果是，Phase 1 怎么降级？
+
+### AI 数据复利飞轮（Data-AI Compounding Loop）
+
+**干饭的核心增长引擎不是单一算法，而是 AI 在数据架构两端同时受益形成的复利循环。** 这是产品"用得越久越值钱"的结构性原因。
+
+#### 飞轮结构
+
+```
+USER 拍照 / 反馈
+     ↓
+AI 生产者 (Layer 0→1) — 看图 → 结构化数据
+     ↓
+LAYER 1 原始数据累积 + 用户修正
+     ↓
+LAYER 2 洞察引擎 (deriveInsights) — 归纳跨餐规律
+     ↓
+AI 消费者 (Layer 2→3) — 拿洞察作 context 生成更准的建议
+     ↓
+USER 感受到"AI 真的懂我"
+     ↓
+更愿意记录、更精细反馈
+     ↓
+（回到 AI 生产者，但样本更多、修正更准、洞察更熟）
+↓ 整个链条同步升级 ↓
+```
+
+**每转一圈，AI 在两个位置同时变强：**
+- 生产端：见过的样本更多 + 用户修正更多 → 识别更准
+- 消费端：洞察 maturity 推进 → 建议更个性化
+
+#### 飞轮的免疫系统：用户修正
+
+**没有用户修正，AI 错误会指数级放大**。识别错的菜 → 错的标签进 Layer 1 → 归纳出错的洞察 → AI 消费基于错洞察给错建议 → 用户反感离开。
+
+用户修正是这条链路的守门员。它必须满足：
+- `meal_corrections` 表 append-only（不覆盖原 AI 输出，留痕）
+- `deriveInsights` 优先使用修正后的真相
+- 修正频次本身是数据（高频修正 = AI 这块需训练）
+
+#### 飞轮成立的 4 条硬约束
+
+| 约束 | 详细要求 | 违反后果 |
+|---|---|---|
+| **1. AI 生产数据必须 append-only** | 第二次识别新增一条，不覆盖第一次 | 失去 AI 进化的数据血缘，无法做模型升级前后对比 |
+| **2. 用户修正必须独立成表** | `meal_corrections` 与 `meal_analysis` 解耦，每次修正新增一条 | 无法分析 AI 错误模式，无法做模型评估 |
+| **3. deriveInsights 用修正后的真相** | 优先 corrections 最新值，回落原 analysis | 洞察基于 AI 误识，下游全错 |
+| **4. AI 消费 Prompt 必须标注洞察来源** | "基于 N 次记录、命中率 M%（≥阈值才使用）"作为 prompt 上下文，禁止 AI 编造洞察 | AI 自由发挥 → 与拼图/总结页结论冲突 |
+
+#### 飞轮在 5 个 Phase 的强度
+
+| Phase | 飞轮转速 | 关键数据 |
+|---|---|---|
+| 1 | 启动 | 餐次 + 反馈 + 修正 累积 |
+| 2 | 加速 | + 计划执行（用户用脚投票） |
+| 3 | 校准 | + 体重/围度（硬证据校准 AI） |
+| 4 | 突破 | + 健康信号（生理证据校准主观反馈） |
+| 5 | 自维持 | + 履约模式（场景因素纳入推理） |
+
+**Phase 4 是飞轮的拐点**：从主观反馈系统升级为客观+主观双校准系统，AI 消费端的预测能给精确时间点（如"14:30 困倦"）。Phase 4 之前的预测应保守（只给方向，不给时间）。
+
+#### 设计判断标准
+
+当任何功能/Prompt/UI 决策不确定时，回到这个原则：
+
+> **它让飞轮转得更快还是更慢？变快保留，变慢推回。**
+
+- 让用户多答一题 → 飞轮变慢（降履约）
+- 让 AI 自由发挥 → 飞轮变慢（错误放大）
+- 让用户修正 AI → 飞轮变快（增加真相输入）
+- 让洞察被 AI 引用 → 飞轮变快（消费端升级）
+
+---
+
+# AI 服务层架构
+
+本节是干饭产品 **AI 服务层的唯一权威定义**。所有 LLM 调用接入点、Prompt 模板、Context 契约、Response Schema、Provider 切换、降级策略，都必须先回到本节对齐。**任何绕过本节的"临时 AI 调用 / 散落 Prompt / 自定义 Context"都是架构债，必须立即纠正。**
+
+- 单个 UC 的完整契约 → `docs/architecture/use-cases/uc-XX-*.md`
+- 新增 UC 的标准流程 → `docs/architecture/use-cases/README.md`
+- 文档分层与改动归属决策规则 → `AGENTS.md`「文档分层与改动归属」章节
+- 各阶段 UC 实施清单 → `docs/phases/phase-X-*.md`「本阶段 AI UC 实施清单」节
+
+## 设计目标
+
+| 目标 | 含义 |
+|---|---|
+| **模型不绑定** | 切换 SiliconFlow / Claude / OpenAI / 任何国产模型不影响产品代码 |
+| **阶段可加性** | Phase 2-6 新增 AI 能力时纯追加 UC 文件，零修改旧 UC 代码 |
+| **数据架构对齐** | 严格区分 Layer 1 生产者 / Layer 3 消费者；consumer 必须引用 insights |
+| **契约可机读** | Context 和 Response 都是类型化定义（Pydantic + Zod 双端） |
+| **治理预留** | 为后续 AI 自演进留出绿/黄/红区接口（版本、开关、Telemetry、Eval） |
+| **降级零中断** | 任何 Provider 故障或 LLM 异常都有结构化兜底，调用方永不拿到非法数据 |
+| **履约飞轮闭环** | AI 在 Layer 1 和 Layer 3 同时受益，消费端必须用 insights |
+
+## 架构定位
+
+### 在六层系统架构中的位置
+
+```
+UI 层               React Native screens / components
+App 逻辑层          Zustand stores / hooks / 状态机
+AI 服务层 ◄────── 本节定义
+  - UseCase Registry
+  - Context Builders
+  - Response Parsers
+  - Provider Abstraction
+数据层              Supabase tables / 本地 SQLite
+基础设施层          FastAPI / Supabase / Storage
+                          ↓
+                  LLM Provider 池
+                  （SiliconFlow / Claude / OpenAI / Mock）
+```
+
+### 与数据架构 3 层的对齐
+
+| 数据层 | AI 角色 | 是否需要 insights | UC 类型 |
+|---|---|---|---|
+| **Layer 1** | 数据生产者 | ❌ 不需要 | producer（看图识别、餐后份量对比） |
+| **Layer 2** | （无 AI） | — | deriveInsights 是纯算法 |
+| **Layer 3 AI** | 内容消费者 | ✅ 必须 | consumer（饭前建议、抽卡 reason、洞察文案） |
+| **Layer 3 非 AI** | 直接渲染 | — | 身体拼图块、统计徽章 |
+
+**强制约束：** 声明为 `consumer` 的 UC，Context Schema 必须包含 `insights: list[Insight]`；执行时若 insights 为空，必须走冷启动降级，不得让 LLM 自由发挥。
+
+### 跨 UC 共享类型（定义在蓝图）
+
+| 类型 | 蓝图章节 |
+|---|---|
+| `Insight` | Layer 2 洞察引擎 |
+| `RecentMealRef` | 核心 TypeScript 类型 |
+| `NutritionEstimate` | 核心 TypeScript 类型 |
+| `RecommendationStage`（advice_stage 枚举） | 饭前抽卡功能规范 |
+
+各 UC 文件**引用**这些类型，不重复定义。
+
+## 核心契约
+
+### UseCase Protocol
+
+```python
+class UseCase(Protocol):
+    # 元数据
+    name: str                                # snake_case，全局唯一
+    version: str                             # 语义版本
+    layer: Literal["producer", "consumer", "enricher"]
+    min_phase: int
+    description: str
+
+    # 类型契约
+    context_schema: Type[BaseModel]
+    response_schema: Type[BaseModel]
+
+    # 能力声明
+    requires_image: bool
+    requires_llm: bool                       # False = 算法类（如向量检索）
+    requires_insights: bool                  # consumer 必须 True
+
+    # Prompt（requires_llm=True 时必填）
+    prompt_template: str | None
+    prompt_version: str                      # 与 version 解耦
+
+    # 执行入口
+    def execute(self, ctx: BaseModel, provider: "LLMProvider") -> BaseModel: ...
+    def fallback(self, ctx: BaseModel, error: Exception) -> BaseModel: ...
+
+    # 治理钩子（Phase 4+ 启用）
+    def eval_samples(self) -> list[dict]: ...
+```
+
+### LLMProvider Protocol
+
+UC 层只依赖抽象接口，不知道具体模型：
+
+```python
+class LLMProvider(Protocol):
+    name: str                                # "siliconflow" / "claude" / "openai" / "mock"
+    model_id: str
+
+    def call_vision(self, prompt, image_url, text_context, **kwargs) -> dict: ...
+    def call_text(self, prompt, text_context, **kwargs) -> dict: ...
+    def call_embedding(self, text: str) -> list[float]: ...
+    def is_available(self) -> bool: ...
+    def cost_estimate(self, prompt_tokens, completion_tokens) -> float: ...
+```
+
+Phase 2+ 按需扩展，如 `call_vision_multi()`（UC-04 多图对比）。
+
+### Registry 模式
+
+```python
+class UseCaseRegistry:
+    @classmethod
+    def register(cls, uc): ...                       # 启动时强制校验
+    @classmethod
+    def get(cls, name): ...
+    @classmethod
+    def list_metadata(cls): ...                      # GET /v1/uc 元数据列表
+
+class ProviderRegistry:
+    @classmethod
+    def get_active(cls) -> LLMProvider:
+        # 按 env LLM_PROVIDER 选 Provider，故障时 fallback 到 MockProvider
+        ...
+```
+
+**注册校验强制约束（启动时执行）：**
+
+1. `name` 全局唯一
+2. `layer == "consumer"` 时 `requires_insights` 必须为 True
+3. `requires_llm == True` 时 `prompt_template` 必填
+4. `context_schema` / `response_schema` 必须是 `BaseModel` 子类
+
+### 类型化原则
+
+**禁止使用 `dict` 或 `Any` 作为 Context / Response 类型。**
+
+- FastAPI 端：Pydantic v2 BaseModel
+- App 端：Zod schema + TypeScript 类型
+- 字段命名：snake_case（FastAPI）↔ camelCase（App），由 schema 注册时声明映射
+
+## Provider 抽象层
+
+### 设计原则
+
+1. UC 不知道 Provider 是谁
+2. Provider 在启动时由 env var 注入
+3. MockProvider 永远可用，最后兜底
+4. 多 Provider 共存（Phase 3+ A/B）
+
+### Provider 池（当前与规划）
+
+| Provider | 实装状态 | 备注 |
+|---|---|---|
+| `SiliconflowProvider` | ✅ Phase 1 默认 | Qwen3-VL-32B-Instruct + BAAI/bge-m3 |
+| `MockProvider` | ✅ 永远可用 | 结构化兜底 |
+| `ClaudeProvider` | ⚠️ 占位 | Phase 2+ 可选实装 |
+| `OpenAIProvider` | ⚠️ 占位 | 国际市场扩展时实装 |
+
+### Provider 切换
+
+```bash
+LLM_PROVIDER=siliconflow    # 当前
+LLM_PROVIDER=claude         # 切换
+LLM_PROVIDER=mock           # 调试/降级
+```
+
+不改 UC 代码、不重新构建 App、不数据迁移。
+
+## Use Case 注册表（仅元数据）
+
+**完整契约见 `docs/architecture/use-cases/uc-XX-*.md`，本表只放元数据。**
+
+| ID | name | Layer | 最小 Phase | LLM | 触发场景 | 详细契约 |
+|---|---|---|---|---|---|---|
+| UC-01 | `meal_analysis` | hybrid (producer+consumer) | 1 | ✅ Vision | 用户拍照后立即 | `docs/architecture/use-cases/uc-01-meal-analysis.md` |
+| UC-02 | `body_insight` | consumer | 1 | ✅ Text | 身体页刷新 / 新规律成熟 | `docs/architecture/use-cases/uc-02-body-insight.md` |
+| UC-03 | `card_recommend` | consumer | 2 | ✅ Text | 用户抽卡 / 夜宵提醒 | `docs/architecture/use-cases/uc-03-card-recommend.md` |
+| UC-04 | `leftover_compare` | producer | 1 末/2 | ✅ Vision（多图） | 用户上传餐后剩余 | `docs/architecture/use-cases/uc-04-leftover-compare.md` |
+| UC-05 | `nutrition_match` | enricher | 1 | ❌ pgvector | UC-01 输出 dish_name 后 | `docs/architecture/use-cases/uc-05-nutrition-match.md` |
+
+**新增 UC 流程**：见 `docs/architecture/use-cases/README.md`「新增 UC 的标准流程」章节。
+
+## 调用通道
+
+### 唯一业务路由
+
+```
+POST /v1/uc/{uc_name}    ← 所有 UC 走这一个路由
+GET  /v1/uc              ← 元数据列表，App 启动时自检
+```
+
+**旧路由 `/v1/meal/analyze` 已废弃**，Phase 1 重构时直接删除，不保留兼容包装。
+
+### Dispatcher 职责
+
+```
+1. 输入 Schema 校验
+2. 调 Provider 执行（或非 LLM 直接走算法）
+3. 输出 Schema 校验
+4. Telemetry 记录
+5. 异常时调 UC.fallback() 返回降级响应
+6. consumer 类 UC 加 Stage Router 计算 advice_stage
+```
+
+### App 客户端
+
+```typescript
+// 统一调用入口
+await executeUseCase<MealAnalysisResponse>("meal_analysis", ctx)
+await executeUseCase<BodyInsightResponse>("body_insight", ctx)
+```
+
+每个 UC 在 `src/services/ai/useCases/xxx.ts` 提供：
+
+- `buildContext(input)` — 从本地数据组装类型化 Context
+- `parseResponse(raw)` — Zod 解析 + 安全过滤
+- `fallback(ctx)` — 离线/无 endpoint 时的客户端兜底
+
+## 横切机制
+
+### 版本管理
+
+| 版本号 | 升级触发 | 兼容性 |
+|---|---|---|
+| `version` | Context/Response Schema 变化 | 可能破坏兼容 |
+| `prompt_version` | 仅 Prompt 文本调整 | 完全兼容 |
+
+升级路径：`v1.0 → v1.1`（绿区）→ `v2.0`（黄区，向后兼容）→ `v3.0`（红区，App 同步升级）。
+
+### Telemetry
+
+每次 UC 执行记录：timestamp / request_id / uc_name / uc_version / prompt_version / provider / duration_ms / status / error_type / estimated_cost。
+
+Phase 1：本地日志。Phase 2+：专表或观测平台。
+
+### 配置开关
+
+每个 UC 单独 env var：
+
+```bash
+UC_MEAL_ANALYSIS_ENABLED=true
+UC_BODY_INSIGHT_ENABLED=false
+UC_CARD_RECOMMEND_ENABLED=false
+```
+
+关闭的 UC 直接走 fallback，不调 Provider。
+
+### 降级层级
+
+```
+1. UC.execute() 正常返回             → 用真实结果
+2. Provider 超时/HTTP 错误           → UC.fallback()
+3. LLM 返回非法 JSON                  → UC.fallback()
+4. Response Schema 校验失败           → UC.fallback()
+5. UC 开关关闭                         → UC.fallback()
+6. 所有 Provider 不可用                → MockProvider
+7. App 完全离线                       → 客户端 fallback
+```
+
+每层都返回 `response_schema` 合法实例，App 永不拿到非法数据。
+
+## Phase 演进路线
+
+| Phase | 必装 UC | 可选 UC | 框架增量 |
+|---|---|---|---|
+| **1** | UC-01 v1.0, UC-02 v1.0, UC-05 | UC-04 v1.0 | Registry / Dispatcher / Telemetry v1 / SiliconFlow + Mock Provider |
+| **2** | UC-01 v2.0（两阶段拆分）, UC-03 v1.0 | — | Stage Router 完整版 / Eval harness v0 |
+| **3** | — | — | 多 Provider A/B（验证抽象层） |
+| **4** | UC-03 v2.0（body_structure 阶段） | UC-01 v3.0（接入 health_signals） | Eval 自动化 / Canary 部署 |
+| **5** | UC-03 v3.0（fulfillment 阶段） | 新 UC：plan_generate / meal_predict | — |
+| **6** | UC-03 v4.0（food_memory 阶段） | 新 UC：food_memory_recommend | — |
+
+## 治理预留
+
+为后续 AI 自演进留接口，**Phase 1-3 不启用**：
+
+| 区域 | 允许改动 | Phase 1-3 | Phase 4+ |
+|---|---|---|---|
+| 🟢 绿区 | Prompt 文本微调 | 人工 PR | AI 提交 + Eval 通过自动 deploy |
+| 🟡 黄区 | 新 UC / Schema 加 optional | 人工 PR | AI 生成 PR + 人工 review |
+| 🔴 红区 | 跨 UC 改动 / 安全字段 / Provider 切换 | 永远人工 | 永远人工 |
+
+每个 UC 必须提供 `eval_samples()`，Phase 4+ 自动跑全部样本通过率才能部署。
+
+---
+
+> 以下「履约智能横向契约」中的所有契约（食物身份、履约事件、任务上下文、算法输出）都是 Layer 1 数据源层和 Layer 2 洞察引擎的具体字段约束实现，属于本数据架构的细化。
+
+# 履约智能横向契约
+
+以下契约贯穿 MVP 1.0-6.0。它们不是单独页面，而是让记录、计划、预测、采购、配餐、会员和 6.0 食材记忆形成同一条履约率优化链。
+
+## 食物标准身份契约
+
+AI 识别、计划菜品、采购 SKU、配餐套餐和营养库必须逐步映射到统一食物身份，避免 6.0 才发现“吃了什么”和“买了什么”无法相连。
+
+| 身份 | 说明 | 示例 |
+|---|---|---|
+| `dish_key` | 菜品或组合餐身份 | `tomato_egg`, `chicken_salad` |
+| `ingredient_key` | 原材料身份 | `egg`, `tomato`, `chicken_breast` |
+| `sku_key` | 履约平台商品身份 | `hema_egg_10pcs` |
+| `nutrition_item_id` | 营养库标准项 | `nutrition_items.id` |
+| `meal_ingredient_link` | 某餐可能消耗的原材料 | 一餐番茄炒蛋消耗鸡蛋、番茄 |
+
+V1 只要求覆盖高频食材和履约 SKU；不追求全量配方和克重精确，优先服务计划执行、采购转化和配餐优化。
+
+## 履约事件契约
+
+所有关键动作都写入统一事件链。事件不是为了埋点好看，而是为了回答：这个动作是否提高了下一次履约率。
+
+```text
+推荐生成 -> 用户查看 -> 接受 / 替换 / 跳过 -> 采购 / 配餐 / 会员 -> 实际记录 -> 饭后反馈 -> 周报纠错 -> 下一轮优化
+```
+
+每条事件至少包含：
+
+- `user_id`
+- `event_type`
+- `object_type`
+- `object_id`
+- `source`
+- `confidence`
+- `expected_fulfillment_lift`
+- `actual_outcome`
+- `created_at`
+
+## 任务上下文契约
+
+不允许把所有用户数据塞进一个超大 prompt。每个关键动作由 `context_composer` 组装最小必要上下文。
+
+| 动作 | 上下文 | 用途 |
+|---|---|---|
+| 拍照分析 | `AnalysisContext` | 识别这一餐，给即时建议 |
+| 生成周计划 | `PlanContext` | 生成更可能执行的计划 |
+| 饭前预测 | `PredictionContext` | 判断这餐后可能的身体反应 |
+| 采购跳转 | `PurchaseContext` | 判断推荐买什么、为什么现在买 |
+| 配餐订阅 | `SubscriptionContext` | 判断几餐、什么类型、什么频率最容易履约 |
+| 记录餐次 | `MealExecutionContext` | 判断是否命中计划、是否完成履约 |
+| 食材记忆 | `FoodMemoryContext` | 推断已购食材剩余、消耗和置信度 |
+| 周报生成 | `WeeklyReportContext` | 复盘本周履约、纠错、训练下周策略 |
+| 会员转化 | `MembershipContext` | 判断是否展示会员价值和如何降打扰 |
+
+## 算法输出契约
+
+所有算法输出必须是结构化、可回放、可评估的决策结果，而不是只返回文案。
+
+每个算法决策至少包含：
+
+- 输入上下文版本：`context_version`
+- 决策对象：`object_type` / `object_id`
+- 决策结果：`decision`
+- 置信度：`confidence`
+- 原因：`reasons[]`
+- 目标指标：`target_metric`
+- 预期履约提升：`expected_fulfillment_lift`
+- 降级策略：`fallback`
+
+大模型负责解释和表达，算法层负责事实、评分、约束、置信度和履约率优化。
 
 ---
 
@@ -22,25 +813,32 @@
 │  useMealStore               本地优先写入                    │
 │  useProfileStore            后台同步 Supabase               │
 │  usePlanStore                                               │
+│                                                             │
+│  src/services/ai/ ◄── AI 服务层（统一 executeUseCase）      │
 └──────────────┬──────────────────────────┬───────────────────┘
                │ Supabase JS SDK          │ HTTPS
                ↓                          ↓
 ┌──────────────────────┐    ┌─────────────────────────────────┐
 │      Supabase        │    │      FastAPI AI Service          │
-│  PostgreSQL          │    │  POST /v1/meal/analyze  ←──┐    │
-│  Auth (phone/email)  │    │  POST /v1/plan/generate    │    │
-│  Storage (images)    │    │  POST /v1/pattern/compute  │    │
-│  Realtime            │    │  POST /v1/predict/meal     │    │
-│  Row Level Security  │    │  POST /v1/insight/generate │    │
-│  pgvector (营养库)   │◄───│  nutrition/search.py    ───┘    │
+│  PostgreSQL          │    │  POST /v1/uc/{uc_name}    ←──┐  │
+│  Auth (phone/email)  │    │  GET  /v1/uc                  │  │
+│  Storage (images)    │    │                               │  │
+│  Realtime            │    │  use_cases/ (UC Registry)     │  │
+│  Row Level Security  │    │  providers/ (Provider 抽象)   │  │
+│  pgvector (营养库)   │◄───│  nutrition/ (pgvector 客户端) ┘  │
 └──────────────────────┘    │                                 │
-                            │  ↕ Anthropic Claude API         │
+                            │  ↕ LLM Provider 抽象层           │
+                            │    （SiliconFlow / Claude /      │
+                            │     OpenAI / Mock）              │
                             └─────────────────────────────────┘
 
-餐次分析两阶段流程：
-  阶段1（识别）: 图片 → Claude Vision → 结构化菜品名称 + 估算营养
-  阶段2（精准化）: 菜品名称 → pgvector向量搜索营养库 → 合并精准营养值
-  合并输出 + UserContext → Claude 生成个性化建议
+餐次分析流程（UC-01 v1.0 单次调用 / Phase 2 升级 v2.0 两阶段）：
+  v1.0: 图片 + UserContext + insights → Provider Vision → 完整 MealAnalysisResponse
+                                          ↓
+                            UC-05 nutrition_match → pgvector 回填精准营养
+  v2.0: 拆为 Phase A 快速识别（≤6s 返回核心字段）+ Phase C 异步补全建议
+
+详细 AI 调用规范见「AI 服务层架构」章节。
 ```
 
 ## 最终技术栈
@@ -59,7 +857,7 @@
 | 通知 | expo-notifications | 0.28+ | 本地+推送 |
 | 后端平台 | Supabase | cloud | DB+Auth+Storage |
 | AI服务 | FastAPI | 0.111+ | Python AI逻辑 |
-| AI模型 | Claude API | claude-sonnet-4-6 | 图像识别+推理 |
+| AI模型 | LLM Provider 抽象 | 当前实装 SiliconFlow（Qwen3-VL-32B + BAAI/bge-m3） | 图像识别+推理 + Embedding；可切换 Claude/OpenAI/其他 |
 | 部署平台 | Railway | - | FastAPI托管 |
 | 代码语言 | TypeScript | 5.x | 移动端 |
 | | Python | 3.11+ | AI服务 |
@@ -89,7 +887,6 @@ ganfan/
 │       │   │   ├── basic-info.tsx       ← 基础信息填写
 │       │   │   └── goals.tsx            ← 目标设置
 │       │   ├── feedback.tsx             ← 饭后反馈
-│       │   ├── checkin.tsx              ← 每日回访
 │       │   ├── meal-detail.tsx          ← 餐次详情
 │       │   ├── plan.tsx                 ← 餐饮计划(2.0)
 │       │   ├── insight.tsx              ← 身体洞察(3.0)
@@ -97,7 +894,6 @@ ganfan/
 │       ├── components/
 │       │   ├── MealCard.tsx
 │       │   ├── RecoCard.tsx
-│       │   ├── CheckinCard.tsx
 │       │   ├── BodyPuzzle.tsx
 │       │   ├── NutritionBar.tsx
 │       │   └── WeightChart.tsx
@@ -245,16 +1041,29 @@ CREATE TABLE users (
 
 CREATE TABLE profiles (
   user_id            UUID PRIMARY KEY REFERENCES users(id),
-  age                INT,
-  gender             TEXT,
-  height_cm          NUMERIC,
   goal               TEXT DEFAULT '越来越舒服',
-  health_background  TEXT[] DEFAULT '{}',
   avoid              TEXT,
-  feeling            TEXT,
-  reminder_delay_min INT,
+  daily_budget       INT,                        -- 元/天整数，Onboarding Q3 映射：60元以内→50/60~120→90/120~200→160/200以上→250
+  feeling            TEXT,                       -- Onboarding Q4
+  eating_style       TEXT,                       -- Onboarding Q5，后台静默标注，档案页不展示
+  -- 以下字段已废弃（2026-05-26 ##035），保留列兼容旧数据，新建档不写入
+  age                INT,                        -- @deprecated 档案页按需填写，Onboarding 不收集
+  gender             TEXT,                       -- @deprecated
+  height_cm          NUMERIC,                    -- @deprecated
+  health_background  TEXT[] DEFAULT '{}',        -- @deprecated
+  reminder_delay_min INT,                        -- @deprecated 推送延迟已固定为 20 分钟，不读取此字段
   updated_at         TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE TABLE meal_budget_weights (
+  user_id     UUID REFERENCES users(id),
+  meal_type   TEXT NOT NULL,   -- '早饭'|'午饭'|'晚饭'|'加餐'
+  weight      NUMERIC NOT NULL, -- 0~1，四条权重之和=1
+  updated_at  TIMESTAMPTZ DEFAULT now(),
+  PRIMARY KEY (user_id, meal_type)
+);
+-- 初始默认权重（Onboarding Q3 完成后写入）：早饭 0.20 / 午饭 0.35 / 晚饭 0.40 / 加餐 0.05
+-- 动态学习算法为 Phase 2+
 
 CREATE TABLE weight_logs (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -271,12 +1080,12 @@ CREATE TABLE meals (
   dish             TEXT,
   cuisine          TEXT,
   province         TEXT,
-  mood             TEXT,                   -- 就餐时的情绪/压力状态，如'压力有点大'|'心情不错'|'平静'
+  scene            TEXT,                   -- 就餐场景：'外卖'|'堂食'|'自己做'|'食堂'|'路边摊'|'便利店'|'快餐店'|'其他'；Phase 5 前只用于记录和菜系地图统计，不影响 AI Prompt
+  mood             TEXT,                   -- 就餐时的情绪/压力状态，如'压力有点大'|'心情不确'|'平静'
   meal_started_at  BIGINT,                 -- 用户点"开始吃"时的时间戳（ms）
   meal_duration_ms BIGINT,                 -- 进食时长（结束-开始），用于后续节律分析
-  from_card        JSONB,                  -- 来源推荐卡信息 {dish, badge, reason}
+  from_card        JSONB,                  -- 来源推荐卡信息 {dish, badge, risk, recommendationStage, recommendationStageLabel, recommendationReason, recommendationSources, unlockRequirement, confidenceLevel}；slot/slot_label/card_state 记录在 card_actions 表，不重复写此处
   additionals      JSONB,                  -- 额外加的食物列表 [{name, estimate}]
-  daily_checkin_id UUID,                   -- 关联的每日回访ID（回访提交后回写）
   auto_closed_at   TIMESTAMPTZ,            -- 超过30分钟未完成分析时自动关闭的时间
   created_at       TIMESTAMPTZ DEFAULT now()
 );
@@ -321,29 +1130,26 @@ CREATE TABLE meal_images (
   created_at  TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TABLE daily_checkins (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id      UUID REFERENCES users(id),
-  date         DATE NOT NULL,
-  meal_ids     UUID[],
-  due_at       BIGINT,
-  is_next_day  BOOLEAN DEFAULT false,
-  energy       TEXT,
-  digestion    TEXT,
-  satiety      TEXT,
-  answered_at  TIMESTAMPTZ,
-  dismissed    BOOLEAN DEFAULT false,
-  UNIQUE(user_id, date)
-);
 
 CREATE TABLE card_actions (
-  id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id),
-  dish    TEXT,
-  badge   TEXT,
-  risk    TEXT,
-  action  TEXT NOT NULL,
-  ts      BIGINT NOT NULL
+  id                         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                    UUID REFERENCES users(id),
+  dish                       TEXT,
+  badge                      TEXT,
+  risk                       TEXT,
+  slot                       TEXT,          -- 槽位 key：'stable' | 'alt' | 'explore'
+  slot_label                 TEXT,          -- 槽位显示名：'常规款' | '特别款' | '隐藏款'
+  card_state                 TEXT,          -- 用户选择的餐前状态，如'压力有点大'|'很累很困'
+  recommendation_stage       TEXT,          -- 推荐阶段 key：'general'|'feedback'|'body_puzzle'|...
+  recommendation_stage_label TEXT,          -- 推荐阶段显示名：'通用推荐'|'反馈推荐'|'身体拼图推荐'|...
+  recommendation_reason      TEXT,          -- 推荐理由文案（card.reason）
+  recommendation_sources     TEXT,          -- 数据来源描述，如'稳定饭后反馈、菜系、场景、吃法规律'
+  unlock_requirement         TEXT,          -- 解锁条件描述，如'身体拼图已解锁'
+  confidence_level           TEXT,          -- 置信度：'低'|'低到中'|'中'|'中到高'|'高'
+  source                     TEXT DEFAULT 'card_draw', -- 'card_draw' | 'homepage'
+  action                     TEXT NOT NULL, -- 'accepted'（选择）| 'skipped'（跳过）
+  -- 注意：翻牌 'seen' 仅记录在前端 cardStates 本地状态，不写入此表
+  ts                         BIGINT NOT NULL
 );
 
 -- Row Level Security
@@ -441,7 +1247,7 @@ CREATE TABLE prediction_accuracy (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   prediction_id    UUID REFERENCES predictions(id),
   meal_id          UUID REFERENCES meals(id),
-  checkin_id       UUID REFERENCES daily_checkins(id),
+  checkin_id       UUID,                                -- 原 daily_checkins 引用，已废弃，保留字段兼容历史数据
   dimensions       JSONB,
   overall_accuracy NUMERIC,
   feedback_signal  TEXT,
@@ -472,9 +1278,36 @@ CREATE TABLE health_data (
 );
 ```
 
-### Migration 005：5.0 社区表
+### Migration 005：5.0 履约与社区表
 
 ```sql
+CREATE TABLE fulfillment_orders (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID REFERENCES users(id),
+  source          TEXT NOT NULL,       -- 'grocery' | 'subscription' | 'partner_redirect'
+  channel         TEXT,                -- 美团买菜 / 叮咚买菜 / 盒马 / 配餐合作方等
+  status          TEXT NOT NULL,       -- 'clicked' | 'submitted' | 'paid' | 'delivered' | 'cancelled'
+  plan_id         UUID REFERENCES meal_plans(id),
+  order_payload   JSONB,               -- 平台沙盒订单摘要，不存真实密钥
+  total_amount    NUMERIC,
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  updated_at      TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE fulfillment_order_items (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id         UUID REFERENCES fulfillment_orders(id) ON DELETE CASCADE,
+  plan_slot_id     UUID REFERENCES plan_slots(id),
+  dish_key         TEXT,
+  ingredient_key   TEXT,
+  sku_key          TEXT,
+  name             TEXT NOT NULL,
+  quantity         NUMERIC,
+  unit             TEXT,
+  expected_use_by  DATE,
+  created_at       TIMESTAMPTZ DEFAULT now()
+);
+
 CREATE TABLE community_dishes (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   dish         TEXT NOT NULL,
@@ -516,55 +1349,200 @@ CREATE TABLE contributions (
 );
 ```
 
+### Migration 006：6.0 履约智能与食材记忆表
+
+```sql
+CREATE TABLE canonical_foods (
+  key              TEXT PRIMARY KEY,
+  type             TEXT NOT NULL,       -- 'dish' | 'ingredient' | 'sku' | 'meal_kit'
+  display_name     TEXT NOT NULL,
+  aliases          TEXT[] DEFAULT '{}',
+  parent_key       TEXT REFERENCES canonical_foods(key),
+  nutrition_item_id UUID REFERENCES nutrition_items(id),
+  metadata         JSONB DEFAULT '{}',
+  updated_at       TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE food_identity_mappings (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_type        TEXT NOT NULL,     -- 'ai_food' | 'plan_dish' | 'partner_sku' | 'nutrition_item'
+  source_value       TEXT NOT NULL,
+  canonical_food_key TEXT REFERENCES canonical_foods(key),
+  confidence         NUMERIC DEFAULT 0,
+  verified           BOOLEAN DEFAULT false,
+  updated_at         TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(source_type, source_value)
+);
+
+CREATE TABLE fulfillment_events (
+  id                         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                    UUID REFERENCES users(id),
+  event_type                 TEXT NOT NULL,
+  object_type                TEXT NOT NULL,
+  object_id                  UUID,
+  source                     TEXT NOT NULL,
+  context_version            TEXT,
+  algorithm_decision_id       UUID,
+  confidence                 NUMERIC,
+  expected_fulfillment_lift  NUMERIC,
+  actual_outcome             JSONB,
+  metadata                   JSONB DEFAULT '{}',
+  created_at                 TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE context_snapshots (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        UUID REFERENCES users(id),
+  context_type   TEXT NOT NULL,        -- AnalysisContext / PlanContext / FoodMemoryContext 等
+  context_version TEXT NOT NULL,
+  payload        JSONB NOT NULL,
+  built_from     JSONB DEFAULT '{}',
+  created_at     TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE algorithm_decisions (
+  id                         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                    UUID REFERENCES users(id),
+  algorithm                  TEXT NOT NULL,
+  algorithm_version          TEXT NOT NULL,
+  context_snapshot_id         UUID REFERENCES context_snapshots(id),
+  object_type                TEXT,
+  object_id                  UUID,
+  decision                   JSONB NOT NULL,
+  confidence                 NUMERIC,
+  reasons                    JSONB DEFAULT '[]',
+  target_metric              TEXT DEFAULT 'effective_fulfillment_rate',
+  expected_fulfillment_lift  NUMERIC,
+  fallback                   JSONB,
+  created_at                 TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE food_memory_items (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id               UUID REFERENCES users(id),
+  canonical_food_key     TEXT REFERENCES canonical_foods(key),
+  source_order_item_id   UUID REFERENCES fulfillment_order_items(id),
+  estimated_remaining_ratio NUMERIC,
+  estimated_quantity     NUMERIC,
+  unit                   TEXT,
+  expiry_risk            TEXT,          -- 'none' | 'soon' | 'expired' | 'unknown'
+  confidence             NUMERIC DEFAULT 0,
+  last_inferred_at       TIMESTAMPTZ,
+  updated_at             TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE food_memory_events (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id             UUID REFERENCES users(id),
+  food_memory_item_id UUID REFERENCES food_memory_items(id),
+  event_type          TEXT NOT NULL,     -- 'created' | 'inferred_consumed' | 'expired' | 'corrected' | 'replenished'
+  related_meal_id     UUID REFERENCES meals(id),
+  related_plan_slot_id UUID REFERENCES plan_slots(id),
+  related_order_item_id UUID REFERENCES fulfillment_order_items(id),
+  delta               JSONB,
+  confidence          NUMERIC,
+  source              TEXT NOT NULL,     -- 'system' | 'weekly_report_correction' | 'order'
+  created_at          TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE meal_ingredient_links (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id              UUID REFERENCES users(id),
+  meal_id              UUID REFERENCES meals(id),
+  canonical_food_key    TEXT REFERENCES canonical_foods(key),
+  food_memory_item_id   UUID REFERENCES food_memory_items(id),
+  estimated_used_ratio  NUMERIC,
+  confidence            NUMERIC,
+  source                TEXT NOT NULL,   -- 'vision' | 'plan_match' | 'food_memory_inference'
+  created_at            TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE weekly_fulfillment_reports (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        UUID REFERENCES users(id),
+  week_of        DATE NOT NULL,
+  fulfillment_stats JSONB NOT NULL,
+  food_memory_summary JSONB DEFAULT '{}',
+  corrections    JSONB DEFAULT '[]',
+  next_week_strategy JSONB DEFAULT '{}',
+  created_at     TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, week_of)
+);
+```
+
 ## API 接口规范
 
 **FastAPI AI Service 基础路径：`/v1`**
 
+> ⚠️ **重要变更（2026-05-27）**：本节原有的 `/v1/meal/analyze`、`/v1/insight/generate`、`/v1/plan/generate`、`/v1/pattern/compute`、`/v1/predict/meal` 等独立路由**全部废弃**，统一收敛到 `POST /v1/uc/{uc_name}`。
+>
+> - 每个原路由的能力现在对应一个 Use Case，详细契约见「AI 服务层架构」章节的 UC 注册表
+> - 旧路由对应关系：
+>   - `/v1/meal/analyze` → UC-01 `meal_analysis`
+>   - `/v1/insight/generate` → UC-02 `body_insight`（Phase 1）/ Phase 2+ 增加新 UC
+>   - `/v1/plan/generate` → Phase 2+ 新增 UC：`plan_generate`
+>   - `/v1/predict/meal` → Phase 4+ 新增 UC：`meal_predict`
+>   - `/v1/pattern/compute` → 客户端 `deriveInsights()` 本地算法（不是 LLM 调用）
+> - `/v1/nutrition/search` 改为通过 UC-05 `nutrition_match` 统一调用
+> - 下方旧规格仅作历史参考，实施以 AI 服务层架构 + use-cases/ 详细文档为准
+
 ```
-POST /v1/meal/analyze
-  Request:  { image_base64: str, meal_type: str, user_context: UserContext }
-  Response: { dish, nutrition, tags, risk, recognized_foods, eating_advice,
-              nutrition_source, match_confidence }
-  Timeout:  25s（含向量搜索，向量搜索超过2s则跳过，保留AI估算）
-  Fallback: 返回 mock_analysis 并标记 source='mock'
+POST /v1/uc/{uc_name}                              ← 唯一业务路由
+  Request:  匹配对应 UC 的 context_schema (Pydantic)
+  Response: 匹配对应 UC 的 response_schema
+  Timeout:  按 UC 自身声明（UC-01 25s / UC-02 15s / UC-03 20s / UC-05 同步）
+  Fallback: 调 UC.fallback() 返回结构化兜底响应
 
-  内部两阶段流程：
-    Step 1: Claude Vision 识别 → { dish_name, ai_nutrition_estimate, tags, risk, eating_advice }
-    Step 2: nutrition/search.py 精确+向量搜索营养库
-            命中（score≥0.85）→ 用库中数值替换 ai_nutrition_estimate
-                               写 nutrition_source='vector_matched', match_confidence
-            未命中 → 保留 ai_nutrition_estimate，nutrition_source='ai_estimate'
-    Step 3: 合并营养值 + UserContext → Claude 生成 eating_advice（个性化建议）
-
-GET /v1/nutrition/search?q=红烧肉&limit=5
-  Response: { items: [{ id, dish_name, nutrition_per_100g, score }] }
-  用途: 用户手动修正菜品时的搜索建议
-
-POST /v1/plan/generate
-  Request:  { user_id: str, week_of: str, user_context: UserContext }
-  Response: { slots: PlanSlot[], goal_alignment: float }
-  Requires: dish_scores 存在（2.0解锁后调用）
-
-POST /v1/pattern/compute
-  Request:  { user_id: str }
-  Response: { correlations: Correlation[], version: int, sample_size: int }
-  Trigger:  meal_count >= 21 AND checkin_rate >= 0.6
-
-POST /v1/predict/meal
-  Request:  { candidate_dish: str, user_context: UserContext }
-  Response: { predicted: Predictions, confidence: float, dominant_source: str }
-  Requires: body_pattern.correlations >= 3 高置信度项
-
-POST /v1/insight/generate
-  Request:  { user_id: str, trigger: str }
-  Response: { insights: Insight[], generated_at: str }
+GET /v1/uc                                          ← 元数据自检
+  Response: 所有已注册 UC 的元数据列表（name / version / layer / requires_*）
+  用途: App 启动时对比客户端注册的 UC，发现版本错配立即报警
 ```
 
-**UserContext 结构（个人上下文包）：**
+旧规格（历史参考，下面的描述只用于理解原设计意图，实施不再使用）：
+
+```
+（历史）POST /v1/meal/analyze
+  → 现 UC-01 meal_analysis，详见 docs/architecture/use-cases/uc-01-meal-analysis.md
+
+（历史）GET /v1/nutrition/search?q=红烧肉&limit=5
+  → 现 UC-05 nutrition_match，详见 docs/architecture/use-cases/uc-05-nutrition-match.md
+
+（历史）POST /v1/plan/generate
+  → Phase 2+ 新增 UC `plan_generate`（暂未编号 UC-06）
+
+（历史）POST /v1/pattern/compute
+  → 客户端 deriveInsights()，不是 LLM 调用
+
+（历史）POST /v1/predict/meal
+  → Phase 4+ 新增 UC `meal_predict`
+
+（历史）POST /v1/insight/generate
+  → 现 UC-02 body_insight，详见 docs/architecture/use-cases/uc-02-body-insight.md
+
+（历史）POST /v1/context/compose
+  → Context 组装现在由各 UC 自己的 buildContext() 完成，不需要独立路由
+
+POST /v1/fulfillment/event
+  Request:  { user_id: str, event_type: str, object_type: str, object_id?: str, metadata?: dict }
+  Response: { event_id: str }
+  用途: 记录计划、点击、采购、配餐、会员、反馈、复购等履约动作
+
+POST /v1/food-memory/infer
+  Request:  { user_id: str, week_of?: str, context_snapshot_id?: str }
+  Response: { items: FoodMemoryItem[], events: FoodMemoryEvent[], confidence: float }
+  Requires: 5.0 履约订单 + 1.0 餐次记录 + 食物身份映射
+
+POST /v1/fulfillment/optimize
+  Request:  { user_id: str, week_of: str, context_snapshot_id?: str }
+  Response: { next_week_strategy: dict, expected_fulfillment_lift: float, decisions: AlgorithmDecision[] }
+  用途: 6.0 将食材记忆、计划执行、订单和周报纠错反哺下一轮计划/采购/配餐/会员
+```
+
+**UserContext 结构（个人上下文包，兼容概念）：**
 
 ```json
 {
-  "profile": { "goal": "", "health_background": [], "age": 0, "gender": "" },
+  "profile": { "goal": "", "avoid": null, "daily_budget": 90, "feeling": null },
   "body_pattern": { "correlations": [], "version": 1 },
   "dish_scores": { "<dish_key>": { "energy_avg": 0, "confidence": 0 } },
   "recent_meals": [],
@@ -575,6 +1553,17 @@ POST /v1/insight/generate
   "unlock_stage": 1
 }
 ```
+
+6.0 之后禁止把上方完整包原样塞入所有 prompt。`UserContext` 只是共享字段集合，实际调用必须由 `context_composer` 按任务生成轻量上下文：
+
+- `AnalysisContext`：档案、忌口、最近 5 餐、修正历史。
+- `PlanContext`：目标、营养缺口、DishScore、身体规律、近期吃腻程度、履约率摘要。
+- `PredictionContext`：候选菜、身体规律、健康数据、预测准确率。
+- `PurchaseContext`：计划食材缺口、预算、转化历史、履约渠道状态。
+- `SubscriptionContext`：计划执行率、外卖/配餐倾向、预算、取消/跳过原因。
+- `FoodMemoryContext`：履约订单、订单项、计划槽位、实际餐次、食材映射、历史食量。
+- `WeeklyReportContext`：本周事件汇总、计划执行、交易、食材记忆和纠错候选。
+- `MembershipContext`：高价值功能使用、付费触发、打扰频控和续费风险。
 
 ## 功能解锁阈值
 
@@ -601,13 +1590,24 @@ export const UNLOCK_THRESHOLDS = {
     description: '社区协同解锁'
   },
 
-  // 身体拼图各块独立解锁条件
+  // 饭前抽卡三阶段（无门槛直接可用，阶段决定推荐质量）
+  DRAW_CARD: {
+    general: 0,      // 0 条有效反馈：通用推荐，基于状态 fallback 菜品
+    feedback: 3,     // ≥3 条有效反馈：按历史反馈过滤+加权
+    body_puzzle: 7,  // ≥7 条有效反馈：深度关联身体感受，引用身体记录
+  },
+
+  // 身体拼图各块独立解锁条件（2026-05-29 修订：条件收紧为有意义的数据门槛）
   BODY_PUZZLE: {
-    show_section: 7,             // 整个身体拼图区域出现所需最少餐次
-    block_0_liked_dishes: 1,     // 「喜欢吃这个」：有1餐即显示
-    block_1_my_way: 3,           // 「我的吃法」：3餐
-    block_2_explore: 2,          // 「口味探索」：2种不同菜系
-    block_3_getting_better: 10,  // 「越来越舒服」：10餐
+    show_section: 0,                // 无整体门槛；各块按自身条件独立解锁，未解锁块灰色显示
+    block_0_liked_dishes: 3,        // 「喜欢吃这个」：正向反馈（comfort=舒服 OR 有精神）≥ 3 餐
+    block_1_my_way_feedback: 7,     // 「我的吃法」：总反馈 ≥ 7，且正向 ≥ 1、负向 ≥ 1（需要对比度）
+    block_2_explore: 3,             // 「口味探索」：有反馈的 distinct 菜系 ≥ 3（排除家常菜/全国）
+    block_3_getting_better: 14,     // 「越来越舒服」：总反馈 ≥ 14，且后7餐正向比例 ≥ 前7餐 + 10%
+    block_3_trend_delta: 0.10,      // block_3 趋势门槛：后7餐正向率需超出前7餐至少10个百分点
+    // block_3 语义：产品价值证明——接受建议（抽卡/饭前建议/餐饮计划）后身体越来越舒服
+    // Phase 1 正向餐等权；Phase 2 起接受过建议的餐可加权；Phase 3 起追加餐饮计划执行信号
+    timeline_lookback_days: 60,     // 成长时间轴⏱按钮：最早记录超过60天前时出现
   },
 
   // 美食版图（菜系地图）
@@ -676,6 +1676,34 @@ export const PROVINCES: Province[] = [
 // '全国' — 不明确省份来源的菜系
 // '境外' — 外国菜系（日料/韩餐/西餐等）
 // 两者均不计入美食版图解锁数量
+
+// ── 菜系选择器选项（分析结果页底部面板，5 组 35+ 项）──────────────────
+export const CUISINE_OPTIONS: { group: string; items: string[] }[] = [
+  { group: '常见',    items: ['家常菜','粤菜','川菜','鲁菜','苏菜','沪菜','浙菜','湘菜','徽菜','闽菜'] },
+  { group: '北方',    items: ['京菜','津菜','晋菜','冀菜','豫菜','东北菜'] },
+  { group: '西部',    items: ['陕菜','渝菜','黔菜','滇菜','西北菜','新疆菜','藏菜','青海菜','清真菜','蒙古菜'] },
+  { group: '其他地区', items: ['桂菜','琼菜','鄂菜','赣菜','台湾菜'] },
+  { group: '境外 / 其他', items: ['日料','韩餐','西餐','快餐','轻食'] },
+]
+
+// ── 菜系 → 省份反向映射（选完菜系后自动回填 province）────────────────
+export const CUISINE_TO_PROVINCE: Record<string, string> = {
+  '粤菜':'广东','川菜':'四川','鲁菜':'山东','苏菜':'江苏','沪菜':'上海',
+  '浙菜':'浙江','湘菜':'湖南','徽菜':'安徽','闽菜':'福建','京菜':'北京',
+  '津菜':'天津','晋菜':'山西','冀菜':'河北','豫菜':'河南','东北菜':'辽宁',
+  '陕菜':'陕西','渝菜':'重庆','黔菜':'贵州','滇菜':'云南','西北菜':'甘肃',
+  '新疆菜':'新疆','藏菜':'西藏','青海菜':'青海','清真菜':'宁夏','蒙古菜':'内蒙古',
+  '桂菜':'广西','琼菜':'海南','鄂菜':'湖北','赣菜':'江西','台湾菜':'台湾',
+  '家常菜':'全国','轻食':'全国',
+  '日料':'境外','韩餐':'境外','西餐':'境外','快餐':'境外',
+}
+// 选中菜系后：province = CUISINE_TO_PROVINCE[cuisine] ?? '全国'
+
+// ── 就餐场景选项（分析结果页底部面板，8 项平铺）─────────────────────────
+export const SCENE_OPTIONS: string[] = [
+  '外卖','堂食','自己做','食堂','路边摊','便利店','快餐店','其他',
+]
+// Phase 5 前 scene 只用于记录和菜系地图统计，不影响 AI Prompt
 ```
 
 ---
@@ -691,7 +1719,12 @@ export const PROVINCES: Province[] = [
 算法层（FastAPI algorithms/）：
   计算结构化事实：特征相关性、评分均值、营养缺口、预测置信度
   消费营养库精准值，而不是Claude估算值
-  输出：numbers, arrays, structured JSON
+  输出：numbers, arrays, structured JSON, AlgorithmDecision
+
+上下文层（FastAPI context/）：
+  不直接把数据库原始数据塞进模型
+  由 context_composer 根据动作组装最小必要上下文
+  输出：AnalysisContext / PlanContext / PredictionContext / FulfillmentContext / FoodMemoryContext / WeeklyReportContext
 
 大模型层（Claude API）：
   消费算法输出 + 营养库精准值 + UserContext，生成可读文字
@@ -700,9 +1733,137 @@ export const PROVINCES: Province[] = [
 
 关键原则：
   营养库提供"准确数值"，算法提供"是什么规律"，大模型解释"为什么"和"怎么办"
-  每个用户的 UserContext 不同 → 每次生成内容个性化
+  每个动作的 TaskContext 不同 → 每次生成内容个性化且不超载
+  所有算法决策必须写 algorithm_decisions，关键动作必须写 fulfillment_events
   营养库数据可独立更新，算法迭代不需要 App 发版，FastAPI 独立热更新
+
+饭前抽卡专属分工：
+  规则引擎（Python buildCardPoolForState）：
+    读 meal_feedback 历史 → 按状态过滤+评分排序 → 返回候选菜（stable/alt/explore）
+    规则引擎决定"选哪道菜"，不调用营养库，不让 AI 自主选菜
+  
+  AI（Claude）：
+    输入：{state, stage, stable_candidate, alt_candidate, explore_dish, UserContext}
+    输出：每张卡的 reason（个性化理由）和 advice（吃法建议）
+    AI 只写文字，不选菜，不改变过滤结果
+    reason 文案风格按 stage 区分：
+      general：通用语气，不引用个人历史（"熟悉的味道，压力大时稳一点"）
+      feedback：引用近期反馈（"上次吃完你精力不错，疲惫时这个靠谱"）
+      body_puzzle：引用身体感受关联（"吃了 X 次，Y 次身体舒服，综合评分高"）
+  
+  营养库（pgvector）：
+    饭前抽卡不参与过滤和选菜（营养库只有原料级数据，无饭后感受标签）
+    仅在 Prompt 4.0+ 中用于生成吃法建议的营养事实背书
 ```
+
+## 饭前抽卡功能规范
+
+> 饭前抽卡（draw_card）是干饭 1.0 的核心差异化功能：在用户还不知道吃什么时，基于当前状态和历史数据生成三张推荐卡供翻牌。功能质量随数据积累自动升级，不设硬锁门槛阻断体验。
+
+### 核心设计原则
+
+1. **状态决定内容，不仅决定排序** — 用户当前状态（压力/疲惫/清淡/好的/随便）必须同时影响过滤规则和推荐原因，不能只改变排序
+2. **三槽位盲盒体验（泡泡玛特风格）** — 三张暗牌翻开，每张有独立稀有度和定位，翻牌前不知道是什么
+3. **无门槛渐进升级** — 0 餐也能抽（通用推荐），数据越多质量越高，用户感知是"越用越懂我"，不是"不够 X 餐不让用"
+4. **过滤基于用户历史，不依赖外部营养库** — 营养库只有原料级数据（1600+ 条），无饭后感受标签；过滤和加权必须基于用户自己的 `meal_feedback` 历史
+
+### 三阶段渐进解锁
+
+| 阶段 key | 解锁条件（有效反馈数）| 推荐质量 | reason 文案示例 |
+|---|---|---|---|
+| `general` | 0–2 条 | 通用推荐，基于状态 fallback 菜品 | "熟悉的味道，压力大时稳一点" |
+| `feedback` | 3–6 条 | 按历史反馈过滤 + 加权 | "上次吃完你精力不错，疲惫时这个靠谱" |
+| `body_puzzle` | ≥7 条 | 身体感受关联，深度个性化 | "吃了 3 次，2 次身体舒服，综合评分高" |
+
+> **有效反馈** = `meal_feedback.comfort` 不为空的餐次记录数。
+> `general` 阶段卡片内容来自 fallback 菜品映射表，不做历史过滤；advice 字段固定提示"这是通用推荐，记录更多餐次后会基于你的真实反馈生成。"
+
+### 三槽位设计
+
+| 槽位 key | 显示名 | 稀有度标识 | 定位 | 暗牌背景色 |
+|---|---|---|---|---|
+| `stable` | 常规款 | ● STANDARD | 今天最稳的选择，历史正向反馈最高分 | 橙红 `#E85D26` |
+| `alt` | 特别款 | ◆ LIMITED | 今日限定方向，第二顺位稳定选择 | 金黄 `#B8860B` |
+| `explore` | 隐藏款 | ★ RARE | 翻到就赚到，用户历史未记录或低频探索方向 | 深紫 `#5B2D8E` |
+
+### 六种餐前状态 × 过滤 / 加权规则
+
+状态判断**只基于用户自己的 `meal_feedback` 和 `meal_analysis.tags` 历史**，不调用营养库。
+
+| 用户状态 | 硬过滤（exclude） | 加权（boost） |
+|---|---|---|
+| `压力有点大` | 无 | 重复吃过的菜 ×2（熟悉感），comfort=舒服 +3 |
+| `心情不错` | 无 | mood=满足 +2，cuisine 多样性 +1 |
+| `很累很困` | comfort=困倦的历史菜；analysis.tags 含"高油/易困倦" | comfort=舒服 +3 |
+| `想吃点好的` | 无 | mood=满足 +2 |
+| `想吃点清淡` | analysis.tags 含"高油/主食偏多/易困倦" | analysis.tags 含"少油/蛋白质足" +2 |
+| `随便都行` | 无 | comfort=舒服 +3（综合最优） |
+
+> `analysis.tags` 来自用户自己的 `meal_analysis.tags`（AI 在餐次分析时生成），不是营养库标签。
+
+### 六阶段完整规则（过滤 + 加权 + AI 分工）
+
+| 阶段 | MVP | 新增数据源 | 新增过滤规则 | 新增加权规则 | AI reason 风格 |
+|---|---|---|---|---|---|
+| `general` | 1.0 | 状态 fallback 菜品表 | 忌口硬过滤 | 状态基础加权 | 通用，不引用个人历史 |
+| `feedback` | 1.0 | `meal_feedback` | 状态×感受过滤（困倦/高油等） | comfort/mood 评分加权 | 引用近期反馈（"上次吃完你..."） |
+| `body_puzzle` | 1.0→2.0 | 同上 + `dish_scores` | 高频负向菜系降权 | DishScore 加权；置信度<0.3 回退规则引擎 | 引用身体感受计数（"吃了 X 次，Y 次舒服"） |
+| `body_structure` | 4.0 | `health_data`（睡眠/步数/运动）| 睡眠差→排除高油高碳；运动少→降权高热量 | 睡眠≥7h→高蛋白+2；步数≥8000→可接受高碳水；只用已授权且有值字段 | 引用今日身体状态（"昨晚睡眠不足，今天先避开重口"） |
+| `fulfillment` | 5.0 | `plan_slots` 执行率、`fulfillment_events` | 近4周复杂菜执行率<60%→排除备餐繁琐菜；跳过率高的菜系降权 | 历史高执行率菜+2；社区同画像高购买率菜+1 | 引用执行可行性（"你这周复杂备餐执行率低，这张更容易完成"） |
+| `food_memory` | 6.0 | `food_memory_items`（库存推断） | 无硬过滤 | 可用库存食材关联度高的菜+3；食材临期+2 | 引用手边食材（"家里鸡蛋和番茄大概率还够，今天优先用掉"） |
+
+> 高阶阶段**累加**低阶规则，不替换。`body_structure` 同时包含 `body_puzzle` 的所有过滤和加权。
+
+### `buildCardPoolForState` 算法边界
+
+```python
+# services/ai/algorithms/draw_card.py
+def build_card_pool_for_state(user_id: str, state: str) -> CardPool:
+    """
+    1. 从 meal_feedback 取有效反馈餐（comfort 非空）
+    2. 按 state 规则过滤候选
+    3. 按当前阶段叠加评分（feedback_signal + state_boost + dish_score + health_adjust + execution_rate + food_memory）
+    4. 按菜名去重
+    5. 返回 stable_candidate, alt_candidate, explore_dish
+       explore_dish: 优先选用户历史未记录过的菜（从 fallback 探索库随机）
+    """
+
+def get_recommendation_stage(user_id: str) -> RecommendationStage:
+    feedback_count = count_valid_feedback(user_id)
+    # 高阶优先，但需满足对应 MVP 阶段解锁条件
+    if has_food_memory(user_id):             return 'food_memory'
+    if has_fulfillment_history(user_id):     return 'fulfillment'
+    if has_health_data_authorized(user_id):  return 'body_structure'
+    if feedback_count >= 7:                  return 'body_puzzle'
+    if feedback_count >= 3:                  return 'feedback'
+    return 'general'
+```
+
+算法输出给 Claude，Claude 只写 reason 和 advice，不改变菜品选择。
+
+### 卡片数据流
+
+```
+用户选择状态 → buildCardPoolForState → 候选池
+             ↓
+         Claude API → reason / advice（按阶段风格）
+             ↓
+         三张 DrawCard → 渲染暗牌
+
+用户翻牌 → 前端 cardStates[i] = 'seen'（本地状态，不写 card_actions）
+用户选择 → card_actions.action = 'accepted' / 'skipped'
+用户记录餐次 → meals.from_card = {dish, badge, risk,
+                recommendationStage, recommendationStageLabel,
+                recommendationReason, recommendationSources,
+                unlockRequirement, confidenceLevel}
+
+效果验证路径：
+  card_actions.action = 'accepted' + meals.from_card 非空
+  → 关联对应 meal_feedback
+  → 验证推荐质量 → 异步更新 DishScore（2.0 起）
+```
+
+---
 
 ## UI 设计系统
 
@@ -841,7 +2002,7 @@ export const radius = {
 
 **页面专用复合组件（Sprint 中实现，不属于基础库）：**
 
-`MealCard`、`RecoCard`、`CheckinCard`、`BodyPuzzle`、`NutritionBar`、`WeightChart`、`ProvinceMap`（SVG地图）
+`MealCard`、`RecoCard`、`BodyPuzzle`、`NutritionBar`、`WeightChart`、`ProvinceMap`（SVG地图）
 
 ---
 
@@ -854,10 +2015,10 @@ export const radius = {
 export type MealType = '早饭' | '午饭' | '晚饭' | '加餐'
 export type MealMood = '心情不错' | '平静' | '压力有点大' | '有点焦虑' | '疲惫'
 export type Fullness  = '撑' | '刚好' | '还饿'
-export type Comfort   = '舒服' | '胀气' | '困倦' | '有精神'
-export type Satisfaction = '很开心' | '还不错' | '一般' | '有点后悔'
+export type Comfort   = '舒服' | '胀气' | '困倦'           // 与原型 QUESTION_SCHEMA 对齐（2026-05-29 修订：删除「有精神」）
+export type Satisfaction = '还不错' | '一般' | '有点后悔'  // 与原型 QUESTION_SCHEMA 对齐（2026-05-29 修订：删除「很开心」）
 export type ActualIntake = '全吃完' | '吃了3/4' | '吃了一半' | '剩很多'
-export type HomeScene = 'DEFAULT' | 'PENDING_FB' | 'CHECKIN_DUE' | 'DONE'
+export type HomeScene = 'DEFAULT' | 'PENDING_FB' | 'DONE'
 export type ImageType = 'wide' | 'close' | 'leftover'
 export type PlanExecStatus = 'eaten' | 'swapped' | 'skipped'
 
@@ -871,16 +2032,19 @@ export interface Nutrition {
 
 // ── 用户 ─────────────────────────────────────────────
 export interface Profile {
-  userId:           string
-  age:              number | null
-  gender:           string | null
-  heightCm:         number | null
-  goal:             string
-  healthBackground: string[]
-  avoid:            string | null
-  feeling:          string | null
-  reminderDelayMin: number
-  updatedAt:        string
+  userId:       string
+  goal:         string
+  avoid:        string | null
+  dailyBudget:  number | null      // 元/天整数，Q3 映射值：50/90/160/250
+  feeling:      string | null      // Onboarding Q4
+  eatingStyle:  string | null      // Onboarding Q5，后台静默，档案页不展示
+  updatedAt:    string
+  // @deprecated 以下字段保留兼容旧数据，新建档不写入
+  age?:              number | null
+  gender?:           string | null
+  heightCm?:         number | null
+  healthBackground?: string[]
+  reminderDelayMin?: number        // 推送延迟已固定 20 分钟，不读取
 }
 
 export interface WeightLog {
@@ -963,15 +2127,64 @@ export interface DailyCheckin {
   dismissed:  boolean
 }
 
-// ── 推荐卡 ───────────────────────────────────────────
+// ── 饭前抽卡 ─────────────────────────────────────────
+export type RecommendationStage =
+  | 'general'         // 通用：无反馈数据，基于状态 fallback
+  | 'feedback'        // 反馈：≥3 条有效反馈，过滤+加权历史
+  | 'body_puzzle'     // 身体拼图：≥7 条反馈，关联身体感受
+  | 'body_structure'  // 身体结构：已授权健康数据（4.0+）
+  | 'fulfillment'     // 计划履约：餐饮计划执行率可追踪（5.0+）
+  | 'food_memory'     // 食材记忆：订单/剩余量可推断（6.0+）
+
+export type CardSlot = 'stable' | 'alt' | 'explore'
+export type CardSlotLabel = '常规款' | '特别款' | '隐藏款'
+export type PreMealState =
+  | '压力有点大' | '心情不错' | '很累很困'
+  | '想吃点好的' | '想吃点清淡' | '随便都行'
+
+export interface DrawCard {
+  id?:                    string
+  slot:                   CardSlot
+  slotLabel:              CardSlotLabel
+  slotSublabel:           string            // '今天最稳的选择' 等
+  emoji?:                 string            // 槽位装饰 emoji：'⭐'(stable) | '✨'(alt) | '🎲'(explore)
+  dish:                   string
+  type:                   'repeat' | 'safe' | 'explore'
+  badge:                  string
+  tags:                   string[]
+  risk:                   'low' | 'medium' | 'high'
+  reason:                 string
+  advice:                 string
+  recommendationStage:    RecommendationStage
+  recommendationStageLabel?: string         // 翻牌后由 openCardSheet 注入
+  recommendationReason?:  string            // 翻牌后由 openCardSheet 注入（=reason）
+  recommendationSources?: string            // 翻牌后由 openCardSheet 注入
+  unlockRequirement?:     string            // 翻牌后由 openCardSheet 注入
+  confidenceLevel?:       string            // 翻牌后由 openCardSheet 注入（中文描述）
+  accepted?:              boolean
+  decidedAt?:             string
+  description?:           string
+}
+
 export interface CardAction {
-  id:     string
-  userId: string
-  dish:   string
-  badge:  string | null
-  risk:   string | null
-  action: 'accept' | 'skip'
-  ts:     number
+  id:                        string
+  userId:                    string
+  dish:                      string
+  badge:                     string | null
+  risk:                      string | null
+  slot:                      CardSlot
+  slotLabel:                 CardSlotLabel
+  cardState:                 PreMealState | null  // 用户选择的餐前状态
+  recommendationStage:       RecommendationStage
+  recommendationStageLabel:  string              // 阶段显示名，如'身体拼图推荐'
+  recommendationReason:      string              // 推荐理由文案
+  recommendationSources:     string              // 数据来源描述
+  unlockRequirement:         string              // 解锁条件描述
+  confidenceLevel:           '低' | '低到中' | '中' | '中到高' | '高'
+  source:                    'card_draw' | 'homepage'
+  action:                    'accepted' | 'skipped'
+  // 注意：翻牌行为（'seen'）仅存于前端 cardStates 本地状态，不持久化到 card_actions
+  ts:                        number
 }
 
 // ── 完整餐次（聚合视图，供 UI 层使用）────────────────
@@ -1014,6 +2227,86 @@ export interface DishScore {
   sampleSize:      number
   confidence:      number
   lastUpdated:     string
+}
+
+// ── 横向履约智能契约 ─────────────────────────────────
+export type CanonicalFoodType = 'dish' | 'ingredient' | 'sku' | 'meal_kit'
+export type FulfillmentEventType =
+  | 'plan_generated'
+  | 'plan_viewed'
+  | 'suggestion_accepted'
+  | 'suggestion_swapped'
+  | 'suggestion_skipped'
+  | 'purchase_clicked'
+  | 'purchase_completed'
+  | 'subscription_started'
+  | 'meal_recorded'
+  | 'feedback_submitted'
+  | 'food_memory_inferred'
+  | 'weekly_report_viewed'
+  | 'weekly_report_corrected'
+  | 'membership_offer_viewed'
+  | 'membership_purchased'
+
+export interface CanonicalFood {
+  key:             string
+  type:            CanonicalFoodType
+  displayName:     string
+  aliases:         string[]
+  parentKey:       string | null
+  nutritionItemId: string | null
+}
+
+export interface FulfillmentEvent {
+  id:                       string
+  userId:                   string
+  eventType:                FulfillmentEventType
+  objectType:               string
+  objectId:                 string | null
+  source:                   string
+  contextVersion:           string | null
+  confidence:               number | null
+  expectedFulfillmentLift:  number | null
+  actualOutcome:            Record<string, unknown> | null
+  createdAt:                string
+}
+
+export interface AlgorithmDecision {
+  id:                       string
+  userId:                   string
+  algorithm:                string
+  algorithmVersion:         string
+  contextSnapshotId:        string
+  decision:                 Record<string, unknown>
+  confidence:               number
+  reasons:                  string[]
+  targetMetric:             'effective_fulfillment_rate' | string
+  expectedFulfillmentLift:  number | null
+  fallback:                 Record<string, unknown> | null
+}
+
+// ── 6.0 食材记忆 ─────────────────────────────────────
+export interface FoodMemoryItem {
+  id:                      string
+  userId:                  string
+  canonicalFoodKey:         string
+  sourceOrderItemId:        string | null
+  estimatedRemainingRatio:  number | null
+  estimatedQuantity:        number | null
+  unit:                    string | null
+  expiryRisk:              'none' | 'soon' | 'expired' | 'unknown'
+  confidence:              number
+  lastInferredAt:          string | null
+}
+
+export interface WeeklyFulfillmentReport {
+  id:                  string
+  userId:              string
+  weekOf:              string
+  fulfillmentStats:    Record<string, unknown>
+  foodMemorySummary:   Record<string, unknown>
+  corrections:         Array<Record<string, unknown>>
+  nextWeekStrategy:    Record<string, unknown>
 }
 ```
 
@@ -1086,9 +2379,11 @@ interface PlanState {
 
 ```sql
 -- ══ 直接含 user_id 的表（直接策略）══════════════════
--- profiles / weight_logs / meals / daily_checkins
--- card_actions / meal_plans / body_patterns / weekly_reports
+-- profiles / weight_logs / meals / card_actions / meal_plans / body_patterns / weekly_reports
 -- predictions / interventions / health_data / user_similarity
+-- fulfillment_orders / fulfillment_events / context_snapshots
+-- algorithm_decisions / food_memory_items / food_memory_events
+-- meal_ingredient_links / weekly_fulfillment_reports
 
 -- 以 profiles 为示例，其余表替换表名即可：
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -1162,6 +2457,49 @@ CREATE POLICY "own dish scores" ON dish_scores
 ALTER TABLE nutrition_targets ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "own nutrition targets" ON nutrition_targets
   FOR ALL USING (auth.uid() = user_id);
+
+-- ══ 6.0 履约智能用户私有表 ═══════════════════════
+ALTER TABLE fulfillment_orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own fulfillment orders" ON fulfillment_orders
+  FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE fulfillment_events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own fulfillment events" ON fulfillment_events
+  FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE context_snapshots ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own context snapshots" ON context_snapshots
+  FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE algorithm_decisions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own algorithm decisions" ON algorithm_decisions
+  FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE food_memory_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own food memory items" ON food_memory_items
+  FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE food_memory_events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own food memory events" ON food_memory_events
+  FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE meal_ingredient_links ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own meal ingredient links" ON meal_ingredient_links
+  FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE weekly_fulfillment_reports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own weekly fulfillment reports" ON weekly_fulfillment_reports
+  FOR ALL USING (auth.uid() = user_id);
+
+-- canonical_foods / food_identity_mappings 是平台级标准库：
+-- 用户只读，写入由后台服务账号或人工审核流程执行。
+ALTER TABLE canonical_foods ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "read canonical foods" ON canonical_foods
+  FOR SELECT USING (true);
+
+ALTER TABLE food_identity_mappings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "read food identity mappings" ON food_identity_mappings
+  FOR SELECT USING (true);
 ```
 
 ---
@@ -1459,7 +2797,7 @@ async def build_user_context(user_id: str, supabase: Client) -> dict:
 
     # ─── 1. 基础档案 ──────────────────────────────────────
     profile_res = supabase.table("profiles") \
-        .select("age, gender, height_cm, goal, health_background, avoid, feeling") \
+        .select("goal, avoid, daily_budget, feeling, eating_style") \
         .eq("user_id", user_id).single().execute()
     profile = profile_res.data or {}
 
@@ -1470,14 +2808,7 @@ async def build_user_context(user_id: str, supabase: Client) -> dict:
         .order("ts", desc=True).limit(21).execute()
     recent_meals = meals_res.data or []
 
-    # ─── 3. 近7天回访（关联信号）────────────────────────────
-    checkins_res = supabase.table("daily_checkins") \
-        .select("date, energy, digestion, satiety") \
-        .eq("user_id", user_id) \
-        .order("date", desc=True).limit(7).execute()
-    recent_checkins = checkins_res.data or []
-
-    # ─── 4. DishScores（只传置信度≥0.3的，防止噪声干扰）──────
+    # ─── 3. DishScores（只传置信度≥0.3的，防止噪声干扰）──────
     scores_res = supabase.table("dish_scores") \
         .select("dish_key, energy_avg, digestion_avg, satisfaction_avg, confidence, sample_size") \
         .eq("user_id", user_id) \
@@ -1507,12 +2838,11 @@ async def build_user_context(user_id: str, supabase: Client) -> dict:
 
     # ─── 8. 解锁阶段判断 ──────────────────────────────────
     meal_count = len(recent_meals)
-    checkin_rate = _compute_checkin_rate(recent_checkins, meal_count)
     high_conf_patterns = len([
         c for c in (body_pattern or {}).get("correlations", [])
         if c.get("confidence", 0) >= 0.6
     ])
-    unlock_stage = _determine_stage(meal_count, checkin_rate, high_conf_patterns)
+    unlock_stage = _determine_stage(meal_count, high_conf_patterns)
 
     # ─── 9. 健康数据（4.0解锁后）──────────────────────────
     health_data = {}
@@ -1526,7 +2856,6 @@ async def build_user_context(user_id: str, supabase: Client) -> dict:
     return {
         "profile": profile,
         "recent_meals": recent_meals,
-        "recent_checkins": recent_checkins,
         "dish_scores": dish_scores,
         "body_pattern": body_pattern,
         "weight_trend": weight_trend,       # kg/week，正数为增重，负数为减重，None为数据不足
@@ -1579,14 +2908,57 @@ def _determine_stage(meal_count: int, checkin_rate: float, high_conf_patterns: i
 > $$ LANGUAGE sql SECURITY DEFINER;
 > ```
 
+## TaskContext Composer（2.0 起逐步实现）
+
+`build_user_context()` 是早期兼容入口。2.0 起新增 `services/ai/context/composer.py`，按动作构建轻量任务上下文，并把结果写入 `context_snapshots`。
+
+```python
+async def compose_context(user_id: str, context_type: str, object_id: str | None, supabase: Client) -> dict:
+    """按任务生成最小必要上下文，不把完整用户历史直接塞进模型。"""
+
+    if context_type == "AnalysisContext":
+        return await build_analysis_context(user_id, object_id, supabase)
+    if context_type == "PlanContext":
+        return await build_plan_context(user_id, object_id, supabase)
+    if context_type == "PredictionContext":
+        return await build_prediction_context(user_id, object_id, supabase)
+    if context_type == "PurchaseContext":
+        return await build_purchase_context(user_id, object_id, supabase)
+    if context_type == "SubscriptionContext":
+        return await build_subscription_context(user_id, object_id, supabase)
+    if context_type == "FoodMemoryContext":
+        return await build_food_memory_context(user_id, object_id, supabase)
+    if context_type == "WeeklyReportContext":
+        return await build_weekly_report_context(user_id, object_id, supabase)
+    if context_type == "MembershipContext":
+        return await build_membership_context(user_id, object_id, supabase)
+    raise ValueError("unsupported_context_type")
+```
+
+上下文原则：
+
+- 原始事件和明细先进入数据库，不直接进入 prompt。
+- 高频统计、偏好、履约率、复购周期和消耗概率优先预计算为特征。
+- 每次 AI 调用只读取当前动作需要的上下文。
+- 每个上下文快照必须有 `context_version`，方便回放、A/B 测试和算法回归。
+
 ---
 
 ## Claude Prompt 模板
 
-> 文件：`services/ai/prompts/` 目录下各模板文件。
-> 所有 prompt 用 `prompt_version` 字段追踪版本（格式 `v1.2`），写入 `analysis_meta`。
+> ⚠️ **重要变更（2026-05-27）**：本节原有的 Prompt 1/2/3 散落定义**已废弃**。所有 Prompt 现归属到各 UC 的契约文档，单文件管理：
+>
+> | 旧定义 | 现归属 |
+> |---|---|
+> | Prompt 1：Vision 识别 | UC-01 `meal_analysis` Prompt 模板（v1.0 单次调用，Phase 2 拆为两阶段） |
+> | Prompt 2：个性化建议生成 | UC-01 Prompt 内嵌的 Layer 3 consumer 部分（Phase 2 v2.0 拆出独立 Prompt） |
+> | Prompt 3：首批洞察生成（T5-05） | UC-02 `body_insight` Prompt 模板 |
+>
+> Prompt 全文见 `docs/architecture/use-cases/uc-XX-*.md` 的「§5 Prompt 模板」节。Prompt 版本号由 UC 文件的 `prompt_version` 字段维护，与 UC 整体 `version` 解耦——Prompt 文本调整属绿区改动，不破坏 Schema 兼容。
+>
+> 下方旧 Prompt 文本仅作历史参考，新增/修改 Prompt **必须改对应 UC 文件**，不得改本节。
 
-### Prompt 1：Vision 识别（Step 1 of analyze）
+### Prompt 1：Vision 识别（Step 1 of analyze）— 历史参考
 
 ```python
 # services/ai/prompts/vision_recognize.py
@@ -1698,8 +3070,8 @@ def build_advice_prompt(
 
 【用户个人情况】
 目标：{profile.get('goal', '越来越舒服')}
-健康背景：{', '.join(profile.get('health_background', [])) or '无特殊情况'}
 忌口：{profile.get('avoid') or '无'}
+单日预算：{profile.get('daily_budget', '未设置')} 元/天
 近7天已吃菜系：{cuisine_summary}
 近3天身体信号：{checkin_hint}{pattern_hint}
 
@@ -1744,7 +3116,7 @@ def build_first_insight_prompt(stats: dict, user_context: dict) -> list:
 
 用户档案：
 目标：{user_context['profile'].get('goal')}
-健康背景：{user_context['profile'].get('health_background')}
+忌口：{user_context['profile'].get('avoid') or '无'}
 
 请生成洞察，返回格式：
 {{
@@ -1941,9 +3313,12 @@ T1-02 Supabase Auth 集成（邮箱+密码）
 
 T1-03 用户建档流程
   产出: app/onboarding/basic-info.tsx, goals.tsx
-  存储: profiles表写入，本地SQLite同步
-  字段: age, gender, height_cm, goal, health_background[], avoid
-  验收: 首次登录后进入建档流程，完成后profiles表有数据
+  存储: profiles表写入，本地SQLite同步；同时写入 meal_budget_weights 初始4行
+  字段: goal / avoid / daily_budget（整数，元/天）/ feeling / eating_style（后台静默，档案页不展示）
+  Q3选项映射: 60元以内→50 / 60~120元→90 / 120~200元→160 / 200元以上→250
+  Q3完成后写入 meal_budget_weights 默认权重: 早饭0.20 / 午饭0.35 / 晚饭0.40 / 加餐0.05
+  不收集: age / gender / height_cm / health_background（档案页按需填写）
+  验收: 首次登录后进入建档流程；完成后 profiles 表有 goal/avoid/daily_budget/feeling/eating_style；meal_budget_weights 有初始4行；Q3选项正确映射为整数
 
 T1-04 本地 SQLite 初始化
   产出: db/schema.ts（1.0表的SQLite版本），db/migrations/001.ts
@@ -2031,8 +3406,15 @@ T2-05 分析结果展示界面
   营养来源标签:
     nutrition_source='vector_matched' → 显示"📊 数据来自营养库"（小字，绿色）
     nutrition_source='ai_estimate'    → 显示"≈ AI估算"（小字，灰色）
-  功能: 用户可点击修改菜品名和营养数值（写入meal_corrections）
-  验收: 分析结果正确显示，营养来源标签根据source显示，修改后corrections表有记录
+  功能: 用户可修改菜品名和营养数值（写入 meal_corrections）；
+        菜系修改：底部面板分组 chip 选择器（CUISINE_OPTIONS，5 组 35+ 项），
+                  选中后自动按 CUISINE_TO_PROVINCE 回填 province；
+        场景修改：底部面板平铺列表（SCENE_OPTIONS，8 项）；
+                  两者均不使用自由文本输入框；
+                  修改写入 meal_corrections（field/ai_value/user_value/corrected_at）；
+                  scene Phase 5 前不影响 AI Prompt
+  验收: 分析结果正确显示，营养来源标签根据 source 显示，修改后 meal_corrections 有记录；
+        菜系选完后 province 自动更新；场景选项为枚举，不出现自由输入
 
 T2-06 餐次保存到数据库
   产出: db/meals.ts insertMeal(), insertMealAnalysis()
@@ -2066,7 +3448,7 @@ T2-09 就餐心情记录
 
 ---
 
-## Sprint 3｜反馈与每日回访
+## Sprint 3｜反馈与通知
 
 ```
 T3-01 饭后即时反馈界面
@@ -2074,39 +3456,17 @@ T3-01 饭后即时反馈界面
   问题（按顺序）:
     Q1: 实际吃掉多少（全吃完/吃了3/4/吃了一半/剩很多）
     Q2: 饱腹状态（撑/刚好/还饿）
-    Q3: 身体即时感受（舒服/胀气/困倦/有精神）
-    Q4: 这顿吃得开心吗（很开心/还不错/一般/有点后悔）
+    Q3: 身体即时感受（舒服/胀气/困倦）          // 多选；与原型 QUESTION_SCHEMA 对齐
+    Q4: 这顿吃得开心吗（还不错/一般/有点后悔）  // 单选；与原型 QUESTION_SCHEMA 对齐
   存储: meal_feedback表
   验收: 4题全答完才能提交，数据写入正确
 
-T3-02 每日回访调度逻辑
-  产出: utils/checkinScheduler.ts scheduleDailyCheckin(meal)
-  规则:
-    早饭/午饭/加餐 → dueAt = max(当天17:00, now+3h)
-    晚饭 → dueAt = 次日07:00
-    同一天多餐 → 合并到同一条checkin记录，更新mealIds[]
-  验收: 单元测试覆盖3种餐型的dueAt计算
-
-T3-03 每日回访界面（首页卡片）
-  产出: components/CheckinCard.tsx
-  显示条件: Date.now() >= dueAt AND !answered
-  问题（同时展示，选完提交）:
-    精力状态（精力充沛/还好/疲惫犯困）
-    肠胃感受（舒适顺畅/有点不适/明显不舒服）
-    两餐之间（很耐饿/有点饿/饿得很快）
-  提交逻辑:
-    1. 更新daily_checkins（energy/digestion/satiety/answered_at）
-    2. 回写 meals.daily_checkin_id = checkin.id（当天所有meal_ids中的每条）
-  验收: 回访卡到时出现，提交后消失，data写入checkins表，meal.daily_checkin_id有值
+【已废弃】T3-02/T3-03/T3-05 每日回访已于 2026-05-29 删除，偏离履约率核心链路
 
 T3-04 本地通知（即时反馈提醒）
   产出: utils/notifications.ts schedulePostMealReminder()
-  逻辑: 餐次保存后，按profile.reminder_delay_min延迟发推送
-  验收: Android真机收到通知，点击跳转到feedback页面
-
-T3-05 本地通知（每日回访提醒）
-  产出: scheduleCheckinReminder(dueAt)
-  验收: 指定时间Android真机收到回访通知
+  逻辑: 餐次保存后固定 20 分钟延迟推送；系统固定，不读取 profile.reminder_delay_min，不提供用户配置项
+  验收: Android真机收到通知（餐次保存后约20分钟触发），点击跳转到feedback页面；不出现推送延迟设置项
 ```
 
 **Sprint 3 验收标准：** 完整走通一餐：拍照→分析→即时反馈→（当天/次日）回访，数据全链路完整
@@ -2116,10 +3476,34 @@ T3-05 本地通知（每日回访提醒）
 ## Sprint 4｜历史记录与个人档案
 
 ```
-T4-01 餐次历史日历视图
-  产出: app/history.tsx，日历视图组件
+T4-01 餐次历史日历视图（2026-05-23 修订）
+  产出: app/history.tsx、日历视图组件、screens/WeeklyHistoryScreen.tsx
+        src/utils/weeklyReport.ts、src/components/WeeklyReportCard.tsx
+        app/weekly-history.tsx
   逻辑: 按日期聚合meals，有记录的日期显示色点（已反馈=绿，未反馈=橙）
-  验收: 能看到当月记录，点击日期展开当天餐次列表
+  顶部合并卡（饮食记录沉淀 + 我的一周）:
+    上半：饮食记录沉淀（累计餐次全量统计，不随月份/筛选变化）
+    下半：我的一周周报卡（meals.length >= 3 时显示，5字段完整卡片）
+      5字段: 口味chips（前2菜系，无数据→"待观察"）| 感受最好chips（comfortable次数，无数据→"待观察"）
+             粗估热量（range取第一个数字均值，无则"待确认"）| 蛋白质（同上）| 建议文字
+      建议文字逐字稿:
+        sleepy次数 >= 餐数/2 → "😴 这周午餐后困倦明显，建议减少高碳水组合，增加蛋白质。"
+        overfull/too_full次数 >= 2 → "🍽️ 发现容易吃撑的模式，可以提前设定饭量提醒。"
+        其余 → "✨ 保持现在的饮食节奏，身体反馈很稳定！"
+      营养解析: range字段如"500-700 kcal"，取第一个数字500（非中点），Math.round均值
+      时间窗口: 近7天有效记录；为空则兜底 allMeals.slice(-7)
+    整卡点击 → 全屏「我的一周·历史」页（screens/WeeklyHistoryScreen.tsx）
+      首条: 与卡片使用完全相同的时间窗口算法和数据
+      历史条: 自然周（周一~周日）分组，排除首条已覆盖记录，无createdAt的记录不进历史分组，倒序排列
+      每条: 使用与「我的一周」卡片完全相同的 WeeklyReportCard 组件
+            仅左上角替换为日期范围字符串，不显示「📊 我的一周」标题
+      顶部说明: 「每周总结在周日晚7点生成，周一0点后仅在这里查看历史」
+  验收:
+    - 能看到当月记录，点击日期展开当天餐次列表
+    - meals.length >= 3 时合并卡下半显示「我的一周」5字段周报卡
+    - 卡片与历史页首条数据完全一致（同一时间窗口算法）
+    - 历史页每条与卡片使用相同组件，5字段完整展示，仅日期不同
+    - 点击整卡进入历史周汇总页，首条数据与卡片一致
 
 T4-01b 美食版图（菜系地图视图）
   产出: 历史页第二个Tab「🗺️ 菜系地图」
@@ -2153,9 +3537,17 @@ T4-04 体重记录
 
 T4-05 个人档案页
   产出: app/profile.tsx
-  内容: 基础信息（可编辑）、目标（可编辑）、健康背景（多选）、
-        餐饮偏好统计、AI接入状态、数据管理
-  验收: 所有字段可编辑，修改后profiles表更新
+  三块结构:
+    ① 干饭目标 — goal（文字）+ daily_budget（元/天），flex垂直排列，可编辑
+    ② 身体拼图 — 4块独立解锁（同 T5-06 规格）
+    ③ 干饭档案 — 由 deriveInsights() 驱动，三字段三档渐进：
+       · 偏好餐次: cold(<5餐)→forming(5-20餐,积累中badge)→mature(≥21餐,正式标签)
+       · 干饭风格: cold(<5 analyzed)→forming(5-20,积累中badge)→mature(≥21 analyzed,正式标签)
+       · 忌口偏好: 直接读 profile.avoid，无门控
+  顶部副标题: "N 餐记录"（不含阶段名）
+  页面打开时即时重算 deriveInsights，<20ms响应
+  eating_style 不在档案页展示
+  验收: 三块结构完整显示；偏好餐次/干饭风格三档渲染正确；goal/avoid/daily_budget 可编辑，修改后profiles表更新
 
 T4-06 数据管理功能
   产出: confirmClearAllData(), confirmDeleteAccount()
@@ -2167,34 +3559,61 @@ T4-06 数据管理功能
 
 ---
 
-## Sprint 5｜推荐卡与首页逻辑
+## Sprint 5｜饭前抽卡与首页逻辑
 
 ```
-T5-01 规则引擎实现
-  产出: services/ai/algorithms/rules.py
-  规则集:
-    R1: 菜系多样性（近3天出现的菜系降权）
-    R2: 忌口硬过滤（profile.avoid中的词命中则排除）
-    R3: 健康背景适配（血糖敏感→高GI警告）
-    R4: 时段适配（晚饭偏轻食低热量）
-    R5: 营养补偿（近7天蛋白质低→高蛋白菜提权）
-  验收: 单元测试覆盖5条规则，边界情况通过
+T5-01 饭前抽卡规则引擎
+  产出: services/ai/algorithms/draw_card.py
+  核心函数:
+    build_card_pool_for_state(user_id, state) → CardPool
+      从 meal_feedback 取有效反馈（comfort 非空）
+      按状态规则过滤+评分排序+菜名去重
+      返回 {stable_candidate, alt_candidate, explore_dish}
+    get_recommendation_stage(feedback_count) → RecommendationStage
+      0-2条 → 'general'，3-6条 → 'feedback'，≥7条 → 'body_puzzle'
+  状态过滤规则（详见《饭前抽卡功能规范》章节）:
+    R1 忌口硬过滤（profile.avoid）
+    R2 状态过滤（很累很困→排除 comfort=困倦/高油/易困倦历史菜）
+    R3 状态加权（压力大→熟悉菜 ×2；有精神→推精力好菜 +3 等）
+    R4 explore 槽位优先选用户历史未记录的菜
+  验收: 单元测试覆盖6种状态×3种阶段，边界情况通过；general阶段无历史数据时 fallback 不报错
 
-T5-02 推荐卡生成接口
-  产出: FastAPI POST /v1/insight/generate
-  逻辑: 调用rules.py，返回3张推荐卡（含dish/reason/badge）
-  验收: 接口返回正确格式，无相同菜系重复
+T5-02 饭前抽卡接口
+  产出: FastAPI POST /v1/insight/generate（trigger='draw_card'）
+  请求: { user_id, state: PreMealState, meal_type: MealType }
+  流程:
+    1. build_card_pool_for_state 选菜
+    2. get_recommendation_stage 定阶段
+    3. Claude API 生成 reason + advice（按阶段风格，见《算法与大模型分工》）
+    4. 返回三张 DrawCard（slot: stable/alt/explore）
+  响应: { cards: DrawCard[], stage: RecommendationStage, feedback_count: int }
+  验收: 返回 stable/alt/explore 三槽位；reason 引用正确（general不引用个人历史，body_puzzle引用身体感受）；无相同菜品重复
 
-T5-03 首页推荐卡组件
-  产出: components/RecoCard.tsx
-  功能: 接受/跳过，写入card_actions表
-  显示: 菜品名、菜系、推荐原因、营养亮点
-  card_actions字段来源:
-    dish    ← 推荐卡的菜品名
-    badge   ← 推荐卡的营养标签（如'高蛋白'|'轻食'），来自insight接口返回
-    risk    ← 推荐卡的风险标签（如'高GI'），来自insight接口返回，无风险时为null
-    action  ← 用户操作：'accept'|'skip'
-  验收: 接受/跳过后card_actions表有完整记录，badge/risk字段与展示一致，刷新后不重复展示
+T5-03 饭前抽卡组件
+  产出: screens/DrawCardScreen.tsx
+  交互:
+    1. 状态选择页（6种状态按钮 + 三阶段进度 badge）
+    2. 三张暗牌（常规款/特别款/隐藏款，Pop Mart 盲盒风格）
+    3. 翻牌动画 → Sheet 展开（你抽到了 + 槽位标签 + 推荐原因 + 吃法建议）
+    4. 选这个 → 进入拍照页
+  card_actions 写入字段（翻牌仅本地 cardStates='seen'，不写库）:
+    dish, badge, risk
+    slot, slot_label                 ← 'stable'/'alt'/'explore' / '常规款'/'特别款'/'隐藏款'
+    card_state                       ← 用户选择的餐前状态
+    recommendation_stage             ← 当前推荐阶段 key
+    recommendation_stage_label       ← 阶段显示名
+    recommendation_reason            ← 推荐理由文案
+    recommendation_sources           ← 数据来源描述
+    unlock_requirement               ← 解锁条件描述
+    confidence_level                 ← 置信度中文描述
+    source = 'card_draw'
+    action = 'accepted'（选择）| 'skipped'（跳过，对所有已翻未选的卡统一写入）
+  meals.from_card 写入字段（用户选择后进入拍照时写入）:
+    dish, badge, risk
+    recommendationStage, recommendationStageLabel
+    recommendationReason, recommendationSources
+    unlockRequirement, confidenceLevel
+  验收: 三张暗牌渲染正确；翻牌后显示槽位名称；选择后 card_actions 有完整记录（含 stage_label/reason/sources）；从 card 进入拍照后 meals.from_card 含 recommendationStage/recommendationReason/confidenceLevel 字段
 
 T5-04 首页状态机
   产出: stores/useMealStore.ts getHomeScene()
@@ -2202,8 +3621,7 @@ T5-04 首页状态机
     DEFAULT     → 显示推荐卡
     PENDING_FB  → 显示待反馈卡（带餐次图片+去打分按钮）
     DONE        → 今日已完成摘要
-    CHECKIN_DUE → 回访卡（优先级最高，覆盖其他状态）
-  验收: 4种状态切换正确，不出现状态错乱
+  验收: 3种状态切换正确，不出现状态错乱
 
 T5-05 首批洞察生成（7天后）
   产出: FastAPI POST /v1/insight/generate trigger='weekly_first'
@@ -2213,28 +3631,77 @@ T5-05 首批洞察生成（7天后）
     生成≤3条文字洞察
   验收: 有7天数据的测试账号首页出现洞察卡片
 
-T5-06 身体拼图初版
-  产出: components/BodyPuzzle.tsx（仅1.0数据版）
-  显示块（共4块，按顺序，各有独立解锁条件）:
-    块0「喜欢吃这个」: 解锁条件 meals_count >= 1（有记录即显示）
-      显示反馈好评最多的菜品/标签（comfort=舒服 OR satisfaction=很开心）
-      无好评数据时显示「再记录几餐，规律就出来了」
-    块1「我的吃法」: 解锁条件 meals_count >= 3
-      近期精力/肠胃负向信号汇总，好评率最高的标签，满足感均值
+T5-06 身体拼图（2026-05-29 修订：解锁条件收紧）
+  产出: components/BodyPuzzle.tsx、components/BodyInsight.tsx、screens/TimelineScreen.tsx
+
+  显示块（共4块，无整体门槛，各块独立解锁，未解锁块以灰色锁定态显示）:
+    块0「喜欢吃这个」: 解锁条件 正向反馈（comfort=舒服 OR 有精神）≥ 3 餐
+      显示反馈好评最多的菜品/标签 + 历史好评榜
+      未解锁时显示：「再打 N 次好评，这块拼图就出来了」
+    块1「我的吃法」: 解锁条件 总反馈 ≥ 7，且正向 ≥ 1、负向 ≥ 1（需要对比度才能识别规律）
+      近期吃法规律，好评率最高标签，满足感均值
       "这是你的专属吃法，不是通用建议"
-    块2「口味探索」: 解锁条件 distinct_cuisines >= 2
-      已探索的各菜系，及各菜系"感觉不错"的次数
+      未解锁时显示：反馈不足则「还差N次反馈，好评和差评都要有」；有反馈无负向则「还需要至少1次不舒服的反馈，有对比才有规律」
+    块2「口味探索」: 解锁条件 有反馈的 distinct_cuisines ≥ 3（排除家常菜/全国）
+      已探索的各菜系记录及好评次数
       → 底部按钮「看我的美食地图 →」跳转到历史页菜系地图Tab
       未解锁时显示：「再探索 N 种新菜系解锁」
-    块3「越来越舒服」: 解锁条件 meals_count >= 10
-      近7天 vs 首7天舒服率对比，显示改善百分比
-      未解锁时显示：「记录到10餐后解锁（还差N餐）」
-  整体解锁条件: meals_count >= 7 才显示整个身体拼图区域
+    块3「越来越舒服」: 解锁条件 总反馈 ≥ 14，且后7餐正向比例 ≥ 前7餐正向比例 + 10%
+      语义：产品价值证明——接受建议后身体趋势变好
+      正向餐信号来源（分阶段扩展）：
+        Phase 1：抽卡后 card.accepted=true 的餐
+        Phase 2：抽卡接受 + 饭前建议页采纳
+        Phase 3+：以上 + 餐饮计划执行餐
+      月度舒服率柱状图（按月分组，颜色：0%红 / 50-70%橙 / 80%+绿）
+      未解锁时显示：反馈不足则「还差N次反馈，趋势才看得出来」；反馈够但趋势未达则「反馈够了，但身体舒适度还在提升中，继续保持」
+
+  你的身体说（4块下方，独立组件 BodyInsight.tsx）:
+    数据来源: analysis.typeFields（AI识别时生成，字段: oil/staple/protein/vegetable）
+    算法:
+      1. 从 typeFields 推断结构类别: oil=重→高油; staple=偏多&&oil≠重→高碳; protein=充足||oil=轻→清淡; else→均衡
+      2. 按结构类别统计困倦率（comfort=困倦/胀气）和舒服率（comfort=舒服 OR satisfaction=还不错）
+      3. 找出困倦率最高 vs 最低的两个类别，若差距≥25%则触发洞察
+    精准度按 meals_count 递进:
+      n < 5:  积累期文案（「已有N餐，继续记录，结构规律会越来越清晰」）
+      n >= 8: 初步关联（「初步规律：X结构餐后困倦率明显高于Y结构（X% vs Y%）」）
+      n >= 15: 完整因果（「你吃X食物（如具体菜名）后困倦/不舒服概率N%；吃Y食物后是M%。差距不是口味偏好——是身体对油脂和碳水负担的真实反应。」）
+    ⚠️ 禁止使用菜系名称（京菜/川菜等）作为对比维度，必须使用 typeFields 推断的结构类别
+
+  成长时间轴 ⏱（Header右上角按钮）:
+    触发条件: 有早于60天前的历史餐次（meals.ts <= now - 60days）
+    点击: 全屏页从右滑入，标题「成长时间轴」，副标题「N餐 · N个月」
+    时间轴节点（按 meals.ts 升序）:
+      🎬 开始记录（第一餐时间+菜名）
+      🗺️ 解锁「口味探索」（探索了N种菜系）
+      🥢 解锁「我的吃法」（积累了7餐对比记录）
+      😋 解锁「喜欢吃这个」（3次好评 · 发现好吃的：XXX）
+      ✨ 解锁「越来越舒服」（14餐趋势达成 · 舒服率X%→Y%）
+      📍 今天（已拼上N/4 · N餐记录 · N个月旅程）
+    页面底部: 月度舒服率柱状图
+    工程产出: screens/TimelineScreen.tsx
+
+  饮食日历「饮食记录沉淀 + 我的一周」合并卡（2026-05-23 修订）:
+    位置: 历史页「饮食日历」Tab 顶部（原饮食记录沉淀总览卡升级）
+    上半：饮食记录沉淀（累计餐次数，全量不随筛选变化）
+    下半：我的一周周报卡（meals.length >= 3 时显示）
+      5字段: 口味chips（前2菜系，无数据→"待观察"）| 感受最好chips（comfortable，无数据→"待观察"）
+             粗估热量（range取第一个数字均值，无→"待确认"）| 蛋白质（同上）| 建议文字
+      建议文字: sleepy>=餐数/2→"😴 这周午餐后困倦明显，建议减少高碳水组合，增加蛋白质。"
+               overfull/too_full>=2→"🍽️ 发现容易吃撑的模式，可以提前设定饭量提醒。"
+               其余→"✨ 保持现在的饮食节奏，身体反馈很稳定！"
+      时间窗口: 近7天有效记录；为空则兜底 allMeals.slice(-7)
+    整卡点击 → 全屏「我的一周 · 历史」页（screens/WeeklyHistoryScreen.tsx）
+      首条与卡片使用完全相同时间窗口算法；历史条按自然周分组、排除首条已覆盖记录
+      无createdAt记录不进历史分组；每条使用 WeeklyReportCard 组件（5字段完整），仅左上角替换为日期范围
+      顶部说明: 「每周总结在周日晚7点生成，周一0点后仅在这里查看历史」
+
   验收:
-    - 满7餐后身体拼图区域出现，不足7餐显示解锁进度
-    - 各块按自己的解锁条件独立显示/隐藏
-    - 「看我的美食地图 →」按钮正确跳转到history页的map视图Tab
-    - 数据准确，无null崩溃
+    - 各块按自身条件独立显示，无整体7餐门槛
+    - 「你的身体说」文案基于 typeFields 结构类型，不出现菜系名称
+    - 成长时间轴节点按 ts 排序，颜色、emoji 与原型一致
+    - meals.length >= 3 时合并卡下半显示「我的一周」5字段周报卡
+    - 卡片与历史页首条数据完全一致；历史每条使用相同 WeeklyReportCard 组件
+    - 数据准确，无 null 崩溃
 ```
 
 **Sprint 5 验收标准：** 首页逻辑完整，推荐卡功能可用，7天后出现首条身体洞察
@@ -2321,7 +3788,7 @@ T8-01 周计划生成接口
     Step1: 为7天×3餐每个槽位生成候选菜池
     Step2: 按营养缺口+DishScore+多样性综合评分
     Step3: 选最高分作为推荐，次高分作为备选
-  写入: meal_plans + plan_slots表
+  写入: meal_plans + plan_slots表，同时写 fulfillment_events(type='plan_generated')
   测试: 生成计划无重复菜系（同天），满足营养目标
 
 T8-02 计划界面
@@ -2331,6 +3798,7 @@ T8-02 计划界面
   换菜持久化:
     用户选择新菜后 → plan_slots.swapped_to = {dish, reason}
     同步更新界面展示为新菜，原推荐保留在 suggested.alternatives 可查看
+  事件: 查看计划、接受建议、换菜、跳过建议都写 fulfillment_events
   测试: 界面渲染正确；换菜后plan_slots.swapped_to有值；重开App仍显示换后的菜
 ```
 
@@ -2340,6 +3808,7 @@ T8-02 计划界面
 T9-01 记录餐次时关联当日计划
   产出: 修改insertMeal()，自动匹配plan_slots
   逻辑: 同日同餐型的plan_slot.executed_meal_id = meal.id
+  事件: 命中计划写 fulfillment_events(type='meal_recorded', object_type='plan_slot')
   测试: 记录午饭后plan_slots的executed_meal_id有值
 
 T9-01b 计划执行状态追踪
@@ -2368,7 +3837,7 @@ T10-01 每周身体报告生成
   触发条件:
     每周一 App 启动时检查，最近7天内有餐次记录 → 生成上周报告
     若 weekly_reports 表中本周已有记录 → 不重复生成
-  内容: 计划执行率（execution_status统计）、按计划日vs不按计划日的4维度对比、本周亮点
+  内容: 计划执行率（execution_status统计）、履约事件漏斗、按计划日vs不按计划日的4维度对比、本周亮点
   写入: weekly_reports表（week_of = 上周一日期，UNIQUE约束防重复）
   测试:
     有7天内餐次记录 → 生成报告
@@ -2469,6 +3938,7 @@ T13-02 目标偏离干预
 T14-01 规律反哺计划生成
   产出: 升级 /v1/plan/generate，消费body_pattern
   逻辑: 排除与已知负向相关性匹配的菜品
+  事件: 因身体规律排除/替换菜品时写 algorithm_decisions 和 fulfillment_events
   测试: 有"辛辣→肠胃不适"规律的用户，计划中无辛辣菜
 ```
 
@@ -2520,6 +3990,7 @@ T17-01 饭前预测算法
     在body_pattern.correlations中查匹配
     健康数据调节（睡眠差→消化敏感性+0.2）
     多证据聚合（同向增强，反向抵消）
+  写入: predictions + algorithm_decisions，记录 dominant_source 和 expected_fulfillment_lift
   测试: 已知相关性+候选菜，验证预测方向正确
 
 T17-02 饭前预测展示
@@ -2527,6 +3998,19 @@ T17-02 饭前预测展示
   显示条件: 有4.0解锁 AND 预测置信度>0.5
   文案: "根据你的X次记录，这类菜后你可能[...]"
   测试: 置信度低时不显示，高时正确显示
+
+T17-03 饭前抽卡升级至 body_structure 阶段
+  产出: 升级 draw_card.py buildCardPoolForState + get_recommendation_stage
+  逻辑:
+    Health Connect 授权后 get_recommendation_stage 返回 'body_structure'
+    buildCardPoolForState 叠加健康数据调节层：
+      睡眠<6h → 排除高油高碳菜（analysis.tags 含"高油"/"主食偏多"）
+      步数≥8000 → 解除高碳水过滤限制
+      运动日（当天 exercise > 30min）→ 高蛋白菜 +2
+      只使用已授权且当天有值的字段，无数据字段不参与
+    card_actions.recommendation_stage 写入 'body_structure'
+    reason 文案引用今日身体状态（"昨晚睡眠不足，今天先避开重口"）
+  测试: 昨晚睡眠<6h 时 stable/alt 槽无高油高碳菜；无睡眠数据时不触发该过滤；Health Connect 未授权时保持 body_puzzle 阶段
 ```
 
 ## Sprint 18｜预测反馈回路
@@ -2582,12 +4066,13 @@ T20-01 健康成果报告生成
 ```
 T21-01 食材清单从计划生成
   产出: algorithms/grocery.py plan_to_grocery_list(plan_id)
-  逻辑: 解析plan_slots的菜品→标准食材列表→按类别聚合
+  逻辑: 解析plan_slots的菜品→标准食材列表→按类别聚合；同时写 dish_key / ingredient_key 映射候选
   测试: 5菜计划生成正确的食材清单和份量
 
 T22-01 采购接口对接
   产出: 对接第三方生鲜API（具体平台由人类决策D5确定）
   功能: 一键下单，订单状态追踪
+  写入: fulfillment_orders + fulfillment_order_items + fulfillment_events
   测试: 沙盒环境下单流程完整
 ```
 
@@ -2597,6 +4082,7 @@ T22-01 采购接口对接
 T23-01 配餐方案界面
   产出: 周配餐订阅购买页
   功能: 预览菜单、选择份数、设置配送时间
+  写入: fulfillment_orders(type='subscription') + fulfillment_events(type='subscription_started')
   测试: 订阅流程完整，数据写入Supabase
 ```
 
@@ -2613,6 +4099,19 @@ T25-02 协同过滤推荐（冷启动）
   产出: 新用户（<7天数据）使用community_dishes推荐
   逻辑: 按profile匹配最近segment，返回该segment高分菜
   测试: 新注册用户的推荐来自社区数据，有数据来源标注
+
+T25-03 饭前抽卡升级至 fulfillment 阶段
+  产出: 升级 draw_card.py buildCardPoolForState + get_recommendation_stage
+  逻辑:
+    履约历史可追踪后 get_recommendation_stage 返回 'fulfillment'
+    buildCardPoolForState 叠加执行率调节层：
+      近4周 plan_slots 复杂备餐菜执行率<60% → 降权同类菜
+      用户跳过率最高的菜系整体降权
+      历史高执行率菜 +2 加权
+    general 阶段冷启动 explore 槽改为从 community_dishes 同 segment 高分菜中选
+    card_actions.recommendation_stage 写入 'fulfillment'
+    reason 文案引用执行可行性（"你这周复杂备餐执行率低，这张更容易完成"）
+  测试: 连续跳过某菜系用户该菜系不出现在 stable/alt 槽；新用户 explore 槽菜品来自社区同 segment；高执行率用户 stable 槽为历史执行最稳定的菜之一
 ```
 
 **5.0 验收标准：**
@@ -2620,6 +4119,93 @@ T25-02 协同过滤推荐（冷启动）
 - [ ] 食材清单从计划正确生成
 - [ ] community_dishes表有聚合数据
 - [ ] 新用户推荐标注"基于与你相似的用户"
+
+---
+
+# MVP 6.0 — 履约率优化与食材记忆
+
+**前置：** 5.0 已跑通沙盒或真实履约订单 AND 计划执行状态可追踪 AND 周报已成为用户可理解的信任界面
+**目标：** 以单人履约链路为核心，用干饭履约数据和 AI 推断优化下一轮计划、采购、配餐和会员转化
+**周期：** 4 Sprint（8周）
+
+## Sprint 27｜履约数据资产化
+
+```
+T27-01 履约事件链
+  产出: fulfillment_events 写入规范 + 客户端/服务端事件入口
+  逻辑: 计划生成、查看、接受、替换、跳过、采购、配餐、反馈、周报、会员动作都进入统一事件链
+  测试: 关键路径能按 user_id 串出 plan_slot -> order -> meal -> feedback -> report
+
+T27-02 食物身份映射
+  产出: canonical_foods + food_identity_mappings 初版
+  逻辑: 先覆盖高频食材、常见菜品、5.0 履约 SKU；建立 dish_key / ingredient_key / sku_key / nutrition_item_id 映射
+  测试: 番茄炒蛋计划、鸡蛋 SKU、餐图识别鸡蛋能映射到同一 ingredient_key
+```
+
+## Sprint 28｜食材记忆推断
+
+```
+T28-01 履约后食材记忆生成
+  产出: algorithms/food_memory.py create_food_memory_from_order(order_id)
+  逻辑: 订单完成后自动生成 food_memory_items，估算数量、保质期和置信度
+  测试: 沙盒订单送达后生成食材记忆，不要求用户每日确认
+
+T28-02 食材消耗推断
+  产出: algorithms/food_memory.py infer_consumption(user_id, meal_id)
+  逻辑: 结合餐图 recognized_foods、plan_slot、历史食量、订单时间和食材身份映射，推断已购食材消耗
+  测试: 记录番茄炒蛋后，相关鸡蛋/番茄 food_memory_items 剩余比例下降且有置信度
+
+T28-03 饭前抽卡 food_memory 阶段
+  产出: 升级 draw_card.py buildCardPoolForState + get_recommendation_stage
+  逻辑:
+    food_memory_items 可用时 get_recommendation_stage 返回 'food_memory'
+    buildCardPoolForState 新增食材记忆加权层：
+      当前有库存的食材关联菜（dish_key ↔ ingredient_key 映射）评分 +3
+      临期食材（remaining_ratio < 0.2 且 expiry_date 在 3 天内）关联菜评分 +2
+    stable 槽优先选与库存食材高关联度的菜
+    explore 槽保持未记录探索方向（不受食材记忆约束）
+    card_actions.recommendation_stage 写入 'food_memory'
+    reason 文案引用手边食材："家里鸡蛋和番茄大概率还够，今天优先用掉"
+  测试: 有鸡蛋+番茄库存时，stable 槽优先出番茄炒蛋类菜；无库存时回退 body_puzzle 加权
+```
+
+## Sprint 29｜反哺计划与履约
+
+```
+T29-01 计划生成使用食材记忆
+  产出: 升级 /v1/plan/generate 的 PlanContext
+  逻辑: 优先使用已购且适合用户目标的食材；快过期食材仅在不伤害健康目标时提高排序
+  测试: 有高置信剩余鸡蛋时，下周早餐计划更倾向使用鸡蛋
+
+T29-02 采购/配餐/会员履约优化
+  产出: /v1/fulfillment/optimize
+  逻辑: 根据计划执行率、订单消耗、浪费风险、复购周期，输出补货、减少配餐份数或会员价值触发建议
+  测试: 剩余食材过多时减少采购建议；计划执行高且频繁使用高级功能时会员价值触发更自然
+```
+
+## Sprint 30｜周报确认与商业验证
+
+```
+T30-01 食材记忆周报
+  产出: weekly_fulfillment_reports + 周报食材记忆模块
+  逻辑: 每周集中展示系统推断：吃完了什么、可能还剩什么、可能浪费什么、下周怎么调整
+  用户动作: 只在周报里做低频纠错，不做每日库存维护
+  测试: 周报展示食材记忆摘要，纠错写 food_memory_events(type='corrected')
+
+T30-02 履约率归因
+  产出: algorithms/fulfillment_attribution.py compute_fulfillment_lift(user_id, week_of)
+  逻辑: 对比使用食材记忆前后计划执行率、采购转化率、配餐续订率、周报纠错率
+  测试: 周报能输出“哪些动作提升/降低履约率”的结构化结果
+```
+
+**6.0 验收标准：**
+- [ ] 关键动作都写入 `fulfillment_events`，能串出计划到履约结果链路
+- [ ] 高频菜品/食材/SKU/营养库身份映射可用
+- [ ] 订单完成后自动生成食材记忆，用户无需每日确认
+- [ ] 餐次记录后能推断食材消耗并更新置信度
+- [ ] 周计划能使用食材记忆优化排序
+- [ ] 周报能集中展示并纠错食材记忆
+- [ ] 能计算食材记忆对计划执行、采购转化、配餐续订或会员转化的影响
 
 ---
 
@@ -2680,6 +4266,7 @@ T25-02 协同过滤推荐（冷启动）
 | D3 | FastAPI部署区域（建议：Railway ap-northeast） | AI分析延迟 | Sprint2前 |
 | D4 | 2.0食材数据库来源：自建菜品→食材映射表 OR 对接第三方食材API | 数据准确性 | Sprint21前 |
 | D5 | 5.0采购平台：美团买菜/叮咚买菜/盒马 | 商务合作 | Sprint22前 |
+| D6 | 6.0食材记忆使用边界：只使用干饭履约渠道 OR 开放外部库存导入 | 产品负担、隐私、安全和履约数据质量 | Sprint27前 |
 
 ---
 
@@ -2694,26 +4281,31 @@ T25-02 协同过滤推荐（冷启动）
 -- 账号 A：新用户（0 餐），用于测试 onboarding 流程
 INSERT INTO users (id, email) VALUES
   ('00000000-0000-0000-0000-000000000001', 'seed_new@test.com');
-INSERT INTO profiles (user_id, age, gender, height_cm, goal, health_background, avoid)
-  VALUES ('00000000-0000-0000-0000-000000000001', 28, '女', 165, '越来越舒服', '{}', null);
+INSERT INTO profiles (user_id, goal, avoid, daily_budget, feeling)
+  VALUES ('00000000-0000-0000-0000-000000000001', '越来越舒服', null, 90, null);
+INSERT INTO meal_budget_weights (user_id, meal_type, weight) VALUES
+  ('00000000-0000-0000-0000-000000000001', '早饭', 0.20),
+  ('00000000-0000-0000-0000-000000000001', '午饭', 0.35),
+  ('00000000-0000-0000-0000-000000000001', '晚饭', 0.40),
+  ('00000000-0000-0000-0000-000000000001', '加餐', 0.05);
 
--- 账号 B：7 餐完整记录（含回访），用于验证身体拼图解锁、首批洞察
+-- 账号 B：7 餐完整记录，用于验证身体拼图解锁、首批洞察
 INSERT INTO users (id, email) VALUES
   ('00000000-0000-0000-0000-000000000002', 'seed_7meals@test.com');
-INSERT INTO profiles (user_id, age, gender, height_cm, goal)
-  VALUES ('00000000-0000-0000-0000-000000000002', 32, '男', 175, '越来越舒服');
+INSERT INTO profiles (user_id, goal, daily_budget)
+  VALUES ('00000000-0000-0000-0000-000000000002', '越来越舒服', 90);
 -- 数据特征：
---   7 条 meals + meal_analysis + meal_feedback + 3 条 daily_checkins（回访率 43%）
+--   7 条 meals + meal_analysis + meal_feedback
 --   province 覆盖：四川×3、广东×2、江苏×2（distinct_cuisines=3，口味探索块解锁）
---   comfort 分布：'舒服'×3、'胀气'×2、'有精神'×2
+--   comfort 分布：'舒服'×3、'胀气'×2、'困倦'×2
 
--- 账号 C：21 餐完整记录，回访率 ≥ 60%，用于验证 BodyPattern 解锁
+-- 账号 C：21 餐完整记录，用于验证 BodyPattern 解锁
 INSERT INTO users (id, email) VALUES
   ('00000000-0000-0000-0000-000000000003', 'seed_21meals@test.com');
-INSERT INTO profiles (user_id, age, gender, height_cm, goal)
-  VALUES ('00000000-0000-0000-0000-000000000003', 35, '女', 162, '越来越舒服');
+INSERT INTO profiles (user_id, goal, daily_budget)
+  VALUES ('00000000-0000-0000-0000-000000000003', '越来越舒服', 90);
 -- 数据特征：
---   21 条 meals + 13 条 daily_checkins（回访率 62%）
+--   21 条 meals + meal_feedback
 --   注入已知相关性：
 --     川菜/辛辣 → digestion='有点不适'（至少 5 次，形成统计显著性）
 --     粤菜/清淡 → digestion='舒适顺畅'（至少 5 次）
@@ -2746,6 +4338,9 @@ INSERT INTO users (id, email) VALUES
 | 3.0 Sprint11 | `body_pattern.py` | 第21条完整记录提交后异步触发 |
 | 4.0 Sprint17 | `predictor.py` | 拍照后，识别完成时触发 |
 | 5.0 Sprint25 | `collaborative.py` | 后台定时任务，每日凌晨运行 |
+| 6.0 Sprint27 | `fulfillment_events.py` / `context_composer.py` | 所有关键动作写事件，算法调用前组装任务上下文 |
+| 6.0 Sprint28 | `food_memory.py` | 履约订单送达、餐次记录后异步触发 |
+| 6.0 Sprint30 | `fulfillment_attribution.py` | 周报生成前后计算履约率归因 |
 
 **关键原则：** 算法在FastAPI服务中，App版本升级不影响算法迭代。算法服务独立部署，可热更新，不需要重新发版App。
 

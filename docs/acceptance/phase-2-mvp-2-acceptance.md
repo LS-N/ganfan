@@ -15,7 +15,7 @@
 
 | 任务 | 验收项 |
 |---|---|
-| T7-01 | 5 条测试餐次可验证 DishScore 计算正确；`dish_scores` upsert 成功；daily_checkin 后异步重算 |
+| T7-01 | 5 条测试餐次可验证 DishScore 计算正确；`dish_scores` upsert 成功；meal_feedback 提交后异步重算 |
 | T7-02 | 有/无 DishScore 的推荐结果存在差异；置信度 <0.3 时回退规则引擎 |
 | T7-03 | 不同 profile 的 TDEE 和宏量目标计算符合基础营养规则；`nutrition_targets` 每日自动创建 |
 | T8-01 | 7 天 x 3 餐计划完整；同天无重复菜系；满足营养目标；写入 `meal_plans` 和 `plan_slots` |

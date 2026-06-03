@@ -10,7 +10,6 @@ import { createReportRepository } from "./reportRepository"
 import { createDrawCardRepository } from "./drawCardRepository"
 import {
   localAnalysisRepository,
-  localDailyCheckinRepository,
   localFeedbackRepository,
   localMealImageRepository,
   localMealRepository,
@@ -56,10 +55,6 @@ export function getReportRepository() {
 
 export function getDrawCardRepository() {
   return createDrawCardRepository()
-}
-
-export function getDailyCheckinRepository() {
-  return localDailyCheckinRepository
 }
 
 export function getWeightRepository() {

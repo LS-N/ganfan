@@ -13,7 +13,6 @@ export function HomeScreen() {
   const authError = useBodyPuzzleStore((state) => state.authError)
   const meals = useBodyPuzzleStore((state) => state.meals)
   const feedbacks = useBodyPuzzleStore((state) => state.feedbacks)
-  const dailyCheckins = useBodyPuzzleStore((state) => state.dailyCheckins)
   const hydratePersistedData = useBodyPuzzleStore((state) => state.hydratePersistedData)
   const sendPhoneOtp = useBodyPuzzleStore((state) => state.sendPhoneOtp)
   const verifyPhoneOtp = useBodyPuzzleStore((state) => state.verifyPhoneOtp)
@@ -28,7 +27,6 @@ export function HomeScreen() {
   const [loginError, setLoginError] = useState<string>()
   const recentMeal = meals[0]
   const homeStatus = getHomeStatus(recentMeal)
-  const needsCheckin = feedbacks.length > 0 && !dailyCheckins.some((item) => item.date === new Date().toISOString().slice(0, 10))
   const authMessage = loginError || authError ? formatAuthError(loginError ?? authError, "验证码发送失败") : undefined
 
   useEffect(() => {
@@ -247,18 +245,6 @@ export function HomeScreen() {
           <Pressable style={styles.ghostButton} onPress={() => router.push("/record")}>
             <Text style={styles.ghostButtonText}>刚刚又吃/喝了别的 →</Text>
           </Pressable>
-        </View>
-      ) : needsCheckin ? (
-        <View style={styles.pendingCard}>
-          <View style={styles.cardHeaderRow}>
-            <View>
-              <Text style={styles.greenLabel}>待回访</Text>
-              <Text style={styles.cardTitle}>补一下今天的身体反馈</Text>
-            </View>
-            <Text style={styles.statusPill}>回访</Text>
-          </View>
-          <Text style={styles.cardDesc}>这一步会把今天的餐次和精力、消化、饱腹节奏关联起来。</Text>
-          <PrimaryButton title="去每日回访" onPress={() => router.push("/checkin")} />
         </View>
       ) : homeStatus === "done" && recentMeal && feedbacks.length > 0 ? (
         <View style={styles.doneCard}>

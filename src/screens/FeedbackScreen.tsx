@@ -15,8 +15,8 @@ type FeedbackQuestion = {
 const baseQuestions: FeedbackQuestion[] = [
   { key: "actualIntake", label: "实际吃掉多少", options: ["全吃完", "吃了3/4", "吃了一半", "剩很多"] },
   { key: "fullness", label: "饱腹状态", options: ["撑", "刚好", "还饿"] },
-  { key: "comfort", label: "身体即时感受", options: ["舒服", "胀气", "困倦", "有精神"] },
-  { key: "satisfaction", label: "这顿吃得开心吗", options: ["很开心", "还不错", "一般", "有点后悔"] }
+  { key: "comfort", label: "身体即时感受", options: ["舒服", "胀气", "困倦"] },
+  { key: "satisfaction", label: "这顿吃得开心吗", options: ["还不错", "一般", "有点后悔"] }
 ]
 
 export function FeedbackScreen() {
@@ -40,7 +40,7 @@ export function FeedbackScreen() {
       tasteFeedback: [mapTaste(answers.satisfaction)],
       priceSatisfaction: mapPrice(answers.satisfaction)
     })
-    router.push("/checkin")
+    router.replace("/")
   }
 
   return (
@@ -107,7 +107,6 @@ function mapFullness(value?: string): Fullness {
 function mapComfort(value?: string): ComfortTag {
   if (value === "胀气") return "bloated"
   if (value === "困倦") return "sleepy"
-  if (value === "有精神") return "energetic"
   return "comfortable"
 }
 
@@ -118,7 +117,6 @@ function mapTaste(value?: string): TasteFeedback {
 }
 
 function mapPrice(value?: string): PriceSatisfaction {
-  if (value === "很开心") return "worth_it"
   if (value === "有点后悔") return "expensive"
   return "normal"
 }

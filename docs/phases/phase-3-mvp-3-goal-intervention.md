@@ -11,8 +11,9 @@
 - `完整数据库 Schema`
   - `Migration 003：3.0 模式表`
   - 复用 `Migration 002：2.0 计划表`
-  - 复用 `weight_logs`、`daily_checkins`、`meal_feedback` 等 1.0 数据。
+  - 复用 `weight_logs`、`meal_feedback`、`card_actions` 等 1.0/2.0 数据。
 - `API 接口规范`：`/v1/pattern/compute`、`/v1/plan/generate`、目标干预相关接口。
+- `饭前抽卡功能规范`：`body_puzzle` 阶段 BodyPattern 增强规则（T14-01 实现后需同步更新 `buildCardPoolForState`）。
 - `功能解锁阈值`：`complete_meals >= 21`、`checkin_rate >= 0.6` 等解锁条件。
 - `算法与大模型分工`：`body_pattern.py`、`fasting.py`、目标偏离干预、规律反哺计划。
 - `核心 TypeScript 类型`：BodyPattern、Correlation、Intervention、Fasting 状态等阶段类型。
@@ -59,7 +60,7 @@
 
 | 任务 | 产出 | 关键逻辑 | 测试/验收 |
 |---|---|---|---|
-| T14-01 规律反哺计划生成 | 升级 `/v1/plan/generate` | 消费 body_pattern，排除与已知负向相关性匹配的菜品 | 有“辛辣 -> 肠胃不适”规律的用户，计划中无辛辣菜 |
+| T14-01 规律反哺计划生成 | 升级 `/v1/plan/generate` + 同步升级 `buildCardPoolForState` | 消费 body_pattern，排除与已知负向相关性匹配的菜品；**同步写入抽卡过滤**：`body_puzzle` 阶段的 `passFilter` 在 BodyPattern 计算完成后新增一条：将 `body_pattern.feature → negative_outcome` 高置信度（confidence>0.6）相关性转为硬过滤规则（如”辛辣→肠胃不适”→抽卡时排除辛辣菜） | 有”辛辣 → 肠胃不适”规律的用户：计划中无辛辣菜；**且**饭前抽卡三槽位均无辛辣类菜品 |
 
 ## 关联验收
 

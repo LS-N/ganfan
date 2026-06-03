@@ -13,7 +13,8 @@ export default [
       ".netlify-publish/",
       "dist/",
       "build/",
-      "coverage/"
+      "coverage/",
+      "docs/prototype/assets/"
     ]
   },
   js.configs.recommended,

@@ -10,8 +10,9 @@
 
 - `完整数据库 Schema`
   - `Migration 005：5.0 社区表`
-  - 复用 `meal_plans`、`plan_slots`、`weekly_reports`、`predictions`、`prediction_accuracy`。
-- `API 接口规范`：履约、社区聚合、计划转食材、订阅相关接口边界。
+  - 复用 `meal_plans`、`plan_slots`、`weekly_reports`、`predictions`、`prediction_accuracy`、`card_actions`。
+- `API 接口规范`：履约、社区聚合、计划转食材、订阅、`/v1/insight/generate?trigger=draw_card` 相关接口边界。
+- `饭前抽卡功能规范`：`fulfillment` 阶段规则（执行率过滤+社区加权）、T25-02 冷启动与通用阶段 fallback 的关系。
 - `算法与大模型分工`：`grocery.py`、`collaborative.py`、社区菜品画像、冷启动推荐。
 - `核心 TypeScript 类型`：CommunityDish、GroceryList、Subscription、FulfillmentOrder 等阶段类型。
 - `完整 RLS 策略`：社区聚合数据、用户授权数据、履约数据的访问边界。
@@ -57,6 +58,7 @@
 |---|---|---|---|
 | T25-01 CommunityDishProfile 聚合 | 后台定时任务 | 每日凌晨聚合所有用户 meal + checkin，按 dish_key 和 segment 分层统计，写 `community_dishes` | 注入 100 个不同用户数据，社区评分计算正确 |
 | T25-02 协同过滤推荐（冷启动） | 新用户社区推荐 | <7 天新用户使用 community_dishes，按 profile 匹配最近 segment，返回高分菜 | 新注册用户推荐来自社区数据，有数据来源标注 |
+| T25-03 饭前抽卡 fulfillment 阶段 | 升级 `draw_card.py buildCardPoolForState` + `get_recommendation_stage` | 履约历史可追踪时 `get_recommendation_stage` 返回 `fulfillment`；新增执行率过滤层：近4周 plan_slots 中复杂备餐菜执行率<60% 则降权/排除同类菜；跳过率高的菜系整体降权；stable 槽叠加历史高执行率菜 +2 加权；`general` 阶段冷启动 explore 槽优先从 community_dishes 同 segment 高分菜中选（而不是纯随机 fallback）；`card_actions.recommendation_stage` 写入 `fulfillment` | fulfillment 阶段用户抽卡：stable 槽为用户历史执行率最高菜之一；连续跳过某菜系的用户该菜系不出现在 stable/alt 槽；`general` 阶段新用户 explore 槽菜品来自社区同 segment 而非纯随机 |
 
 ## 关联验收
 

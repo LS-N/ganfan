@@ -1,13 +1,11 @@
 import { decodeJson, encodeJson, getDatabase } from "../db/client"
-import type { Analysis, DailyCheckin, Feedback, MealImage, MealRecord, Profile, WeightLog } from "../types/meal"
+import type { Analysis, Feedback, MealImage, MealRecord, Profile, WeightLog } from "../types/meal"
 import type {
   AnalysisRepository,
-  DailyCheckinRepository,
   FeedbackRepository,
   MealImageRepository,
   MealRepository,
   ProfileRepository,
-  SaveDailyCheckinInput,
   SaveFeedbackInput,
   SaveMealImageInput,
   WeightRepository
@@ -29,7 +27,6 @@ type MealDbRow = {
   meal_started_at: string | null
   feedback_due_at: string | null
   completed_at: string | null
-  daily_checkin_id: string | null
   created_at: string
   updated_at: string
 }
@@ -179,7 +176,7 @@ export const localMealRepository: MealRepository = {
     const userId = await authService.getSessionUserId()
     if (!userId) return meal
     await db.runAsync(
-      `UPDATE meals SET status=?, dish=?, cuisine=?, province=?, photo_uri=?, meal_started_at=?, feedback_due_at=?, completed_at=?, daily_checkin_id=?, updated_at=?, sync_status='pending' WHERE id=? AND user_id=?`,
+      `UPDATE meals SET status=?, dish=?, cuisine=?, province=?, photo_uri=?, meal_started_at=?, feedback_due_at=?, completed_at=?, updated_at=?, sync_status='pending' WHERE id=? AND user_id=?`,
       meal.status,
       meal.mealCategory ?? meal.analysis?.dishName ?? null,
       meal.cuisine ?? meal.analysis?.cuisine ?? null,
@@ -188,7 +185,6 @@ export const localMealRepository: MealRepository = {
       meal.mealStartedAt ?? null,
       meal.feedbackDueAt ?? null,
       meal.completedAt ?? null,
-      null,
       meal.updatedAt,
       meal.id,
       userId
@@ -369,69 +365,6 @@ export const localFeedbackRepository: FeedbackRepository = {
   }
 }
 
-export const localDailyCheckinRepository: DailyCheckinRepository = {
-  async saveDailyCheckin(input: SaveDailyCheckinInput) {
-    const db = await getDatabase()
-    const now = nowIso()
-    const checkin: DailyCheckin = {
-      id: makeMockId("checkin"),
-      userId: input.userId,
-      date: input.date,
-      mealIds: input.mealIds,
-      dueAt: now,
-      isNextDay: input.isNextDay ?? false,
-      energy: input.energy,
-      digestion: input.digestion,
-      satiety: input.satiety,
-      answeredAt: now,
-      dismissed: false,
-      createdAt: now,
-      updatedAt: now
-    }
-    await db.runAsync(
-      `INSERT INTO daily_checkins (id, user_id, date, meal_ids, due_at, is_next_day, energy, digestion, satiety, answered_at, dismissed, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(user_id, date) DO UPDATE SET
-        meal_ids=excluded.meal_ids,
-        energy=excluded.energy,
-        digestion=excluded.digestion,
-        satiety=excluded.satiety,
-        answered_at=excluded.answered_at,
-        dismissed=excluded.dismissed,
-        updated_at=excluded.updated_at`,
-      checkin.id,
-      checkin.userId,
-      checkin.date,
-      encodeJson(checkin.mealIds),
-      checkin.dueAt,
-      checkin.isNextDay ? 1 : 0,
-      checkin.energy ?? null,
-      checkin.digestion ?? null,
-      checkin.satiety ?? null,
-      checkin.answeredAt ?? null,
-      checkin.dismissed ? 1 : 0,
-      checkin.createdAt,
-      checkin.updatedAt
-    )
-    await enqueue("daily_checkin", checkin.id, "upsert", checkin)
-    return checkin
-  },
-  async listDailyCheckins(userIdInput?: string) {
-    const db = await getDatabase()
-    const userId = userIdInput ?? (await authService.getSessionUserId())
-    if (!userId) return []
-    const rows = await db.getAllAsync<DailyCheckinRow>("SELECT * FROM daily_checkins WHERE user_id = ? ORDER BY date DESC", userId)
-    return rows.map(checkinFromRow)
-  },
-  async getDailyCheckin(date, userIdInput?: string) {
-    const db = await getDatabase()
-    const userId = userIdInput ?? (await authService.getSessionUserId())
-    if (!userId) return undefined
-    const row = await db.getFirstAsync<DailyCheckinRow>("SELECT * FROM daily_checkins WHERE user_id = ? AND date = ?", userId, date)
-    return row ? checkinFromRow(row) : undefined
-  }
-}
-
 export const localWeightRepository: WeightRepository = {
   async saveWeightLog(input) {
     const db = await getDatabase()
@@ -479,22 +412,6 @@ export const localMealImageRepository: MealImageRepository = {
     )
     return rows.map((row) => ({ id: row.id, mealId: row.meal_id, imageType: row.image_type, localUri: row.local_uri ?? undefined, storageUrl: row.storage_url ?? undefined, createdAt: row.created_at }))
   }
-}
-
-type DailyCheckinRow = {
-  id: string
-  user_id: string
-  date: string
-  meal_ids: string
-  due_at: string
-  is_next_day: number
-  energy: DailyCheckin["energy"] | null
-  digestion: DailyCheckin["digestion"] | null
-  satiety: DailyCheckin["satiety"] | null
-  answered_at: string | null
-  dismissed: number
-  created_at: string
-  updated_at: string
 }
 
 function mealFromDbRow(row: MealDbRow, analysis?: Analysis, feedback?: Feedback): MealRecord {
@@ -581,24 +498,6 @@ function feedbackFromDbRow(row: FeedbackDbRow): Feedback {
     tasteFeedback: reactions.tasteFeedback ?? [],
     timingStatus: "on_time",
     createdAt: row.created_at
-  }
-}
-
-function checkinFromRow(row: DailyCheckinRow): DailyCheckin {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    date: row.date,
-    mealIds: decodeJson(row.meal_ids, []),
-    dueAt: row.due_at,
-    isNextDay: row.is_next_day === 1,
-    energy: row.energy ?? undefined,
-    digestion: row.digestion ?? undefined,
-    satiety: row.satiety ?? undefined,
-    answeredAt: row.answered_at ?? undefined,
-    dismissed: row.dismissed === 1,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
   }
 }
 

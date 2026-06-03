@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from nutrition.catalog import search_catalog
 from providers.mock import analyze_meal_mock
 from providers.siliconflow import analyze_meal_with_siliconflow
@@ -37,5 +37,5 @@ def analyze_meal(payload: AnalyzeMealRequest) -> dict:
 
 
 @router.get("/nutrition/search")
-def search_nutrition(q: str) -> dict:
-    return search_catalog(q, limit=5)
+def search_nutrition(q: str, limit: int = Query(default=5, ge=1, le=20)) -> dict:
+    return search_catalog(q, limit=limit)

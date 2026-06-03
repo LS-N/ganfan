@@ -1,4 +1,4 @@
-import type { Analysis, AnalysisCorrection, BodyPuzzleReport, DailyCheckin, DrawCard, Feedback, MealImage, MealRecord, MealSource, MealStatus, MealType, Profile, WeightLog } from "../types/meal"
+import type { Analysis, AnalysisCorrection, BodyPuzzleReport, DrawCard, Feedback, MealImage, MealRecord, MealSource, MealStatus, MealType, Profile, WeightLog } from "../types/meal"
 
 export type CreateMealInput = {
   userId: string
@@ -24,13 +24,6 @@ export type SaveFeedbackInput = Pick<Feedback, "fullness" | "comfort" | "sleepin
   mealId: string
   comfortTags?: Feedback["comfortTags"]
   tasteFeedback?: Feedback["tasteFeedback"]
-}
-
-export type SaveDailyCheckinInput = Pick<DailyCheckin, "energy" | "digestion" | "satiety"> & {
-  userId: string
-  date: string
-  mealIds: string[]
-  isNextDay?: boolean
 }
 
 export type MealRepository = {
@@ -61,12 +54,6 @@ export type AnalysisRepository = {
 export type FeedbackRepository = {
   saveFeedback(input: SaveFeedbackInput): Promise<Feedback>
   listFeedbacks(userId?: string): Promise<Feedback[]>
-}
-
-export type DailyCheckinRepository = {
-  saveDailyCheckin(input: SaveDailyCheckinInput): Promise<DailyCheckin>
-  listDailyCheckins(userId?: string): Promise<DailyCheckin[]>
-  getDailyCheckin(date: string, userId?: string): Promise<DailyCheckin | undefined>
 }
 
 export type MealImageRepository = {

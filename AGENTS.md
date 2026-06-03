@@ -25,6 +25,22 @@ C:\Users\a\.codex\worktrees\*
 
 这些路径只允许作为历史参考或临时工具工作树。
 
+## 原型治理规则
+
+- `docs/prototype/meal-agent-product-prototype.html` 是《干饭》当前的开发对标母版原型，所有原型对齐都以它为准。
+- 修改主原型前，必须先把现有原型历史备份到 `F:\ganfan\_archive\prototype-history\`，再更新主原型。
+- 任何修改原型的工作，都必须先遵守“备份 -> 修改主原型 -> 再同步对齐稿”的顺序，不能直接在对齐稿上补丁式推进。
+- `docs/prototype/meal-agent-product-prototype-home-multi-meal-20260515.html` 只用于首页多餐状态机对齐确认，不能替代主原型成为开发母版。
+- 当用户说出触发词”原型同步开发”时，必须自动启动原型到工程同步 SOP：读取主原型变更，抽取页面流转、状态机、数据字段、可复用资产和验收口径，**先检查并更新 `docs/02-master-blueprint.md`**（凡涉及 DDL 字段、TS 类型、常量、接口的必须同步蓝图），再依次同步当前阶段开发文档、任务表、阶段验收文档、`docs/CURRENT_WORK.md` 和 `docs/TASK_LOG.md`；同步完成并经用户确认前，禁止进入 App 代码实现。详细执行规范见 `docs/01-ai-working-manual.md`「触发词：原型同步开发」章节。
+- 当用户说出触发词”进入开发”时，必须自动执行开发就绪门控：先完成**门控1（原型↔方案完整性检查）**，再完成**门控2（Pre-Flight 技术可行性检查）**，两个门控均通过并经用户确认后，才允许写 `TASK_LOG` START 并开始 L2 开发。详细执行规范见 `docs/01-ai-working-manual.md`「触发词：进入开发」章节。
+- 修改原型前必须同时评估目标效果、真实 App 技术实现方式、当前工程技术能力、Android/iOS 影响、热更新影响、是否新增原生依赖，以及能否与真实开发复用。
+- 原型中可复用的内容必须优先做成结构化资产或逻辑，例如状态机枚举、页面流转、数据字段、菜系/省份映射、SVG path、坐标配置、文案常量和算法规则；后续真实开发应优先复用或直接复制这些资产。
+- 原型中的 HTML DOM、内联样式、浏览器专用 API 只有在目标工程同技术栈时才能直接复制；React Native App 不能直接复制 HTML 页面实现，只能复用数据、算法、视觉规则和可移植 SVG/path 配置。
+- 如果原型效果无法与真实 App 高效复用，必须在原型任务结尾明确标注“不可直接复用”的原因和真实开发替代方案，避免后续工程误以为可以原样搬运。
+- 在主原型和同步开发方案未定稿前，禁止进入 App 业务开发、数据结构开发和页面实现。
+- 只有当原型、页面流转、状态机、数据结构映射和同步开发方案全部定稿并获得用户明确确认后，才允许开始真实开发。
+- **任何新流程、新功能进入 L2 App 代码实施前，必须先在 `docs/architecture/flow-data-maps/` 目录下输出对应的「流程级数据图」并经用户确认。** 模板见 `docs/architecture/flow-data-maps/_template.md`，强制包含 8 节：流程基本信息 / 四层泳道图（USER × AI × L1 × L2 × L3）/ 数据血缘 / 触发条件 / 洞察影响 / 架构检查清单 / 已知架构债 / 变更记录。未输出数据图就开始写代码 = 违反架构纪律 = 必须打回。
+
 ## 当前权威文档
 
 必须优先阅读：
@@ -43,6 +59,71 @@ C:\Users\a\.codex\worktrees\*
 阶段开发文档和验收文档必须从 `docs/02-master-blueprint.md` 拆解，不得脱离蓝图另起任务。
 
 旧的 MVP 0.0 / MVP 0.1 / mock Phase 文档已移入 `_archive/`，只能作为历史参考。
+
+## 文档分层与改动归属（决策规则）
+
+干饭项目文档不是一锅烩。每次任务开始前 Agent 必须先判断「这个改动应该落到哪一层」，**改错位置就是架构债**。
+
+### 四层文档体系
+
+```
+Layer 1 宪法层（跨阶段不变量）
+  docs/02-master-blueprint.md
+    只放：产品哲学 / 履约飞轮 / 系统架构 / 数据架构 3 层抽象 /
+          AI 服务层架构契约 / Layer 边界规则 /
+          Phase 1-6 模块映射 / 阶段独立完整性原则
+         ↓ 引用
+Layer 2 架构详细层（单点契约，独立演进）
+  docs/architecture/flow-data-maps/   单个流程的端到端数据图
+  docs/architecture/use-cases/        单个 AI UC 的契约定义
+         ↓ 引用
+Layer 3 阶段实施层（本阶段做什么 + 怎么验收）
+  docs/phases/phase-X-*.md            本阶段任务清单 + UC 实装
+  docs/acceptance/phase-X-*.md        本阶段验收口径
+         ↓ 引用
+Layer 4 实施细节层（代码邻近）
+  supabase/migrations/*.sql           DDL 落地
+  services/ai/use_cases/uc_*.py       UC 代码实现
+  src/services/ai/useCases/*.ts       App UC 实现
+  .env.example                        环境变量模板
+```
+
+### 改动归属判断表
+
+| 改动类型 | 应改文档 | 错误归属（不能改这里） |
+|---|---|---|
+| 产品哲学 / 北极星 / 履约飞轮 | 蓝图 | — |
+| 系统架构图（六层结构） | 蓝图 | — |
+| 数据架构 Layer 1/2/3 抽象规则 | 蓝图 | — |
+| AI 服务层 UseCase Protocol / Provider 抽象 | 蓝图 | use-cases/ |
+| 跨 UC 共享的类型定义（Insight、NutritionEstimate） | 蓝图 | use-cases/ |
+| Phase 1-6 模块映射 / 阶段解锁阈值 | 蓝图 | phase docs |
+| 单个 AI UC 的 Context / Response / Prompt / Fallback | `docs/architecture/use-cases/uc-XX-*.md` | 蓝图（蓝图只列元数据） |
+| 新增一个 AI UC | 复制 `_template.md` 起新 UC 文件 + 蓝图元数据表追加一行 | phase doc |
+| 单个产品流程的端到端数据图 | `docs/architecture/flow-data-maps/XX-*.md` | 蓝图 |
+| 本阶段实装哪些 UC / 哪些任务 | `docs/phases/phase-X-*.md` | 蓝图 |
+| 本阶段验收口径 | `docs/acceptance/phase-X-*.md` | phase doc |
+| DDL 落地 SQL | `supabase/migrations/*.sql` | 蓝图（蓝图只写表结构抽象） |
+| 环境变量具体值 | `.env`（gitignored）+ `.env.example`（模板） | 蓝图 / RESOURCE_REGISTRY |
+
+### 判断流程
+
+Agent 开始任务前，按以下顺序自问：
+
+1. 这个改动是跨阶段稳定的"不变量"吗？是 → 蓝图；否则进 2
+2. 这个改动是单个 UC / 单个流程的内部细节吗？是 → `architecture/use-cases/` 或 `architecture/flow-data-maps/`；否则进 3
+3. 这个改动是"本阶段做什么 / 验收什么"吗？是 → `phases/` 或 `acceptance/`；否则进 4
+4. 这个改动是代码 / 配置 / DDL 的具体落地吗？是 → 代码邻近文件；否则**停下来问用户**
+
+### 蓝图瘦身原则
+
+蓝图只能含**跨阶段不变量**。如果发现蓝图里出现以下内容，应该考虑外迁到 Layer 2：
+
+- 单个 UC 的完整 Prompt 文本 → `use-cases/uc-XX-*.md`
+- 单个流程的详细 SQL → `supabase/migrations/`
+- 频繁迭代的实施清单 → `phase docs`
+
+蓝图越薄越稳，每次大版本更新都是真"宪法修订"，不是日常调整。
 
 ## 当前阶段
 
@@ -140,6 +221,7 @@ supabase/
 
 - 任何 Agent 开始开发前，必须先更新 `docs/TASK_LOG.md` 的开始记录。
 - 任何 Agent 结束开发前，必须补齐 `docs/TASK_LOG.md` 的结束记录。
+- `docs/TASK_LOG.md` 每个任务标题必须在时间标识前加唯一递增编号，格式如 `##001 2026-05-16 00:44:11 +08:00 - Codex - START`；同一任务 START / END 使用同一编号；`001` 到 `999` 固定三位补零，超过 `999` 后自然递增为 `1000`、`1001`。
 - 任何 Agent 结束任务前，必须读取当前阶段对应的 `docs/acceptance/phase-*.md`，逐条执行验收，并把结果写入 `docs/TASK_LOG.md` 的 END 记录。
 - 验收结果必须使用 `PASS` / `PARTIAL` / `FAIL` / `N/A`。所有 `PARTIAL`、`FAIL`、`N/A` 都必须写明原因或未验证条件。
 - 没有逐条验收记录的任务，不得标记为完成。

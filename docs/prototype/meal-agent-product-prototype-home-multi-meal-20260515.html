@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>干饭 - 首页多餐状态机原型</title>
+  <style>
+    :root{
+      --bg:#FFFDF8;
+      --cream:#F8F3EA;
+      --white:#FFFFFF;
+      --ink:#1C1713;
+      --ink60:#7A6E66;
+      --ink30:#C5BDB5;
+      --border:#E8DED3;
+      --accent:#F05A28;
+      --accent-s:#FDECE5;
+      --green:#2D6A4F;
+      --green-s:#EAF6EF;
+      --amber:#B97911;
+      --amber-s:#FFF4D7;
+      --red:#B44532;
+      --red-s:#FCEAE5;
+      --r:28px;
+      --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+      --serif:"Songti SC","Noto Serif SC",serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:#F2EEE7;color:var(--ink);font-family:var(--sans)}
+    button{font-family:var(--sans)}
+    #app{max-width:420px;min-height:100vh;margin:0 auto;background:var(--bg);position:relative;overflow:hidden}
+    .top{height:82px;display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--bg);border-bottom:1px solid rgba(232,222,211,.72)}
+    .profile{display:flex;align-items:center;gap:12px;border:0;background:transparent;color:var(--ink);padding:0;cursor:pointer}
+    .avatar{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent-s);border:1px solid var(--border);font-size:28px}
+    .streak{font-size:28px;font-weight:900;line-height:1}
+    .nav-icon{border:0;background:transparent;font-size:26px;cursor:pointer}
+    .page{min-height:calc(100vh - 82px);padding:22px 20px 104px;overflow-y:auto}
+    .card{border-radius:var(--r);background:var(--white);padding:22px;box-shadow:0 14px 32px rgba(26,22,18,.04)}
+    .soft{background:linear-gradient(180deg,var(--white),var(--cream))}
+    .pink{background:linear-gradient(180deg,var(--accent-s),var(--white))}
+    .green{border:2.5px solid var(--green);background:linear-gradient(180deg,var(--green-s),var(--white))}
+    .label{font-size:12px;color:var(--ink60);font-weight:800;letter-spacing:.03em;margin:0 0 6px}
+    .label.green-text{color:var(--green)}
+    .title{font-family:var(--serif);font-size:32px;line-height:1.18;margin:0;color:var(--ink)}
+    .desc{font-size:14px;line-height:1.65;color:var(--ink60);margin:14px 0 0}
+    .pill{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;background:var(--white);color:var(--accent);box-shadow:0 6px 16px rgba(26,22,18,.06)}
+    .pill.green-pill{color:var(--green)}
+    .hero{height:176px;border-radius:26px;background:var(--accent-s);margin:18px 0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer}
+    .plate{width:108px;height:108px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--white);border:10px solid rgba(240,90,40,.18);font-size:44px}
+    .photo{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#FFF7EF,#FAD8C8);font-size:58px}
+    .photo span:last-child{font-size:13px;font-weight:900;color:var(--ink60);margin-top:8px}
+    .btn{width:100%;min-height:58px;border:0;border-radius:999px;padding:16px 22px;font-size:17px;font-weight:900;cursor:pointer}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-dark{background:var(--ink);color:#fff}
+    .btn-ghost{background:var(--white);border:1.5px dashed var(--border);color:var(--ink60)}
+    .btn-light{background:var(--cream);color:var(--ink)}
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .hint{margin-top:14px;border-radius:20px;background:var(--amber-s);padding:14px 16px;display:flex;align-items:center;gap:12px}
+    .hint strong{display:block;font-size:14px;color:var(--ink);margin-bottom:3px}
+    .hint p{margin:0;font-size:12px;line-height:1.45;color:var(--ink60)}
+    .hint button{margin-left:auto;min-width:92px;border:0;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:900;padding:10px 12px;cursor:pointer}
+    .summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .progress{height:5px;border-radius:999px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:10px}
+    .progress i{display:block;height:100%;background:var(--green);border-radius:999px}
+    .meal-line{display:flex;align-items:center;gap:10px;border-radius:16px;background:var(--cream);padding:12px;margin-top:12px}
+    .meal-line .icon{width:42px;height:42px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+    .meal-line strong{font-size:14px}
+    .meal-line p{margin:3px 0 0;color:var(--ink60);font-size:12px}
+    .add-list{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+    .add-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(232,222,211,.65)}
+    .add-item span:first-child{font-size:13px;font-weight:800}
+    .add-item span:last-child{font-size:12px;color:var(--ink60)}
+    .tabs{position:absolute;left:0;right:0;bottom:0;height:82px;background:rgba(255,253,248,.96);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(3,1fr);padding:9px 16px 12px}
+    .tab{border:0;background:transparent;color:var(--ink60);font-size:12px;font-weight:900;cursor:pointer}
+    .tab span{display:block;font-size:24px;margin-bottom:4px}
+    .tab.active{color:var(--accent)}
+    .dev{position:absolute;left:12px;right:12px;bottom:88px;border-radius:20px;background:rgba(28,23,19,.88);padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;z-index:6}
+    .dev button{border:0;border-radius:999px;padding:9px 6px;background:rgba(255,255,255,.12);color:#fff;font-size:11px;font-weight:800;cursor:pointer}
+    .screen-title{font-size:25px;line-height:1.28;font-weight:900;margin:0 0 8px}
+    .mode-card{border:1.5px solid var(--border);border-radius:22px;background:var(--white);padding:18px;margin-top:12px;cursor:pointer}
+    .mode-card strong{font-size:18px}
+    .mode-card p{color:var(--ink60);font-size:13px;line-height:1.55;margin:8px 0 0}
+    .analysis-hero{border-radius:26px;background:var(--white);padding:22px;text-align:center;margin:18px 0}
+    .analysis-hero .big{font-size:62px;margin:10px 0}
+    .tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .tag{border-radius:999px;background:var(--cream);padding:7px 11px;font-size:12px;font-weight:900;color:var(--ink60)}
+    .question{border-radius:22px;background:var(--white);padding:18px;margin-top:12px}
+    .score-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .score-row button{border:1.5px solid var(--border);background:var(--cream);border-radius:14px;padding:12px 14px;font-size:13px;font-weight:900;color:var(--ink);cursor:pointer}
+    .meal-type-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 14px}
+    .meal-type-row button{border:1.5px solid var(--border);border-radius:12px;background:var(--white);padding:12px 4px;font-size:13px;font-weight:900;color:var(--ink60);cursor:pointer}
+    .meal-type-row button.active{border-color:var(--accent);background:var(--accent-s);color:var(--accent)}
+    .analysis-photo{height:214px;border-radius:22px;background:linear-gradient(135deg,#52342B,#F1D2A8);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;margin:14px 0}
+    .analysis-photo .scene{font-size:76px;filter:drop-shadow(0 12px 18px rgba(0,0,0,.18))}
+    .analysis-photo .retake{position:absolute;left:14px;bottom:12px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--ink);font-size:12px;font-weight:900;padding:8px 12px;cursor:pointer}
+    .risk-strip{height:3px;border-radius:999px;background:var(--red);margin:12px 0 14px}
+    .analysis-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+    .dish-title{font-family:var(--serif);font-size:27px;line-height:1.24;margin:8px 0 0}
+    .analysis-card{border:1.5px solid var(--border);border-radius:22px;background:var(--white);padding:18px;margin-top:14px}
+    .analysis-card.soft-card{background:var(--cream);border:0}
+    .food-row{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:start;padding:12px 0;border-bottom:1px solid rgba(232,222,211,.8)}
+    .food-row:last-child{border-bottom:0}
+    .food-index{width:26px;height:26px;border-radius:50%;background:var(--white);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
+    .food-row strong{font-size:15px}
+    .food-row p{margin:4px 0 0;font-size:12px;line-height:1.45;color:var(--ink60)}
+    .food-kcal{text-align:right;color:var(--accent);font-size:12px;font-weight:900}
+    .mini-link{border:0;background:transparent;color:var(--accent);font-size:12px;font-weight:900;cursor:pointer;padding:0}
+    .nutrition-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;margin-top:12px}
+    .nutrition-tile{border:0;border-radius:14px;background:var(--cream);padding:13px;text-align:left;cursor:pointer;min-height:84px}
+    .nutrition-tile.big{grid-row:span 2;background:var(--accent-s);min-height:178px}
+    .nutrition-tile small{display:block;color:var(--ink60);font-size:11px;font-weight:900;margin-bottom:8px}
+    .nutrition-tile strong{display:block;color:var(--accent);font-size:18px;line-height:1.18}
+    .nutrition-tile.big strong{font-size:27px}
+    .nutrition-tile span{display:block;color:var(--ink60);font-size:11px;line-height:1.35;margin-top:6px}
+    .advice-card{background:var(--accent-s);border:0}
+    .advice-callout{border-radius:16px;background:var(--white);padding:14px;margin-top:12px}
+    .advice-callout strong{display:block;font-family:var(--serif);font-size:24px;line-height:1.28;font-weight:500}
+    .advice-list{margin:14px 0 0;padding:0;list-style:none}
+    .advice-list li{display:flex;gap:10px;margin-top:10px;font-size:14px;line-height:1.5}
+    .advice-list b{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+    .sheet-mask{position:absolute;inset:0;background:rgba(28,23,19,.38);z-index:20;display:flex;align-items:flex-end}
+    .sheet{width:100%;border-radius:24px 24px 0 0;background:var(--white);padding:22px 20px 26px;box-shadow:0 -14px 36px rgba(26,22,18,.16)}
+    .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .sheet-close{width:38px;height:38px;border-radius:50%;border:0;background:var(--cream);font-size:18px;font-weight:900;cursor:pointer}
+    .detail-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}
+    .detail-row:last-child{border-bottom:0}
+    .detail-row strong{font-size:14px}
+    .detail-row p{margin:4px 0 0;color:var(--ink60);font-size:12px}
+    .detail-row b{color:var(--accent);font-size:13px}
+    .calendar{background:var(--white);border-radius:24px;padding:18px;margin-top:14px}
+    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:12px}
+    .day{aspect-ratio:1;border-radius:12px;background:var(--cream);display:flex;align-items:center;justify-content:center;position:relative;font-size:12px;font-weight:900;color:var(--ink60)}
+    .day.today{border:2px solid var(--accent);background:var(--accent-s);color:var(--accent)}
+    .day.unrated{border:2px solid var(--red);background:var(--red-s);color:var(--red)}
+    .day i{position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--green)}
+    .history-row{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)}
+    .history-row.target{margin:0 -8px;padding:13px 8px;border-radius:18px;background:var(--amber-s);border-bottom:0}
+    .history-row .thumb{width:54px;height:54px;border-radius:16px;background:var(--accent-s);display:flex;align-items:center;justify-content:center;font-size:26px}
+    .history-row strong{font-size:14px}
+    .history-row p{font-size:12px;color:var(--ink60);margin:4px 0 0}
+    .small-btn{border:0;border-radius:999px;background:var(--ink);color:#fff;padding:10px 12px;font-size:12px;font-weight:900;cursor:pointer}
+    .empty-note{color:var(--ink60);font-size:14px;line-height:1.6;text-align:center;padding:26px}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="top">
+      <button class="profile" onclick="showHistory()">
+        <span class="avatar">🍚</span>
+        <span class="streak">⚡ <b id="mealCount">0</b></span>
+      </button>
+      <button class="nav-icon" onclick="showHistory()">📋</button>
+      <button class="nav-icon" onclick="advance(31)">⚡</button>
+    </div>
+    <main class="page" id="screen"></main>
+    <div class="dev">
+      <button onclick="resetDemo()">重置</button>
+      <button onclick="advance(20)">+20分钟</button>
+      <button onclick="advance(31)">+31分钟</button>
+      <button onclick="seedOverdue()">造未反馈</button>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" id="tab-home" onclick="showHome()"><span>🏠</span>Today</button>
+      <button class="tab" onclick="toastOnly()"><span>📋</span>推荐</button>
+      <button class="tab" onclick="toastOnly()"><span>🧩</span>身体</button>
+    </nav>
+  </div>
+
+  <script>
+    const mealTypes = ["早饭","午饭","晚饭","加餐"];
+    const analysisPool = [
+      {
+        key:"sichuan-combo",
+        icon:"🍲",
+        photoEmoji:"🍲🥣🌶️",
+        sourceTitle:"麻辣烫/水煮类组合餐",
+        summary:"重油重辣的川菜组合，主菜明显，汤菜和小菜需要分开估算。",
+        risk:"高风险",
+        riskTone:"red",
+        suggestedType:"午饭",
+        scene:"外卖",
+        adviceTitle:"吃到七分饱，后面用饭后反馈校准。",
+        advice:["这顿偏油辣，容易犯困，建议搭配点主食或清淡茶饮。","少喝油汤或重口汤底。"],
+        reaction:"困倦/撑胀",
+        tags:["重油","重辣","高碳"],
+        foods:[
+          {name:"水煮鱼", cuisine:"川菜", province:"四川", category:"主菜", portion:"约 1 份", calories:"约520-680 kcal", confidence:"中", score:3},
+          {name:"白菜豆腐汤", cuisine:"家常菜", province:"全国", category:"汤菜", portion:"约 1 碗", calories:"约90-150 kcal", confidence:"中", score:1},
+          {name:"麻椒兔", cuisine:"川菜", province:"四川", category:"主菜/小菜", portion:"约半份", calories:"约380-520 kcal", confidence:"偏低", score:2}
+        ],
+        nutrition:{
+          calories:{label:"热量", total:"约990-1350 kcal", level:"偏高", note:"油汤和肉类贡献最大。", details:[
+            ["水煮鱼","约520-680 kcal","鱼肉和红油汤底是主要来源"],
+            ["白菜豆腐汤","约90-150 kcal","汤菜本身较轻，油盐需确认"],
+            ["麻椒兔","约380-520 kcal","兔肉和麻椒油脂贡献明显"]
+          ]},
+          carbs:{label:"碳水", total:"待确认", level:"待确认", note:"图片里未见主食，需确认是否另配米饭。", details:[
+            ["水煮鱼","少量","来自配菜和勾芡"],
+            ["白菜豆腐汤","少量","来自白菜和豆腐"],
+            ["麻椒兔","少量","来自调味和配菜"]
+          ]},
+          protein:{label:"蛋白", total:"约55-85g", level:"偏高", note:"鱼肉、兔肉和豆腐共同贡献。", details:[
+            ["水煮鱼","主要贡献","鱼肉是本餐蛋白核心"],
+            ["白菜豆腐汤","少量到中等","豆腐提供植物蛋白"],
+            ["麻椒兔","主要贡献","兔肉蛋白较高"]
+          ]},
+          fat:{label:"脂肪", total:"约55-80g", level:"偏高", note:"红油、麻椒油和汤底是主要风险。", details:[
+            ["水煮鱼","偏高","红油汤底明显"],
+            ["白菜豆腐汤","较低","若汤底清淡则贡献小"],
+            ["麻椒兔","偏高","麻椒油和炒制油脂明显"]
+          ]},
+          fiber:{label:"纤维", total:"约4-8g", level:"中等", note:"主要来自白菜、香菜和配菜。", details:[
+            ["水煮鱼","少量","配菜可见但不多"],
+            ["白菜豆腐汤","主要贡献","白菜贡献较多"],
+            ["麻椒兔","少量","来自配菜"]
+          ]}
+        }
+      },
+      {
+        key:"milk-tea",
+        icon:"🥤",
+        photoEmoji:"🥤",
+        sourceTitle:"奶茶",
+        summary:"含奶与茶的饮品，可能添加糖或奶精，无固体食物。",
+        risk:"高风险",
+        riskTone:"red",
+        suggestedType:"加餐",
+        scene:"外卖",
+        adviceTitle:"先按小杯或半杯喝，不要当正餐顶掉。",
+        advice:["不要空腹猛喝。","搭配正餐或多喝水。","少加糖，少喝奶盖或厚乳部分。"],
+        reaction:"口渴/犯困",
+        tags:["高糖","高脂","提神"],
+        foods:[
+          {name:"奶茶", cuisine:"粤式饮品", province:"广东", category:"饮品", portion:"约 1 杯，待确认", calories:"约250-520 kcal", confidence:"偏低", score:1}
+        ],
+        nutrition:{
+          calories:{label:"热量", total:"约250-520 kcal", level:"待确认", note:"杯型、糖量、奶盖决定波动。", details:[["奶茶","约250-520 kcal","需要确认杯型、甜度和奶盖"]]},
+          carbs:{label:"碳水", total:"约30-70g", level:"偏高", note:"主要来自糖浆和奶茶底。", details:[["奶茶","约30-70g","甜度越高波动越大"]]},
+          protein:{label:"蛋白", total:"约3-8g", level:"待确认", note:"取决于牛奶/奶粉比例。", details:[["奶茶","约3-8g","多数奶茶蛋白贡献有限"]]},
+          fat:{label:"脂肪", total:"约6-22g", level:"待确认", note:"厚乳、奶盖和植脂末会提高脂肪。", details:[["奶茶","约6-22g","奶盖或厚乳会明显增加"]]},
+          fiber:{label:"纤维", total:"几乎无", level:"偏低", note:"普通奶茶几乎没有膳食纤维。", details:[["奶茶","几乎无","无固体水果或谷物"]]}
+        }
+      },
+      {
+        key:"chicken-rice",
+        icon:"🍛",
+        photoEmoji:"🍛",
+        sourceTitle:"黄焖鸡米饭",
+        summary:"主食偏多，蛋白中等，酱汁盐分可能偏高。",
+        risk:"中风险",
+        riskTone:"amber",
+        suggestedType:"午饭",
+        scene:"外卖",
+        adviceTitle:"米饭先少吃三分之一，吃到七分饱。",
+        advice:["先吃鸡肉和配菜。","汤汁少拌饭。","饭后重点观察困不困、渴不渴。"],
+        reaction:"困倦/口渴",
+        tags:["主食偏多","少蔬菜"],
+        foods:[
+          {name:"黄焖鸡米饭", cuisine:"鲁菜", province:"山东", category:"主食+蛋白", portion:"约 1 份", calories:"约650-850 kcal", confidence:"中", score:1}
+        ],
+        nutrition:{
+          calories:{label:"热量", total:"约650-850 kcal", level:"偏高", note:"米饭和酱汁贡献明显。", details:[["黄焖鸡米饭","约650-850 kcal","一份饭和鸡肉酱汁共同贡献"]]},
+          carbs:{label:"碳水", total:"约80-110g", level:"偏高", note:"主要来自米饭。", details:[["黄焖鸡米饭","约80-110g","米饭约 1-1.5 碗"]]},
+          protein:{label:"蛋白", total:"约25-35g", level:"中等", note:"主要来自鸡肉。", details:[["黄焖鸡米饭","约25-35g","鸡肉可见，份量中等"]]},
+          fat:{label:"脂肪", total:"约25-40g", level:"中等", note:"来自鸡皮、烹调油和酱汁。", details:[["黄焖鸡米饭","约25-40g","酱汁油脂需控制"]]},
+          fiber:{label:"纤维", total:"约2-5g", level:"偏低", note:"蔬菜不足。", details:[["黄焖鸡米饭","约2-5g","配菜少，建议补蔬菜"]]}
+        }
+      }
+    ];
+
+    const state = {
+      screen:"home",
+      minutes:0,
+      nextId:1,
+      meals:[],
+      activeMealId:null,
+      targetMealId:null,
+      draft:null,
+      forcedMealType:null,
+      snackContext:null,
+      nutritionMetric:null,
+      historyFilter:"all",
+      notice:""
+    };
+
+    function nowMs(){ return new Date(2026,4,15,12,0,0).getTime() + state.minutes * 60000; }
+    function nowLabel(){
+      const d = new Date(nowMs());
+      return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+    }
+    function sameToday(){ return true; }
+    function elapsed(from){ return Math.max(0, Math.floor((nowMs() - from) / 60000)); }
+    function byRecent(a,b){ return b.createdAt - a.createdAt; }
+    function mealById(id){ return state.meals.find(m => m.id === id); }
+    function todayMeals(){ return state.meals.filter(sameToday).sort(byRecent); }
+    function pendingMeal(meal){ return meal.status === "pending"; }
+    function pendingExpired(meal){ return pendingMeal(meal) && elapsed(meal.startedAt) >= 30; }
+    function withinPendingWindow(meal){ return pendingMeal(meal) && elapsed(meal.startedAt) < 30; }
+    function todayOverdueUnrated(){ return todayMeals().filter(pendingExpired); }
+    function todayUnrated(){ return todayMeals().filter(m => pendingMeal(m)); }
+
+    function getHomeMainMeal(){
+      const activePending = todayMeals().find(withinPendingWindow);
+      if (activePending) return {kind:"pending", meal:activePending};
+      return {kind:"default"};
+    }
+
+    function setTab(name){
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      if(name === "home") document.getElementById("tab-home").classList.add("active");
+    }
+
+    function render(){
+      document.getElementById("mealCount").textContent = state.meals.length;
+      if(state.screen === "home") renderHome();
+      if(state.screen === "record") renderRecord();
+      if(state.screen === "analysis") renderAnalysis();
+      if(state.screen === "feedback") renderFeedback();
+      if(state.screen === "history") renderHistory();
+    }
+
+    function showHome(){
+      state.screen = "home";
+      state.targetMealId = null;
+      state.draft = null;
+      state.forcedMealType = null;
+      state.snackContext = null;
+      state.nutritionMetric = null;
+      setTab("home");
+      render();
+    }
+    function showHistory(targetId){
+      state.screen = "history";
+      state.targetMealId = targetId || state.targetMealId;
+      if(targetId){ state.historyFilter = "unrated"; }
+      setTab("");
+      render();
+    }
+    function toastOnly(){ state.notice = "本原型聚焦 Today 首页多餐状态机。"; showHome(); }
+    function renderNotice(){
+      if(!state.notice) return "";
+      const text = state.notice;
+      state.notice = "";
+      return `<div class="hint"><span>⚡</span><div><strong>${text}</strong><p>用于本次对齐，不进入正式页面文案。</p></div></div>`;
+    }
+
+    function renderHome(){
+      const root = document.getElementById("screen");
+      const main = getHomeMainMeal();
+      const overdue = todayOverdueUnrated();
+      let html = renderNotice();
+      if(main.kind === "pending") html += renderPendingCard(main.meal);
+      else html += renderDefaultCard();
+      if(overdue.length) html += renderUnratedHint(overdue);
+      html += renderTodayTimeline(main.meal?.id);
+      root.innerHTML = html;
+    }
+
+    function renderDefaultCard(){
+      const n = Math.min(state.meals.length,7);
+      return `<section class="card soft">
+        <p class="label">${state.meals.length ? "现在可以记录下一餐" : "新用户第一步"}</p>
+        <div class="summary">
+          <h1 class="title">${guessMealLabel()}吃点什么好？</h1>
+          <span class="pill">${n}/7</span>
+        </div>
+        <p class="desc">${state.meals.length ? "上一餐已经让出首页主卡，继续记录不会覆盖历史。" : "拍下第一餐，开始建立你的身体反馈。"}</p>
+        <div class="progress"><i style="width:${Math.round(n / 7 * 100)}%"></i></div>
+        <div class="hero" onclick="startNewRecord()">
+          <button class="pill" style="position:absolute;right:12px;top:12px" onclick="event.stopPropagation();startBackfill()">补录</button>
+          <div class="plate">🍽️</div>
+        </div>
+        <button class="btn btn-primary" onclick="startNewRecord()">记录这一餐</button>
+      </section>`;
+    }
+
+    function renderPendingCard(meal){
+      return `<section class="card pink">
+        <div class="summary">
+          <div>
+            <p class="label green-text">刚才那顿 · ${elapsed(meal.startedAt)} 分钟</p>
+            <h1 class="title">${meal.type}慢慢吃</h1>
+          </div>
+          <span class="pill">待反馈</span>
+        </div>
+        ${renderMealPhoto(meal)}
+        <p class="desc">${meal.dish} · ${meal.cuisine} · ${meal.foods.length} 项食物。30 分钟内仍占首页主卡。</p>
+        <button class="btn btn-primary" onclick="openFeedback('${meal.id}')">我吃完了</button>
+        <button class="btn btn-ghost" style="margin-top:12px" onclick="startSnackRecord('pending')">又吃/喝了别的？记加餐 →</button>
+      </section>`;
+    }
+
+    function renderUnratedHint(overdue){
+      const target = overdue.slice().sort(byRecent)[0];
+      return `<div class="hint">
+        <span style="font-size:24px">⏱️</span>
+        <div>
+          <strong>你还有 ${overdue.length} 餐没反馈</strong>
+          <p>首页只提示今天的未反馈餐，默认补最近这一餐。</p>
+        </div>
+        <button onclick="openFeedback('${target.id}')">去补反馈</button>
+      </div>`;
+    }
+
+    function renderTodayTimeline(mainMealId){
+      const meals = todayMeals().filter(meal => !pendingExpired(meal) && meal.id !== mainMealId);
+      if(!meals.length) return "";
+      return `<section class="card" style="margin-top:14px;padding:18px">
+        <p class="label">今天</p>
+        ${meals.map(meal => `<div class="meal-line">
+          <span class="icon">${meal.icon}</span>
+          <div style="flex:1">
+            <strong>${meal.dish}</strong>
+            <p>${meal.type} · ${meal.cuisine} · ${statusText(meal)}</p>
+          </div>
+          <span class="pill ${meal.status === "done" ? "green-pill" : ""}">${meal.status === "done" ? "已反馈" : "待反馈"}</span>
+        </div>`).join("")}
+      </section>`;
+    }
+
+    function renderMealPhoto(meal){
+      return `<div class="hero"><div class="photo"><span>${meal.icon}</span><span>${meal.dish}</span></div></div>`;
+    }
+
+    function renderRecord(){
+      const root = document.getElementById("screen");
+      const isSnack = state.forcedMealType === "加餐";
+      const snackDesc = state.snackContext === "afterFeedback"
+        ? "上一餐已反馈，这次单独记为加餐。"
+        : state.snackContext === "pending"
+          ? "上一餐仍待反馈，这次也单独生成一条加餐记录。"
+          : "再次点餐、喝饮品、吃小食，都按新的加餐记录。";
+      root.innerHTML = `<h1 class="screen-title">${isSnack ? "记录加餐" : "拍图记录"}</h1>
+        <p class="desc">${isSnack ? snackDesc : "选择拍照或相册，完成后进入完整分析页。"}</p>
+        <div class="mode-card" onclick="createAnalysisDraft('photo')">
+          <strong>📷 拍照</strong>
+          <p>${isSnack ? "拍这次加餐，AI 会识别食物类别、份量、热量和菜系。" : "拍这次吃/喝的内容，AI 会拆分图片里的食物项。"}</p>
+        </div>
+        <div class="mode-card" onclick="createAnalysisDraft('album')">
+          <strong>🖼️ 选择图片</strong>
+          <p>从相册选择餐食图片，同样进入分析页。</p>
+        </div>
+        <button class="btn btn-light" style="margin-top:16px" onclick="showHome()">取消</button>`;
+    }
+
+    function renderAnalysis(){
+      const root = document.getElementById("screen");
+      const draft = state.draft;
+      if(!draft){ showHome(); return; }
+      root.innerHTML = `<p class="label" style="text-align:center">这是</p>
+        <div class="meal-type-row">${mealTypes.map(t => `<button class="${draft.type === t ? "active" : ""}" onclick="selectMealType('${t}')">${t}</button>`).join("")}</div>
+        <div class="analysis-photo">
+          <div class="scene">${draft.photoEmoji}</div>
+          <button class="retake" onclick="cancelDraftAndRecord()">重拍/重选</button>
+        </div>
+        <div class="analysis-head">
+          <span class="tag" style="background:var(--green-s);color:var(--green)">+ AI 识别</span>
+          <span class="tag" style="background:var(--red-s);color:var(--red)">△ ${draft.risk}</span>
+        </div>
+        <h1 class="dish-title">${draft.dish}</h1>
+        <p class="desc">${draft.summary}</p>
+        <div class="risk-strip" style="background:${draft.riskTone === "red" ? "var(--red)" : "var(--amber)"}"></div>
+        <p class="desc">${draft.cuisine} · ${draft.province} · ${draft.scene}。每张图作为一次独立餐次记录，图内多食物会拆成食物项。</p>
+        ${renderFoodsCard(draft)}
+        ${renderNutritionOverview(draft)}
+        ${renderAdviceCard(draft)}
+        <div class="tag-row">${draft.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}</div>
+        <p class="desc" style="text-align:center">吃完记得回来打分 🙂</p>
+        <button class="btn btn-primary" onclick="confirmMainAnalysis()">好的，去吃了 ✓</button>
+        <button class="btn btn-light" style="margin-top:12px" onclick="exitAnalysis()">退出 App 再回来</button>
+        ${renderNutritionSheet(draft)}`;
+    }
+
+    function renderFeedback(){
+      const meal = mealById(state.activeMealId);
+      const root = document.getElementById("screen");
+      if(!meal){ showHome(); return; }
+      root.innerHTML = `<p class="label">${pendingExpired(meal) ? "超时补反馈" : "饭后反馈"}</p>
+        <h1 class="screen-title">这顿吃完以后，身体怎么说？</h1>
+        <div class="meal-line" style="background:var(--white)">
+          <span class="icon">${meal.icon}</span>
+          <div><strong>${meal.dish}</strong><p>${meal.type} · ${meal.cuisine} · ${meal.foods.length} 项食物</p></div>
+        </div>
+        <p class="desc">${pendingExpired(meal) ? "这餐已经超过 30 分钟，只做补反馈；现在再吃/喝会按新加餐记录。" : "这张图就是一次独立餐次记录，反馈只对应这次吃/喝的内容。"}</p>
+        <div class="question">
+          <strong>实际吃掉多少</strong>
+          <div class="score-row"><button>全吃完</button><button>剩一点</button><button>剩一半</button></div>
+        </div>
+        <div class="question">
+          <strong>身体即时感受</strong>
+          <div class="score-row"><button>舒服</button><button>胀气</button><button>困倦</button><button>有精神</button></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:16px" onclick="submitFeedback('${meal.id}')">提交反馈</button>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="submitAndStartSnack('${meal.id}')">提交并记加餐</button>
+          <button class="btn btn-light" onclick="exitFeedback()">退出 App 再回来</button>
+        </div>`;
+    }
+
+    function renderHistory(){
+      const root = document.getElementById("screen");
+      const meals = todayMeals();
+      const list = state.historyFilter === "unrated" ? meals.filter(pendingMeal) : meals;
+      const hasUnrated = todayUnrated().length > 0;
+      root.innerHTML = `<div class="summary">
+        <div>
+          <p class="label">我的记录</p>
+          <h1 class="screen-title">打卡日历</h1>
+        </div>
+        <span class="pill">${nowLabel()}</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn ${state.historyFilter === "all" ? "btn-dark" : "btn-light"}" onclick="state.historyFilter='all';render()">全部</button>
+        <button class="btn ${state.historyFilter === "unrated" ? "btn-dark" : "btn-light"}" onclick="state.historyFilter='unrated';render()">未反馈 ${todayUnrated().length}</button>
+      </div>
+      <div class="calendar">
+        <p class="label">2026 年 5 月</p>
+        <div class="days">${Array.from({length:35},(_,i)=>`<div class="day ${i===14?"today":""} ${i===14 && hasUnrated ? "unrated" : ""}">${i>2 && i<34 ? i-2 : ""}${i===14 && meals.length ? "<i></i>" : ""}</div>`).join("")}</div>
+      </div>
+      <section class="card" style="margin-top:14px;padding:18px">
+        <p class="label">${state.historyFilter === "unrated" ? "今天未反馈" : "今天的记录"}</p>
+        ${list.length ? list.map(renderHistoryRow).join("") : `<div class="empty-note">今天没有需要补反馈的餐。</div>`}
+      </section>
+      <button class="btn btn-light" style="margin-top:14px" onclick="showHome()">回到 Today</button>`;
+    }
+
+    function renderHistoryRow(meal){
+      const target = meal.id === state.targetMealId;
+      return `<div class="history-row ${target ? "target" : ""}">
+        <div class="thumb">${meal.icon}</div>
+        <div>
+          <strong>${meal.dish}${target ? " · 已定位" : ""}</strong>
+          <p>${meal.type} · ${meal.cuisine} · ${statusText(meal)}</p>
+        </div>
+        ${pendingMeal(meal) ? `<button class="small-btn" onclick="openFeedback('${meal.id}')">补反馈</button>` : `<span class="pill green-pill">已反馈</span>`}
+      </div>`;
+    }
+
+    function statusText(meal){
+      if(meal.status === "done") return "已反馈 " + elapsed(meal.feedbackAt) + " 分钟";
+      if(pendingExpired(meal)) return "超 30 分钟未反馈";
+      return "待反馈 " + elapsed(meal.startedAt) + " 分钟";
+    }
+
+    function guessMealLabel(){
+      const h = new Date(nowMs()).getHours();
+      if(h < 10) return "早饭";
+      if(h < 14) return "午饭";
+      if(h < 17) return "加餐";
+      if(h < 21) return "晚饭";
+      return "加餐";
+    }
+
+    function startNewRecord(){
+      state.draft = null;
+      state.forcedMealType = null;
+      state.snackContext = null;
+      state.nutritionMetric = null;
+      state.screen = "record";
+      render();
+    }
+
+    function startSnackRecord(context = "pending"){
+      state.draft = null;
+      state.forcedMealType = "加餐";
+      state.snackContext = context;
+      state.nutritionMetric = null;
+      state.screen = "record";
+      render();
+    }
+
+    function startBackfill(){
+      state.notice = "补录会直接进入整餐反馈，后续可接入手动字段。";
+      startNewRecord();
+    }
+
+    function createAnalysisDraft(source){
+      const sample = state.forcedMealType === "加餐" ? analysisPool[1] : analysisPool[state.meals.length % analysisPool.length];
+      const draft = clone(sample);
+      draft.source = source;
+      draft.type = state.forcedMealType || defaultMealTypeFor(draft);
+      draft.dish = deriveMealTitle(draft.foods);
+      draft.cuisine = dominantCuisine(draft.foods).cuisine;
+      draft.province = dominantCuisine(draft.foods).province;
+      state.draft = draft;
+      state.nutritionMetric = null;
+      state.screen = "analysis";
+      render();
+    }
+
+    function selectMealType(type){
+      if(!state.draft) return;
+      state.draft.type = type;
+      render();
+    }
+
+    function openNutritionDetail(metric){
+      state.nutritionMetric = metric;
+      render();
+    }
+
+    function closeNutritionDetail(){
+      state.nutritionMetric = null;
+      render();
+    }
+
+    function confirmMainAnalysis(){
+      const draft = state.draft;
+      if(!draft){ showHome(); return; }
+      const meal = {
+        id:"meal-" + state.nextId++,
+        dish:draft.dish,
+        icon:draft.icon,
+        type:draft.type,
+        summary:draft.summary,
+        cuisine:draft.cuisine,
+        province:draft.province,
+        scene:draft.scene,
+        foods:draft.foods,
+        nutrition:draft.nutrition,
+        risk:draft.risk,
+        source:draft.source,
+        status:"pending",
+        createdAt:nowMs(),
+        startedAt:nowMs(),
+        feedbackAt:null
+      };
+      state.meals.unshift(meal);
+      state.activeMealId = meal.id;
+      state.draft = null;
+      state.forcedMealType = null;
+      state.snackContext = null;
+      state.nutritionMetric = null;
+      state.screen = "home";
+      render();
+    }
+
+    function cancelDraftAndRecord(){
+      state.draft = null;
+      state.nutritionMetric = null;
+      state.screen = "record";
+      render();
+    }
+
+    function exitAnalysis(){
+      state.draft = null;
+      state.forcedMealType = null;
+      state.snackContext = null;
+      state.nutritionMetric = null;
+      showHome();
+    }
+
+    function openFeedback(mealId){
+      state.activeMealId = mealId;
+      state.screen = "feedback";
+      render();
+    }
+
+    function submitFeedback(mealId){
+      const meal = mealById(mealId);
+      if(!meal) return;
+      meal.status = "done";
+      meal.feedbackAt = nowMs();
+      state.activeMealId = meal.id;
+      state.notice = "反馈已提交，首页主卡恢复默认；之后再吃喝会记录为新餐。";
+      state.screen = "home";
+      render();
+    }
+
+    function submitAndStartSnack(mealId){
+      const meal = mealById(mealId);
+      if(meal){
+        meal.status = "done";
+        meal.feedbackAt = nowMs();
+        state.activeMealId = meal.id;
+      }
+      startSnackRecord("afterFeedback");
+    }
+
+    function exitFeedback(){
+      state.screen = "home";
+      render();
+    }
+
+    function advance(min){
+      state.minutes += min;
+      state.notice = "时间前进 " + min + " 分钟，现在 " + nowLabel();
+      render();
+    }
+
+    function seedOverdue(){
+      resetDemo(false);
+      const base = clone(analysisPool[2]);
+      const cuisine = dominantCuisine(base.foods);
+      state.meals.push({
+        id:"meal-" + state.nextId++,
+        dish:deriveMealTitle(base.foods),
+        icon:base.icon,
+        type:"午饭",
+        summary:base.summary,
+        cuisine:cuisine.cuisine,
+        province:cuisine.province,
+        scene:base.scene,
+        foods:base.foods,
+        nutrition:base.nutrition,
+        risk:base.risk,
+        source:"photo",
+        status:"pending",
+        createdAt:nowMs() - 45 * 60000,
+        startedAt:nowMs() - 45 * 60000,
+        feedbackAt:null
+      });
+      state.notice = "已生成一条超过 30 分钟未反馈的午饭。";
+      showHome();
+    }
+
+    function resetDemo(showNotice = true){
+      state.screen = "home";
+      state.minutes = 0;
+      state.nextId = 1;
+      state.meals = [];
+      state.activeMealId = null;
+      state.targetMealId = null;
+      state.draft = null;
+      state.forcedMealType = null;
+      state.snackContext = null;
+      state.nutritionMetric = null;
+      state.historyFilter = "all";
+      state.notice = showNotice ? "已重置原型数据。" : "";
+      render();
+    }
+
+    function renderFoodsCard(draft){
+      return `<section class="analysis-card soft-card">
+        <div class="summary" style="margin-bottom:4px">
+          <div><p class="label">餐食组成</p><strong>识别到 ${draft.foods.length} 项食物，可修正</strong></div>
+          <button class="mini-link">修正菜名</button>
+        </div>
+        ${draft.foods.map((food, index) => `<div class="food-row">
+          <span class="food-index">${index + 1}</span>
+          <div>
+            <strong>${food.name}</strong>
+            <p>${food.category} · ${food.cuisine} · ${food.portion}</p>
+            <p>置信度：${food.confidence} · ${food.province}</p>
+          </div>
+          <div class="food-kcal">${food.calories}<br><button class="mini-link">改份量</button></div>
+        </div>`).join("")}
+        <button class="mini-link" style="margin-top:12px">场景：<strong style="color:var(--ink)">${draft.scene}</strong>　修改 ></button>
+      </section>`;
+    }
+
+    function renderNutritionOverview(draft){
+      const order = ["calories","carbs","protein","fat","fiber"];
+      return `<section class="analysis-card">
+        <div class="summary">
+          <p class="label" style="margin:0">营养概览</p>
+          <span class="label" style="margin:0">粗估</span>
+        </div>
+        <div class="nutrition-grid">
+          ${order.map((key, index) => {
+            const metric = draft.nutrition[key];
+            return `<button class="nutrition-tile ${index === 0 ? "big" : ""}" onclick="openNutritionDetail('${key}')">
+              <small>${metric.label}</small>
+              <strong>${metric.total}</strong>
+              <span>${metric.level} · 点开看食物项贡献</span>
+            </button>`;
+          }).join("")}
+        </div>
+        <p class="desc">照片估算不是精确称重；每个营养模块可查看食物项明细。</p>
+      </section>`;
+    }
+
+    function renderAdviceCard(draft){
+      return `<section class="analysis-card advice-card">
+        <div class="summary">
+          <p class="label" style="color:var(--accent);margin:0">进食建议</p>
+          <span class="tag" style="background:rgba(255,255,255,.55);color:var(--accent)">基于照片和历史反馈</span>
+        </div>
+        <div class="advice-callout"><small>建议吃多少</small><strong>${draft.adviceTitle}</strong></div>
+        <ul class="advice-list">${draft.advice.map((line, index) => `<li><b>${index + 1}</b><span>${line}</span></li>`).join("")}</ul>
+        <div class="advice-callout">
+          <small style="color:var(--red);font-weight:900">可能饭后反应</small>
+          <p style="margin-top:8px;font-size:16px;font-weight:900">${draft.reaction}</p>
+          <p class="desc" style="margin-top:4px">照片显示的结构需要饭后反馈验证。</p>
+        </div>
+      </section>`;
+    }
+
+    function renderNutritionSheet(draft){
+      const metric = state.nutritionMetric ? draft.nutrition[state.nutritionMetric] : null;
+      if(!metric) return "";
+      return `<div class="sheet-mask">
+        <div class="sheet">
+          <div class="sheet-head">
+            <div>
+              <h2 class="screen-title" style="margin:0">${metric.label}明细</h2>
+              <p class="desc" style="margin-top:4px">${metric.total} · ${metric.level}</p>
+            </div>
+            <button class="sheet-close" onclick="closeNutritionDetail()">×</button>
+          </div>
+          ${metric.details.map(item => `<div class="detail-row">
+            <div><strong>${item[0]}</strong><p>${item[2]}</p></div>
+            <b>${item[1]}</b>
+          </div>`).join("")}
+          <p class="desc">估算用于判断结构和反馈重点，不替代称重记录。</p>
+        </div>
+      </div>`;
+    }
+
+    function deriveMealTitle(foods){
+      if(foods.length === 1) return foods[0].name;
+      const dominant = dominantCuisine(foods);
+      if(!dominant.cuisine || dominant.score < 2) return "多菜系组合餐";
+      return dominant.cuisine + "组合餐";
+    }
+
+    function dominantCuisine(foods){
+      const scores = {};
+      foods.forEach(food => {
+        const key = food.cuisine || "菜系待确认";
+        const current = scores[key] || {cuisine:key, province:food.province || "全国", score:0};
+        current.score += food.score || 1;
+        scores[key] = current;
+      });
+      return Object.values(scores).sort((a,b) => b.score - a.score)[0] || {cuisine:"菜系待确认", province:"全国", score:0};
+    }
+
+    function defaultMealTypeFor(sample){
+      if(sample.suggestedType === "加餐") return "加餐";
+      if(sample.foods.length === 1 && /饮品|小食|甜品/.test(sample.foods[0].category)) return "加餐";
+      return guessMealLabel();
+    }
+
+    function clone(value){
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    render();
+  </script>
+</body>
+</html>

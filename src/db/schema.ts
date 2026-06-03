@@ -41,7 +41,6 @@ export const sqliteSchemaStatements = [
     completed_at TEXT,
     from_card TEXT,
     additionals TEXT,
-    daily_checkin_id TEXT,
     auto_closed_at TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
@@ -99,24 +98,6 @@ export const sqliteSchemaStatements = [
     sync_status TEXT NOT NULL DEFAULT 'pending'
   )`,
   `CREATE INDEX IF NOT EXISTS meal_images_meal_idx ON meal_images(meal_id, image_type)`,
-  `CREATE TABLE IF NOT EXISTS daily_checkins (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    date TEXT NOT NULL,
-    meal_ids TEXT NOT NULL DEFAULT '[]',
-    due_at TEXT NOT NULL,
-    is_next_day INTEGER NOT NULL DEFAULT 0,
-    energy TEXT,
-    digestion TEXT,
-    satiety TEXT,
-    answered_at TEXT,
-    dismissed INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    sync_status TEXT NOT NULL DEFAULT 'pending',
-    UNIQUE(user_id, date)
-  )`,
-  `CREATE INDEX IF NOT EXISTS daily_checkins_user_date_idx ON daily_checkins(user_id, date DESC)`,
   `CREATE TABLE IF NOT EXISTS card_actions (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,

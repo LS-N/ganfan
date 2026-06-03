@@ -9,7 +9,6 @@ import {
   authService,
   getAiMealAnalysisService,
   getAnalysisRepository,
-  getDailyCheckinRepository,
   getDrawCardRepository,
   getFeedbackRepository,
   getMealRepository,
@@ -19,7 +18,7 @@ import {
   getWeightRepository
 } from "../services"
 import { getServiceMode } from "../services/serviceMode"
-import type { Analysis, ComfortTag, DailyCheckin, Feedback, Fullness, MealRecord, MealType, PriceSatisfaction, Profile, Report, TasteFeedback, WeightLog } from "../types/meal"
+import type { Analysis, ComfortTag, Feedback, Fullness, MealRecord, MealType, PriceSatisfaction, Profile, Report, TasteFeedback, WeightLog } from "../types/meal"
 
 type SeedScenario = 0 | 3 | 7
 
@@ -32,7 +31,6 @@ type BodyPuzzleState = {
   meals: MealRecord[]
   analyses: Analysis[]
   feedbacks: Feedback[]
-  dailyCheckins: DailyCheckin[]
   weightLogs: WeightLog[]
   report?: Report
   activeMealId?: string
@@ -48,7 +46,6 @@ type BodyPuzzleState = {
   startActiveMeal: () => void
   addAnalysisCorrection: (input: { field: string; aiValue: string; userValue: string }) => void
   saveFeedback: (input: { fullness: Fullness; comfortTags: ComfortTag[]; tasteFeedback: TasteFeedback[]; priceSatisfaction?: PriceSatisfaction }) => void
-  saveDailyCheckin: (input: { energy: NonNullable<DailyCheckin["energy"]>; digestion: NonNullable<DailyCheckin["digestion"]>; satiety: NonNullable<DailyCheckin["satiety"]> }) => void
   saveWeightLog: (valueKg: number) => void
   generateReport: () => void
   markCardDecision: (cardId: string, accepted: boolean) => void
@@ -62,7 +59,6 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
   meals: [],
   analyses: [],
   feedbacks: [],
-  dailyCheckins: [],
   weightLogs: [],
   hydratePersistedData: async () => {
     if (!shouldPersistProductData()) return
@@ -78,7 +74,6 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
       set({ ...emptySignedOutState(), authUserId, authLoading: true, authError: undefined })
       const profile = await getProfileRepository().getCurrentProfile()
       const meals = await getMealRepository().listMeals(authUserId)
-      const dailyCheckins = await getDailyCheckinRepository().listDailyCheckins(authUserId)
       const weightLogs = await getWeightRepository().listWeightLogs(authUserId)
       const activeMealId = meals.some((meal) => meal.id === previousActiveMealId) ? previousActiveMealId : meals[0]?.id
       set({
@@ -87,7 +82,6 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
         meals,
         analyses: meals.flatMap((meal) => (meal.analysis ? [meal.analysis] : [])),
         feedbacks: meals.flatMap((meal) => (meal.feedback ? [meal.feedback] : [])),
-        dailyCheckins,
         weightLogs,
         activeMealId,
         authLoading: false
@@ -238,31 +232,6 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
       void persistFeedback(activeMealId, feedback)
     }
   },
-  saveDailyCheckin: (input) => {
-    const state = get()
-    const profile = state.profile ?? mockProfile
-    const date = localDateKey(new Date())
-    const mealIds = state.meals.filter((meal) => localDateKey(new Date(meal.createdAt)) === date).map((meal) => meal.id)
-    const optimistic: DailyCheckin = {
-      id: makeCheckinId(date),
-      userId: profile.id,
-      date,
-      mealIds,
-      dueAt: nowIso(),
-      isNextDay: false,
-      energy: input.energy,
-      digestion: input.digestion,
-      satiety: input.satiety,
-      answeredAt: nowIso(),
-      dismissed: false,
-      createdAt: nowIso(),
-      updatedAt: nowIso()
-    }
-    set((current) => ({ dailyCheckins: [optimistic, ...current.dailyCheckins.filter((item) => item.date !== date)] }))
-    if (shouldPersistProductData()) {
-      void getDailyCheckinRepository().saveDailyCheckin(optimistic)
-    }
-  },
   saveWeightLog: (valueKg) => {
     const profile = get().profile ?? mockProfile
     const optimistic: WeightLog = { id: `weight-${Date.now()}`, userId: profile.id, valueKg, recordedAt: nowIso() }
@@ -308,7 +277,6 @@ export const useBodyPuzzleStore = create<BodyPuzzleState>((set, get) => ({
       meals,
       analyses,
       feedbacks,
-      dailyCheckins: [],
       weightLogs: [],
       report: scenario === 0 ? undefined : buildMockBodyPuzzleReport(meals, feedbacks),
       activeMealId: meals[0]?.id
@@ -373,14 +341,6 @@ function shouldPersistProductData() {
   return getServiceMode() !== "mock" && !useBodyPuzzleStore.getState().guestMode
 }
 
-function localDateKey(date: Date) {
-  return date.toISOString().slice(0, 10)
-}
-
-function makeCheckinId(date: string) {
-  return `checkin-${date}`
-}
-
 function emptySignedOutState() {
   return {
     authUserId: undefined,
@@ -389,7 +349,6 @@ function emptySignedOutState() {
     meals: [],
     analyses: [],
     feedbacks: [],
-    dailyCheckins: [],
     weightLogs: [],
     report: undefined,
     activeMealId: undefined
