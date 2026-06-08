@@ -5,123 +5,141 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>干饭 · 好好吃饭</title>
 <style>
+/* ── Calz Style v2 · 真实 Calz 风格 · 2026-06-04 ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --cream:#FAF7F2;--white:#FFFEF9;--ink:#1A1612;--ink60:#7A6E66;--ink30:#C5BDB5;
-  --accent:#E85D26;--accent-s:#FFF0E9;--green:#2D6A4F;--green-s:#EBF5EF;
-  --amber:#D4860A;--amber-s:#FEF6E4;--red:#C0392B;--red-s:#FDECEA;
-  --border:#EDE8E1;--r:16px;--rs:10px;
-  --sans:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;
-  --serif:Georgia,'Songti SC',serif;
+  /* Calz 真实色彩系统 */
+  --cream:#F2F2F7;           /* iOS 系统浅灰，卡片底色 */
+  --white:#FFFFFF;
+  --dark:#1C1C1E;            /* 近黑，深色 hero 卡片 */
+  --dark2:#2C2C2E;           /* 深色卡片次色 */
+  --ink:#000000;             /* 页面标题：纯黑，极粗 */
+  --ink60:#8E8E93;           /* iOS 系统灰，辅助文字 */
+  --ink30:#C7C7CC;
+  --accent:#FF9500;          /* 橙/琥珀：只用于边框/数据高亮 */
+  --accent-s:#F2F2F7;        /* 无橙色填充，统一灰底 */
+  --green:#34C759;--green-s:#E3F9EB;
+  --amber:#FF9500;--amber-s:#F2F2F7;
+  --red:#FF3B30;--red-s:#FFE5E4;
+  --border:#E5E5EA;
+  --r:16px;--rs:12px;
+  --sans:-apple-system,BlinkMacSystemFont,'PingFang SC','SF Pro Display','Helvetica Neue',sans-serif;
+  --serif:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;
 }
-html,body{height:100%;background:var(--cream);font-family:var(--sans);color:var(--ink)}
+html,body{height:100%;background:var(--white);font-family:var(--sans);color:var(--ink)}
 #app{max-width:420px;margin:0 auto;min-height:100vh;background:var(--white);display:flex;flex-direction:column;position:relative}
 
-/* NAV */
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--border);background:var(--white);position:sticky;top:0;z-index:100}
-.nav-title{font-family:var(--serif);font-size:19px}
-.nav-back{background:none;border:none;color:var(--ink60);font-size:14px;font-family:var(--sans);padding:6px 10px;border-radius:8px;cursor:pointer}
-.nav-home-left{display:flex;align-items:center;gap:14px;border:none;background:transparent;padding:0;font-family:var(--sans);min-width:170px}
-.nav-avatar{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:linear-gradient(135deg,var(--accent-s),var(--green-s));display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 12px rgba(26,22,18,.06)}
-.nav-home-stat{display:flex;align-items:center;gap:6px;color:var(--ink);font-size:21px;font-weight:900;line-height:1}
-.nav-home-stat .muted{color:var(--ink30)}
-.home-slide{position:relative;height:58px;border-radius:999px;background:var(--cream);border:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:5px;margin:18px 0 16px;overflow:hidden}
-.home-slide-thumb{position:absolute;top:5px;bottom:5px;left:calc(33.333% + 5px);width:calc(33.333% - 10px);border-radius:999px;background:var(--white);box-shadow:0 8px 22px rgba(26,22,18,.08);border:1px solid var(--border);z-index:1}
-.home-slide button{position:relative;z-index:2;border:none;background:transparent;font-family:var(--sans);font-size:12px;font-weight:800;color:var(--ink60);cursor:pointer;height:48px;border-radius:999px}
-.home-slide button.center{color:var(--accent);font-size:13px}
+/* NAV ── Calz 风格：大号加粗页面标题，左对齐，无下划线 */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 8px;background:var(--white);position:sticky;top:0;z-index:100}
+.nav-title{font-size:28px;font-weight:700;color:var(--ink);letter-spacing:-0.5px}
+.nav-back{background:none;border:none;color:var(--ink60);font-size:16px;font-family:var(--sans);padding:6px 0;cursor:pointer;font-weight:400}
+.nav-home-left{display:flex;align-items:center;gap:12px;border:none;background:transparent;padding:0;font-family:var(--sans);min-width:170px}
+.nav-avatar{width:38px;height:38px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:20px}
+/* 首页数字：大号 */
+.nav-home-stat{display:flex;align-items:baseline;gap:4px;color:var(--ink);font-size:32px;font-weight:700;line-height:1;letter-spacing:-1px}
+.nav-home-stat .muted{color:var(--ink30);font-size:24px;font-weight:400}
+/* 三段切换 Segmented */
+.home-slide{position:relative;height:44px;border-radius:10px;background:var(--cream);display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;padding:3px;margin:16px 0 20px;overflow:hidden}
+.home-slide-thumb{position:absolute;top:3px;bottom:3px;left:calc(33.333% + 3px);width:calc(33.333% - 6px);border-radius:8px;background:var(--white);box-shadow:0 1px 4px rgba(0,0,0,.12);z-index:1}
+.home-slide button{position:relative;z-index:2;border:none;background:transparent;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--ink60);cursor:pointer;height:38px;border-radius:8px}
+.home-slide button.center{color:var(--ink);font-weight:600}
 
-/* TABS */
+/* TABS ── 简洁，选中纯黑 */
 .tabbar{display:flex;border-top:1px solid var(--border);background:var(--white);position:sticky;bottom:0;z-index:100}
-.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0 12px;border:none;background:none;cursor:pointer;color:var(--ink60);font-family:var(--sans);font-size:10px;font-weight:500}
-.tab-btn.active{color:var(--accent)}
-.tab-icon{font-size:20px;line-height:1}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 14px;border:none;background:none;cursor:pointer;color:var(--ink60);font-family:var(--sans);font-size:10px;font-weight:500}
+.tab-btn.active{color:var(--ink)}
+.tab-icon{font-size:22px;line-height:1}
 
 /* PAGE */
-.page{flex:1;overflow-y:auto;padding:20px;padding-bottom:90px}
+.page{flex:1;overflow-y:auto;padding:0 20px 20px;padding-bottom:90px}
 .screen{display:none}.screen.active{display:block}
 
-/* BUTTONS */
-.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 24px;border-radius:100px;font-family:var(--sans);font-size:15px;font-weight:500;cursor:pointer;border:none;width:100%;transition:all .2s}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:active{background:#C44D1F;transform:scale(.98)}
-.btn-primary:disabled{opacity:.4;cursor:default}
-.btn-ghost{background:transparent;color:var(--ink60);font-size:14px;margin-top:8px}
+/* BUTTONS ── 主按钮：黑色药丸；次按钮：纯文字 */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;padding:0 28px;border-radius:28px;font-family:var(--sans);font-size:17px;font-weight:600;cursor:pointer;border:none;width:100%;transition:opacity .15s,transform .15s}
+.btn-primary{background:var(--dark);color:#fff;letter-spacing:-0.2px}
+.btn-primary:active{opacity:.8;transform:scale(.98)}
+.btn-primary:disabled{opacity:.3;cursor:default}
+.btn-ghost{background:transparent;color:var(--ink60);font-size:15px;margin-top:6px;height:44px;font-weight:400;border:none}
 
-/* CARDS */
-.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px}
+/* CARDS ── 浅灰底，无边框无阴影，大圆角 */
+.card{background:var(--cream);border:none;border-radius:var(--r);padding:18px;margin-bottom:14px}
+/* 深色 hero 卡片（用 class="card card-dark" 触发） */
+.card-dark{background:var(--dark);color:#fff}
+.card-dark .label,.card-dark .insight-lbl{color:rgba(255,255,255,.55)}
+.card-dark .insight-val,.card-dark h2,.card-dark p{color:#fff}
 
 /* CHIPS */
-.chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:500}
+.chip{display:inline-flex;align-items:center;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:600}
 .chip-green{background:var(--green-s);color:var(--green)}
 .chip-amber{background:var(--amber-s);color:var(--amber)}
 .chip-red{background:var(--red-s);color:var(--red)}
 
-/* SECTION LABEL */
-.label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink60);margin-bottom:10px}
+/* SECTION LABEL ── Calz 风格：全大写小号灰字 */
+.label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink60);margin-bottom:8px}
 
 /* UPLOAD ZONE */
-.upload-zone{border:2px dashed var(--border);border-radius:var(--r);padding:28px 20px;text-align:center;cursor:pointer;background:var(--cream);transition:border-color .2s;margin-bottom:14px}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r);padding:32px 20px;text-align:center;cursor:pointer;background:var(--cream);transition:border-color .2s;margin-bottom:16px}
 .upload-zone:active{border-color:var(--accent);background:var(--accent-s)}
-.upload-zone img{width:100%;height:160px;object-fit:cover;border-radius:var(--rs);display:block}
-.upload-zone .uz-icon{font-size:30px;margin-bottom:6px}
-.upload-zone p{font-size:13px;color:var(--ink60)}
+.upload-zone img{width:100%;height:180px;object-fit:cover;border-radius:var(--rs);display:block}
+.upload-zone .uz-icon{font-size:32px;margin-bottom:8px}
+.upload-zone p{font-size:14px;color:var(--ink60)}
 
-/* SCORE BUTTONS */
+/* SCORE BUTTONS ── 选中时橙色边框（Calz 选中态） */
 .score-row{display:flex;gap:8px;margin-bottom:16px}
-.score-btn{flex:1;padding:10px 4px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--white);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;color:var(--ink60);transition:all .15s;text-align:center}
-.score-btn.sel{border-color:var(--accent);background:var(--accent-s);color:var(--accent)}
+.score-btn{flex:1;padding:14px 4px;border:2px solid var(--border);border-radius:var(--rs);background:var(--white);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;color:var(--ink60);transition:all .15s;text-align:center}
+.score-btn.sel{border-color:var(--accent);background:var(--accent-s);color:var(--accent);font-weight:600}
 
 /* PROGRESS DOTS */
 .day-dots{display:flex;gap:8px;flex-wrap:wrap}
-.day-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink60)}
-.day-dot.done{background:var(--accent);border-color:var(--accent);color:#fff}
+.day-dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink60)}
+.day-dot.done{background:var(--dark);border-color:var(--dark);color:#fff}
 .day-dot.today{border-color:var(--accent);color:var(--accent)}
 
 /* RISK BAR */
-.risk-bar{height:3px;border-radius:2px;margin-top:10px}
+.risk-bar{height:4px;border-radius:2px;margin-top:12px}
 .risk-low{background:var(--green);width:33%}
 .risk-medium{background:var(--amber);width:66%}
 .risk-high{background:var(--red);width:100%}
 
 /* ADVICE BOX */
-.advice-box{background:var(--accent-s);border-radius:var(--rs);padding:14px;margin-top:12px}
-.advice-text{font-size:14px;color:var(--accent);line-height:1.6}
+.advice-box{background:var(--cream);border-radius:var(--rs);padding:16px;margin-top:12px}
+.advice-text{font-size:15px;color:var(--ink);line-height:1.6}
 
 /* MEAL LIST */
-.meal-item{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}
+.meal-item{display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid var(--border)}
 .meal-item:last-child{border-bottom:none}
-.meal-ava{width:42px;height:42px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.meal-ava{width:44px;height:44px;border-radius:12px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
 .meal-meta{flex:1}
 .meal-top{display:flex;align-items:center;justify-content:space-between}
-.meal-name{font-size:13px;font-weight:600}
-.meal-feel{font-size:12px;color:var(--ink60);margin-top:3px}
+.meal-name{font-size:16px;font-weight:600;letter-spacing:-0.2px}
+.meal-feel{font-size:13px;color:var(--ink60);margin-top:4px}
 
 /* INSIGHT CARD */
-.insight-row{display:flex;gap:10px;align-items:flex-start}
-.insight-icon{font-size:22px;flex-shrink:0}
+.insight-row{display:flex;gap:12px;align-items:flex-start}
+.insight-icon{font-size:24px;flex-shrink:0}
 .insight-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink60);margin-bottom:4px}
-.insight-val{font-size:14px;line-height:1.5}
+.insight-val{font-size:16px;line-height:1.5;font-weight:500}
 
 /* ONBOARD */
-.ob-progress{display:flex;gap:6px;margin-bottom:22px}
-.ob-bar{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}
-.ob-bar.done{background:var(--accent)}
-.ob-question{font-family:var(--serif);font-size:24px;line-height:1.3;margin-bottom:20px}
-.ob-opt{display:flex;align-items:center;gap:10px;padding:13px 16px;border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;margin-bottom:10px;font-size:15px;transition:all .15s}
-.ob-opt.sel{border-color:var(--accent);background:var(--accent-s);color:var(--accent)}
+.ob-progress{display:flex;gap:6px;margin-bottom:28px}
+.ob-bar{flex:1;height:4px;border-radius:2px;background:var(--border);transition:background .3s}
+.ob-bar.done{background:var(--ink)}
+.ob-question{font-family:var(--sans);font-size:26px;font-weight:700;line-height:1.25;margin-bottom:24px;letter-spacing:-0.5px}
+.ob-opt{display:flex;align-items:center;gap:12px;padding:16px 18px;border:2px solid var(--border);border-radius:var(--r);cursor:pointer;margin-bottom:12px;font-size:16px;transition:all .15s;background:var(--white)}
+.ob-opt.sel{border-color:var(--accent);background:var(--accent-s);color:var(--dark);font-weight:500}
 
 /* HERO */
-.hero-title{font-family:var(--serif);font-size:36px;line-height:1.1;margin-top:6px}
-.hero-title em{font-style:italic;color:var(--accent)}
-.hero-sub{font-size:14px;color:var(--ink60);line-height:1.6;margin-top:8px}
+.hero-title{font-family:var(--sans);font-size:36px;font-weight:700;line-height:1.1;margin-top:8px;letter-spacing:-1px}
+.hero-title em{font-style:normal;color:var(--accent)}
+.hero-sub{font-size:16px;color:var(--ink60);line-height:1.6;margin-top:10px}
 
 /* ANALYZING */
 .analyzing{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.spin{display:inline-block;font-size:48px;animation:spin 2s linear infinite}
+.spin{display:inline-block;font-size:52px;animation:spin 2s linear infinite}
 
 /* TOAST */
-#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:500;z-index:999;white-space:nowrap;opacity:0;transition:all .3s;pointer-events:none}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:12px 22px;border-radius:100px;font-size:14px;font-weight:500;z-index:999;white-space:nowrap;opacity:0;transition:all .3s;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -129,6 +147,59 @@ html,body{height:100%;background:var(--cream);font-family:var(--sans);color:var(
 @keyframes planPageIn{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}
 @keyframes planPageBack{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
 .fade{animation:fadeUp .3s ease both}
+
+/* ══ Calz 强制覆盖层 ══
+   内联 style 有更高优先级，用 !important 统一拍平渐变/阴影/边框 */
+
+/* 卡片：全部改为浅灰底，无渐变无边框无阴影 */
+.card:not(.card-dark){
+  background:var(--cream) !important;
+  border:none !important;
+  box-shadow:none !important;
+}
+/* 深色 hero 卡片 */
+.card.card-dark{
+  background:var(--dark) !important;
+  border:none !important;
+  box-shadow:none !important;
+  color:#fff !important;
+}
+
+/* 主按钮：统一黑色，无渐变 */
+.btn-primary{
+  background:var(--dark) !important;
+  background-image:none !important;
+  box-shadow:none !important;
+}
+
+/* nav：无底部边框 */
+.nav{border-bottom:none !important;box-shadow:none !important;}
+
+/* 页面内容区留出顶部间距 */
+.page{padding-top:8px !important;}
+
+/* 上传区：纯浅灰，无渐变 */
+.upload-zone{background:var(--cream) !important;}
+.upload-zone:active{background:var(--accent-s) !important;}
+
+/* advice box：浅灰代替旧橙色渐变 */
+.advice-box{background:var(--cream) !important;}
+.advice-text{color:var(--ink) !important;}
+
+/* tab 激活色：黑色而非橙色 */
+.tab-btn.active{color:var(--dark) !important;}
+
+/* home-slide 激活 button */
+.home-slide button.center{color:var(--dark) !important;}
+
+/* 选项按钮选中：橙色边框（保留 Calz 选中态） */
+.score-btn.sel,.ob-opt.sel{border-color:var(--accent) !important;}
+.day-dot.today{border-color:var(--accent) !important;color:var(--accent) !important;}
+
+/* 去除所有 box-shadow */
+*{box-shadow:none !important;}
+
+/* 段落/行内元素的旧橙色文字 → 统一用新 accent */
 </style>
 </head>
 <body>
@@ -525,9 +596,6 @@ let historyTargetMealId = null;  // 从首页未反馈提示跳到饮食日历�
 let userFoodProfile = null;      // 压缩后的个人规律摘要，每次提交后更新
 let pendingAdditionals = [];     // 旧记录兼容字段，新加餐独立成餐次
 let autoCloseTimer = null;       // 30分钟未反馈自动闭环定时器
-let debugTimeOffsetMs = 0;       // 调试用时间偏移，不影响真实逻辑
-let overdueExpanded = false;     // 超时提示多条展开状态
-let justCompletedAt = null;      // 反馈提交时刻，用于 30 分钟过期
 let recordingAdditional = false; // 旧分支兼容，新流程不再使用
 let obStep = 0;
 const obSteps = [
@@ -2232,8 +2300,6 @@ function feelEmoji(f){
   const first = Array.isArray(f) ? f[0] : f;
   return ({舒服:"😊",困倦:"😴",胀气:"😮‍💨",有精神:"⚡",反酸:"😣"})[first]||"😐";
 }
-function fullnessEmoji(v){ return ({撑:"😮‍💨",刚好:"😌",还饿:"😕"})[v]||"🍽️"; }
-function moodEmoji(v){ return ({满足:"😊",还不错:"😊",一般:"😐",后悔:"😞",有点后悔:"😞"})[v]||"🙂"; }
 // comfort 字段兼容 string（历史数据）和 string[]（新多选数据）
 function comfortArr(c){ return Array.isArray(c)?c:(c?[c]:[]); }
 function comfortHas(c,...vals){ const a=comfortArr(c); return vals.some(v=>a.includes(v)); }
@@ -2306,37 +2372,16 @@ function renderLateNightAdvisoryCard(){
 
 // ── HOME ──────────────────────────────────────────────────────────────────────
 function renderHome(){
-  window._backfillMealId=null;
   const s=document.getElementById('s-home');
   const home = getHomeScene();
   const fastHint = fastingState==='fasting' ? renderHomeFastHint() : '';
   const lateNightCard = renderLateNightAdvisoryCard();
 
   s.innerHTML=`
-  ${renderDebugTimeBar()}
   ${lateNightCard}
   ${home}
   ${fastHint}
   `;
-}
-
-function renderDebugTimeBar(){
-  const offsetMin = Math.round(debugTimeOffsetMs/60000);
-  const steps = [0,5,15,31,60,120];
-  const btns = steps.map(m=>{
-    const active = offsetMin===m;
-    return `<button onclick="setDebugOffset(${m})" style="border:none;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;background:${active?'#1a1612':'#e8e3dc'};color:${active?'#fff':'#666'}">${m===0?'现在':'+'+m+'min'}</button>`;
-  }).join('');
-  return `<div style="display:flex;align-items:center;gap:6px;padding:8px 4px;flex-wrap:wrap;border-bottom:1px dashed #e0d9d0;margin-bottom:8px">
-    <span style="font-size:10px;font-weight:700;color:#aaa;white-space:nowrap">⏱ 状态机测试</span>
-    ${btns}
-    ${offsetMin>0?`<span style="font-size:10px;color:#f97316;font-weight:700">+${offsetMin}min</span>`:''}
-  </div>`;
-}
-
-function setDebugOffset(minutes){
-  debugTimeOffsetMs = minutes * 60000;
-  renderHome();
 }
 
 function getTimeGreeting(){
@@ -2396,7 +2441,7 @@ function isTodayMeal(m){
 function mealElapsedMin(m){
   const ts=mealTs(m);
   if(!ts) return 0;
-  return Math.max(0,Math.floor((Date.now()+debugTimeOffsetMs-ts)/60000));
+  return Math.max(0,Math.floor((Date.now()-ts)/60000));
 }
 
 function isUnfeedbackMeal(m){
@@ -2422,29 +2467,10 @@ function getHomeScene(){
   const scene=getCurrentMealScene();
   const overdue=todayUnfeedbackMeals().filter(isMealOverdue);
   const pending=forceHomeRecordDefault?null:getActiveHomePendingMeal();
-  // 已反馈：显示刚完成的那顿（30 分钟内，超时自动过期回默认）
-  if(justCompletedMealId && !pending){
-    const doneExpired = justCompletedAt && (Date.now()+debugTimeOffsetMs-justCompletedAt)/60000 > 30;
-    if(doneExpired){ justCompletedMealId=null; justCompletedAt=null; }
-    else{
-      const done=meals.find(x=>x.id===justCompletedMealId);
-      if(done) return renderHomeDone(done,n) + renderHomeSecondaryRecord() + (overdue.length?renderHomeOverdueHint(overdue):'');
-    }
-  }
-  // 待反馈（< 30min）
   if(pending){
-    return renderHomePendingMeal(pending)
-      + renderHomeSecondaryRecord()
-      + (overdue.length?renderHomeOverdueHint(overdue):'');
+    return renderHomePendingMeal(pending) + (overdue.length?renderHomeOverdueHint(overdue):'');
   }
-  return renderHomeBeforeMeal(scene,n) + (overdue.length?renderHomeOverdueHint(overdue):'');
-}
-
-function renderHomeSecondaryRecord(){
-  return `<div style="display:flex;gap:8px;margin-top:10px">
-    <button onclick="startDirectMealRecord()" style="flex:1;border:1.5px solid var(--border);background:var(--white);border-radius:100px;padding:11px 8px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink60);cursor:pointer">+ 记录新一餐</button>
-    <button onclick="startMealDecision()" style="flex:1;border:1.5px solid var(--border);background:var(--white);border-radius:100px;padding:11px 8px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink60);cursor:pointer">还没想好吃什么</button>
-  </div>`;
+  return renderHomeBeforeMeal(scene,n,forceHomeRecordDefault?'默认':'') + (overdue.length?renderHomeOverdueHint(overdue):'');
 }
 
 function renderHomeBeforeMeal(scene,n){
@@ -2473,12 +2499,13 @@ function renderHomeBeforeMeal(scene,n){
       </div>
     </div>`:''}
     <div onclick="startDirectMealRecord()" style="height:164px;border-radius:24px;background:var(--accent-s);display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;overflow:hidden;cursor:pointer">
+      <button onclick="event.stopPropagation();startBackfillMealRecord()" style="position:absolute;top:12px;right:12px;border:none;background:rgba(255,255,255,.92);color:var(--accent);border-radius:999px;padding:7px 10px;font-family:var(--sans);font-size:12px;font-weight:900;box-shadow:0 6px 16px rgba(26,22,18,.08);cursor:pointer;z-index:2">补录</button>
       ${heroVisual}
       <div style="position:absolute;left:0;right:0;bottom:14px;text-align:center;z-index:2">
         <span style="font-size:14px;font-weight:700;color:rgba(255,255,255,.95);text-shadow:0 1px 6px rgba(0,0,0,.18)">${isFirstRecord?'记录第一餐':'记录这一餐'}</span>
       </div>
     </div>
-    <button onclick="startMealDecision()" style="width:100%;border:1.5px solid rgba(26,22,18,.18);background:rgba(26,22,18,.04);border-radius:100px;padding:14px 16px;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink60);cursor:pointer;margin-top:10px">还没想好吃什么 →</button>
+    <button class="btn btn-ghost" onclick="startMealDecision()" style="font-size:13px;margin-top:4px">还没想好吃什么 →</button>
   </div>`;
 }
 
@@ -2490,72 +2517,50 @@ function renderHomePendingMeal(meal){
   const cuisine=meal.cuisine||analysis.cuisine||'家常菜';
   const elapsed=mealElapsedMin(meal);
   const photo=meal.wideImg;
-  const kcal=n.calories.range||'';
-  const cuisineEmoji={'川菜':'🌶️','粤菜':'🐟','鲁菜':'🥩','沪菜':'🦀','本帮菜':'🦀','京菜':'🥟','快餐':'🍔','家常菜':'🥘'}[cuisine]||'🍽️';
-
-  // 有图：大图覆盖标题
-  const headerWithPhoto=`
+  const nutritionLine=[n.calories.range, cuisine, `${foods.length} 项食物`].filter(Boolean).join(' · ');
+  const photoBlock=photo?`
     <div style="position:relative;border-radius:calc(var(--r) - 2px) calc(var(--r) - 2px) 0 0;overflow:hidden">
-      <img src="${photo}" style="width:100%;height:200px;object-fit:cover;display:block">
-      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,22,18,.75));padding:32px 16px 14px">
-        <p style="font-size:17px;font-weight:900;color:#fff;margin-bottom:2px;line-height:1.35">${title}</p>
-        <p style="font-size:11px;color:rgba(255,255,255,.82)">${[kcal,cuisine].filter(Boolean).join(' · ')}</p>
+      <img src="${photo}" style="width:100%;height:210px;object-fit:cover;display:block">
+      <div style="position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:900">待反馈</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,22,18,.68));padding:32px 16px 14px">
+        <p style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px;line-height:1.35">${title}</p>
+        <p style="font-size:11px;color:rgba(255,255,255,.82)">${nutritionLine}</p>
       </div>
-    </div>`;
-
-  // 无图样式 A：彩色背景 + 大 emoji，保持高度
-  const noPhotoA=`
-    <div style="position:relative;border-radius:calc(var(--r) - 2px) calc(var(--r) - 2px) 0 0;overflow:hidden;height:180px;background:var(--accent-s);display:flex;align-items:center;justify-content:center">
-      <span style="font-size:64px;opacity:.7">${cuisineEmoji}</span>
-      <div style="position:absolute;bottom:0;left:0;right:0;padding:12px 16px 14px">
-        <p style="font-size:17px;font-weight:900;color:var(--accent);margin-bottom:2px;line-height:1.35">${title}</p>
-        <p style="font-size:11px;color:var(--accent);opacity:.7">${[kcal,cuisine].filter(Boolean).join(' · ')}</p>
+    </div>`
+  :`<div style="padding:18px 18px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+      <div>
+        <p style="font-size:16px;font-weight:900;color:var(--ink);margin-bottom:4px">${title}</p>
+        <p style="font-size:12px;color:var(--ink60)">${nutritionLine}</p>
       </div>
+      <span style="background:var(--accent);color:#fff;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:900;flex-shrink:0;margin-top:2px">待反馈</span>
     </div>`;
-
-  const headerBlock = photo ? headerWithPhoto : noPhotoA;
-
   return `<div class="card fade" style="animation-delay:.08s;margin-top:8px;padding:0;border:2.5px solid var(--accent);border-radius:var(--r);overflow:hidden;background:var(--white)">
-    ${headerBlock}
+    ${photoBlock}
     <div style="padding:14px 16px 16px">
-      <p style="font-size:11px;color:var(--ink30);margin-bottom:14px">刚才那顿 · ${elapsed} 分钟前</p>
-      <button class="btn btn-primary" onclick="openFeedbackForMeal(${JSON.stringify(meal.id)})">记录感受 →</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <p style="font-size:12px;color:var(--ink60);line-height:1.5">刚才那顿 · ${elapsed} 分钟</p>
+        <p style="font-size:11px;color:var(--accent);font-weight:800">30 分钟内占首页主卡</p>
+      </div>
+      <button class="btn btn-primary" onclick="openFeedbackForMeal(${JSON.stringify(meal.id)})" style="margin-bottom:10px">我吃完了 →</button>
+      <button onclick="recordPostMealAddOn(${JSON.stringify(meal.id)})" style="width:100%;border:1.5px dashed var(--border);background:var(--cream);border-radius:100px;padding:13px 16px;color:var(--ink60);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">刚刚又吃/喝了别的 →</button>
     </div>
   </div>`;
 }
 
-function overdueThumb(m){
-  const ce={'川菜':'🌶️','粤菜':'🐟','鲁菜':'🥩','沪菜':'🦀','本帮菜':'🦀','京菜':'🥟','快餐':'🍔','家常菜':'🥘'}[m.cuisine||'']||'🍽️';
-  return m.wideImg
-    ?`<img src="${m.wideImg}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0">`
-    :`<span style="font-size:26px;flex-shrink:0;line-height:1">${ce}</span>`;
-}
-function overdueRow(m){
-  return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0">
-    ${overdueThumb(m)}
-    <p style="flex:1;font-size:14px;font-weight:600;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.dish||'这一餐'}</p>
-    <button onclick="event.stopPropagation();backfillFeedback(${m.id})" style="border:none;background:var(--accent);color:#fff;border-radius:999px;padding:0 14px;height:32px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center">未反馈</button>
-  </div>`;
-}
-function toggleOverdueExpand(){
-  overdueExpanded=!overdueExpanded;
-  renderHome();
-}
 function renderHomeOverdueHint(overdueMeals){
+  const target=overdueMeals[0];
   const count=overdueMeals.length;
-  const wrap=(inner,extra='')=>`<div class="fade" style="animation-delay:.14s;margin-top:10px;border:1.5px solid rgba(192,57,43,.18);background:var(--red-s);border-radius:16px;padding:12px 14px${extra}">${inner}</div>`;
-  // 单条：直接展示
-  if(count===1) return wrap(overdueRow(overdueMeals[0]));
-  // 多条：可展开
-  const header=`<div onclick="toggleOverdueExpand()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
-    <span style="font-size:13px;font-weight:700;color:var(--ink)">⚠ ${count} 餐未反馈</span>
-    <span style="font-size:12px;color:var(--ink60);font-weight:600">${overdueExpanded?'▴':'▾'}</span>
+  const title=target?.dish||'这一餐';
+  return `<div class="card fade" style="animation-delay:.14s;margin-top:12px;border:1.5px solid rgba(192,57,43,.24);background:var(--red-s);padding:16px">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div style="width:38px;height:38px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:20px;flex-shrink:0">!</div>
+      <div style="flex:1;min-width:0">
+        <p style="font-size:15px;font-weight:900;color:var(--ink);line-height:1.35">你还有 ${count} 餐没反馈</p>
+        <p style="font-size:12px;color:var(--ink60);line-height:1.6;margin-top:4px">首页只提示今天超时未反馈的餐，默认定位最近一餐：${title}。</p>
+      </div>
+    </div>
+    <button onclick="openHistoryToMeal(${JSON.stringify(target.id)})" style="width:100%;border:none;background:var(--red);color:#fff;border-radius:999px;padding:12px 14px;font-family:var(--sans);font-size:13px;font-weight:800;cursor:pointer;margin-top:12px">去饮食日历补反馈 →</button>
   </div>`;
-  if(!overdueExpanded) return wrap(header);
-  const rows=overdueMeals.map((m,i)=>`
-    ${i>0?`<div style="height:1px;background:rgba(0,0,0,.06);margin:0 0"></div>`:''}
-    ${overdueRow(m)}`).join('');
-  return wrap(header+rows);
 }
 
 function getHomeRecordImage(){
@@ -2581,7 +2586,6 @@ function startMealDecision(){
 }
 
 function startDirectMealRecord(){
-  window._backfillMealId=null;
   forceHomeRecordDefault=false;
   todayState='';
   clearDoneReceipt();
@@ -2609,50 +2613,7 @@ function renderHomeFeedback(scene){
 }
 
 function renderHomeDone(meal,n){
-  const analysis=normalizeMealAnalysis(meal.analysis||{dish:meal.dish,cuisine:meal.cuisine,province:meal.province});
-  const title=meal.dish||getMealDisplayTitle(analysis);
-  const cuisine=meal.cuisine||analysis.cuisine||'家常菜';
-  const photo=meal.wideImg;
-  const fb=meal.fb||{};
-  const cuisineEmoji={'川菜':'🌶️','粤菜':'🐟','鲁菜':'🥩','沪菜':'🦀','本帮菜':'🦀','京菜':'🥟','快餐':'🍔','家常菜':'🥘'}[cuisine]||'🍽️';
-  const reaction=getMealReactionText(meal);
-
-  // 心情标签：右上角 overlay
-  const comfortBadge=fb.comfort
-    ?`<div style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.92);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--ink);backdrop-filter:blur(4px)">${feelEmoji(fb.comfort)} ${comfortText(fb.comfort)}</div>`
-    :'';
-
-  const headerBlock=photo?`
-    <div style="position:relative;border-radius:calc(var(--r) - 2px) calc(var(--r) - 2px) 0 0;overflow:hidden">
-      <img src="${photo}" style="width:100%;height:200px;object-fit:cover;display:block">
-      ${comfortBadge}
-      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,22,18,.75));padding:32px 16px 14px">
-        <p style="font-size:17px;font-weight:900;color:#fff;margin-bottom:2px;line-height:1.35">${title}</p>
-        <p style="font-size:11px;color:rgba(255,255,255,.82)">${cuisine}</p>
-      </div>
-    </div>`
-  :`<div style="position:relative;border-radius:calc(var(--r) - 2px) calc(var(--r) - 2px) 0 0;overflow:hidden;height:180px;background:var(--accent-s);display:flex;align-items:center;justify-content:center">
-      <span style="font-size:64px;opacity:.7">${cuisineEmoji}</span>
-      ${comfortBadge}
-      <div style="position:absolute;bottom:0;left:0;right:0;padding:12px 16px 14px">
-        <p style="font-size:17px;font-weight:900;color:var(--accent);margin-bottom:2px;line-height:1.35">${title}</p>
-        <p style="font-size:11px;color:var(--accent);opacity:.7">${cuisine}</p>
-      </div>
-    </div>`;
-
-  const reactionBlock=reaction?`
-    <div style="background:var(--cream);border-radius:10px;padding:10px 12px;margin-top:14px">
-      <p style="font-size:10px;font-weight:700;color:var(--ink30);letter-spacing:.06em;margin-bottom:4px">身体反应预测</p>
-      <p style="font-size:13px;color:var(--ink);line-height:1.55;margin-bottom:${reaction.sub?'4px':'0'}">${reaction.main}</p>
-      ${reaction.sub?`<p style="font-size:11px;color:var(--ink40)">${reaction.sub}</p>`:''}
-    </div>`:'';
-
-  return `<div class="card fade" style="animation-delay:.08s;margin-top:8px;padding:0;border:2px solid var(--green);border-radius:var(--r);overflow:hidden;background:var(--white)">
-    ${headerBlock}
-    <div style="padding:14px 16px 16px">
-      ${reactionBlock}
-    </div>
-  </div>`;
+  return renderHomeBeforeMeal(getCurrentMealScene(),n);
 }
 
 function clearDoneReceipt(){
@@ -3751,9 +3712,7 @@ const PROMPT_MEAL_ANALYSIS = `你是用户的饮食观察伙伴，不评判，�
 关键规则：
 - meal: typeFields={staple,protein,vegetable,oil,portion}各值”偏高|中等|偏低”；drink:{sweetness,caffeine,mealReplacement}；否则返回{}
 - 只写”偏高/中等/偏低”时必须同时给 range，否则写”暂无法估算”
-- eatingAdvice 三字段各管一件事、不许重复：howMuch=一句话说吃多少；howToEat≤2步只说进食顺序，不重复 howMuch；reduceOrAvoid=一句话说少碰什么
-- expectedReaction 必须写 reason 和 evidence，数量1-3条
-- detail=3条结构观察（主食/蛋白质/蔬菜各一条，说人话不报卡路里），与 eatingAdvice 不重复
+- expectedReaction 必须写 reason 和 evidence
 - risk: low=蛋白足油轻；medium=一般有空间；high=高油高碳/甜饮替餐/空腹刺激
 - 饮品不套”主食偏少/蔬菜待确认”；薯片/坚果属 snack；蛋糕属 dessert`;
 
@@ -4937,45 +4896,33 @@ function updateAnalysisDetails(a){
   if(a?.analysisMeta) console.log('分析耗时:', {phase1: a.analysisMeta.phase1DurationMs+'ms', phase2: a.analysisMeta.phase2DurationMs+'ms', total: a.analysisMeta.totalDurationMs+'ms'});
 }
 
-// 建议卡：吃多少 / 怎么吃 / 少碰 三个固定锚点，各管一件事，不再机械拼接截断（饭前分析页 + 记录页折叠区复用）
-function renderAdviceCard(a, opts){
-  opts=opts||{};
-  const advice=normalizeEatingAdvice(a.eatingAdvice, a.advice, a.foodType);
-  const stage=adviceStageMeta(a);
-  const howToEat=(advice.howToEat||[]).filter(Boolean).slice(0,2);
-  const avoid=(advice.reduceOrAvoid||[]).filter(Boolean).slice(0,2);
-  return `<div style="background:var(--cream);border-radius:14px;padding:13px 14px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px">
-      <p style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.04em">建议</p>
-      ${opts.showStage===false?'':`<span title="${escapeHtml(stage.desc)}" style="font-size:10px;font-weight:900;color:${stage.color};background:${stage.bg};border-radius:999px;padding:4px 8px;white-space:nowrap">${stage.label}</span>`}
-    </div>
-    <div style="display:grid;grid-template-columns:42px 1fr;gap:8px 10px;align-items:baseline">
-      <span style="font-size:11px;font-weight:700;color:var(--ink30)">吃多少</span>
-      <p style="font-size:15px;color:var(--ink);line-height:1.5;font-weight:700">${escapeHtml(advice.howMuch)}</p>
-      ${howToEat.length?`<span style="font-size:11px;font-weight:700;color:var(--ink30)">怎么吃</span>
-      <p style="font-size:13px;color:var(--ink60);line-height:1.55">${howToEat.map((s,i)=>`<span style="color:var(--accent);font-weight:800">${i+1}</span> ${escapeHtml(s)}`).join('　')}</p>`:''}
-      ${avoid.length?`<span style="font-size:11px;font-weight:700;color:var(--ink30)">少碰</span>
-      <p style="font-size:13px;color:var(--ink60);line-height:1.55">${avoid.map(escapeHtml).join('、')}</p>`:''}
-    </div>
-  </div>`;
-}
-
 function renderPreMealDecisionCard(a){
   const title = getMealDisplayTitle(a);
+  const advice = normalizeEatingAdvice(a.eatingAdvice, a.advice, a.foodType);
   const comment = mealCommentText(a);
+  const suggestion = preMealSuggestionItems(advice);
+  const stage = adviceStageMeta(a);
   const srcBadge = a._source==='ai'
     ? `<span style="font-size:10px;font-weight:700;color:#2e7d32;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:999px;padding:4px 8px;white-space:nowrap">AI 识别</span>`
     : `<span style="font-size:10px;color:var(--ink30);background:var(--cream);border:1px solid var(--border);border-radius:999px;padding:4px 8px;white-space:nowrap">模拟数据</span>`;
-  // 顺序：餐食名称 → 副标题 → 餐食组成 → 建议（营养概览由 renderMealUnderstanding 紧随其后）
   return `<div class="card fade" style="margin-bottom:12px">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
       ${srcBadge}
       ${riskChip(a.risk)}
     </div>
     <p style="font-family:var(--serif);font-size:24px;line-height:1.25;margin-bottom:8px">${escapeHtml(title)}</p>
-    <p style="font-size:14px;color:var(--ink60);line-height:1.7;margin-bottom:14px">${escapeHtml(comment)}</p>
+    <p style="font-size:14px;color:var(--ink60);line-height:1.7;margin-bottom:12px">${escapeHtml(comment)}</p>
+    <div style="background:var(--cream);border-radius:14px;padding:13px 14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px">
+        <p style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.04em">建议</p>
+        <span title="${escapeHtml(stage.desc)}" style="font-size:10px;font-weight:900;color:${stage.color};background:${stage.bg};border-radius:999px;padding:4px 8px;white-space:nowrap">${stage.label}</span>
+      </div>
+      <p style="font-size:16px;color:var(--ink);line-height:1.55;font-weight:700">${escapeHtml(advice.howMuch)}</p>
+      ${suggestion.length?`<div style="display:flex;flex-direction:column;gap:6px;margin-top:9px">
+        ${suggestion.map(x=>`<p style="font-size:13px;color:var(--ink60);line-height:1.5">${escapeHtml(x)}</p>`).join('')}
+      </div>`:''}
+    </div>
     ${renderFoodCompositionBlock(a)}
-    <div style="margin-top:14px">${renderAdviceCard(a)}</div>
   </div>`;
 }
 
@@ -4997,7 +4944,6 @@ function renderFoodCompositionBlock(a){
   const foods = normalizeRecognizedFoods(a.recognizedFoods, a.dish);
   const mealNutritionMeta = nutritionSourceMeta(a);
   const province = a.province && a.province !== '全国' ? ` · ${a.province}` : '';
-  const title = getMealDisplayTitle(a);
   return `<div style="border-top:1px solid var(--border);padding-top:13px">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px">
       <div>
@@ -5006,22 +4952,19 @@ function renderFoodCompositionBlock(a){
       </div>
       <button onclick="editRecognition('dish','菜品')" style="border:none;background:transparent;color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap">修正菜名</button>
     </div>
-    ${foods.map((f,i)=>{
-      // 单食物且名称与标题相同时，不重复印菜名，主行直接显示类别·份量
-      const dup = foods.length===1 && f.name===title;
-      return `
+    ${foods.map((f,i)=>`
       <div style="display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-top:${i===0?'none':'1px solid var(--border)'}">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--accent);font-weight:800">${i+1}</div>
         <div style="min-width:0">
-          ${dup?'':`<p style="font-size:15px;font-weight:800;color:var(--ink);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(f.name)}</p>`}
-          <p style="font-size:${dup?'15px':'12px'};font-weight:${dup?'800':'400'};color:${dup?'var(--ink)':'var(--ink60)'};margin-top:${dup?'0':'3px'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(f.category)} · ${escapeHtml(f.quantityText)}</p>
+          <p style="font-size:15px;font-weight:800;color:var(--ink);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(f.name)}</p>
+          <p style="font-size:12px;color:var(--ink60);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(f.category)} · ${escapeHtml(f.quantityText)}</p>
           <p style="font-size:10px;color:${foodNutritionMeta(f, mealNutritionMeta).color};margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(foodNutritionMeta(f, mealNutritionMeta).text)}</p>
         </div>
         <div style="text-align:right">
           <p style="font-size:12px;font-weight:800;color:var(--accent)">${f.estimatedWeightGrams?`约${f.estimatedWeightGrams}g`:'份量待确认'}</p>
           <p style="font-size:10px;color:var(--ink30);margin-top:4px">${confidenceText(f.confidence)}</p>
         </div>
-      </div>`;}).join('')}
+      </div>`).join('')}
     <button onclick="editRecognition('cuisine','菜系')" style="width:100%;border:none;border-top:1px solid var(--border);padding:10px 0 0;background:transparent;text-align:left;font-family:var(--sans);color:var(--ink60);font-size:13px;cursor:pointer">菜系/地区：<strong id="rec-cuisine" style="color:var(--ink)">${escapeHtml(a.cuisine||'家常菜')}${escapeHtml(province)}</strong><span style="float:right;color:var(--accent);font-weight:800">修改 ></span></button>
     <button onclick="editRecognition('scene','场景')" style="width:100%;border:none;border-top:1px solid var(--border);padding:10px 0 0;margin-top:8px;background:transparent;text-align:left;font-family:var(--sans);color:var(--ink60);font-size:13px;cursor:pointer">场景：<strong id="rec-scene" style="color:var(--ink)">${escapeHtml(a.scene||'未知')}</strong><span style="float:right;color:var(--accent);font-weight:800">修改 ></span></button>
   </div>`;
@@ -6013,7 +5956,6 @@ async function submitFeedback(){
   // L4：每次提交后重新压缩个人规律摘要
   userFoodProfile = buildUserFoodProfile(meals);
   justCompletedMealId=m.id;
-  justCompletedAt=Date.now();
   forceHomeRecordDefault=false;
   activePendingMealId=null;
   pendingAnalysis=null;
@@ -6040,8 +5982,8 @@ function parseNutritionMidpoint(rangeStr){
   return Math.round((Number(nums[0])+Number(nums[nums.length-1]))/2);
 }
 
-// 营养结构内容（进度条版，返回 {inner, calText}）
-function summaryNutritionInner(m){
+// 营养结构卡（进度条版）
+function renderSummaryNutritionCard(m){
   const a=m.analysis||{};
   const n=normalizeNutritionEstimate(a.nutritionEstimate,a.foodType);
   const ai=m.actualIntakeAnalysis;
@@ -6057,13 +5999,11 @@ function summaryNutritionInner(m){
   const protMid=parseNutritionMidpoint(n.protein.range);
   const carbMid=parseNutritionMidpoint(n.carbs.range);
   const fatMid=parseNutritionMidpoint(n.fat.range);
-  const fiberMid=parseNutritionMidpoint(n.fiber.range);
 
   const actualCal=calMid?Math.round(calMid*intakeRatio):null;
   const actualProt=protMid?Math.round(protMid*intakeRatio):null;
   const actualCarb=carbMid?Math.round(carbMid*intakeRatio):null;
   const actualFat=fatMid?Math.round(fatMid*intakeRatio):null;
-  const actualFiber=fiberMid?Math.round(fiberMid*intakeRatio):null;
 
   function makeBar(label,value,max,level,color){
     if(!value) return '';
@@ -6081,23 +6021,17 @@ function summaryNutritionInner(m){
   const protLevel=actualProt!==null?metricLevel('protein',actualProt):n.protein.level;
   const carbLevel=actualCarb!==null?metricLevel('carbs',actualCarb):n.carbs.level;
   const fatLevel=actualFat!==null?metricLevel('fat',actualFat):n.fat.level;
-  const fiberLevel=actualFiber!==null?metricLevel('fiber',actualFiber):n.fiber.level;
   const calText=actualCal?`约 ${actualCal} 千卡`:(n.calories.range||'');
 
-  const inner=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+  return `<div class="card fade" style="background:var(--cream);border:none;padding:14px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <span style="font-size:13px;font-weight:700;color:var(--ink)">实际摄入</span>
       <span style="font-family:var(--serif);font-size:17px;font-weight:700;color:var(--accent)">${calText}</span>
     </div>
     ${makeBar('蛋白',actualProt,70,protLevel,'#1F8A70')}
     ${makeBar('碳水',actualCarb,140,carbLevel,'#2F80ED')}
     ${makeBar('脂肪',actualFat,70,fatLevel,'var(--amber)')}
-    ${makeBar('纤维',actualFiber,30,fiberLevel,'var(--green)')}`;
-  return {inner, calText};
-}
-
-// 饭后总结页用：带 cream 卡片外壳
-function renderSummaryNutritionCard(m){
-  return `<div class="card fade" style="background:var(--cream);border:none;padding:14px;margin-bottom:16px">${summaryNutritionInner(m).inner}</div>`;
+  </div>`;
 }
 
 // 判断一条洞察是否与本餐相关
@@ -6188,46 +6122,16 @@ function renderMealReactionPrediction(meal){
   return '';
 }
 
-// 提取"本餐反应预测"纯文本，供首页复用，与 renderMealReactionPrediction 同源
-function getMealReactionText(meal){
-  const puzzleUnlocked = isBodyPuzzleUnlocked(meals);
-  const glucoseUnlocked = isGlucoseUnlocked(profile);
-  const grade = !puzzleUnlocked ? 'A' : glucoseUnlocked ? 'C' : 'B';
-  if(grade === 'C') return null;
-  if(grade === 'A'){
-    const advice = buildGenericMealAdvice(meal);
-    const mealsNeeded = Math.max(0, 7 - meals.length);
-    return { main: advice.text, sub: mealsNeeded > 0 ? `再记 ${mealsNeeded} 餐解锁身体拼图` : '这是通用提示，还在了解你' };
-  }
-  // Grade B
-  const allInsights = deriveInsights(meals);
-  const reactionInsights = allInsights.filter(ins =>
-    ins.category === 'reaction' && ins.maturity === 'mature' && isRelevantToMeal(ins, meal)
-  );
-  if(reactionInsights.length){
-    const top = reactionInsights.sort((a,b) => b.confidence - a.confidence)[0];
-    const dirHint = top.outcome === '困倦'
-      ? '饭后容易犯困，建议饭后稍微走走，避免久坐'
-      : top.outcome === '胀气'
-        ? '饭后可能有些胀气，避免马上躺下，吃慢一点'
-        : '注意饭后身体感受，记录下来积累规律';
-    return { main: dirHint, sub: `基于你 ${top.evidence.sampleSize} 次类似餐的记录推断` };
-  }
-  const advice = buildGenericMealAdvice(meal);
-  return { main: advice.text, sub: '继续积累反应类记录，预测会越来越精准' };
-}
-
 // ── 提交后总结页 ───────────────────────────────────────────────
 function renderFeedbackSummary(m){
   const s=document.getElementById('s-feedback-summary');
   if(!s||!m) return;
-  const a=normalizeMealAnalysis(m.analysis||{});
+  const a=m.analysis||{};
   const ai=m.actualIntakeAnalysis;
 
   // 时间
   const tsDate=m.ts?new Date(m.ts).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-  const dishName=m.dish||a.dish||'';
-  const scene=a.scene||m.scene||'';
+  const dishName=a.dish||m.dish||'';
 
   // 营养结构卡（进度条）
   const nutritionCardHtml=renderSummaryNutritionCard(m);
@@ -6245,8 +6149,8 @@ function renderFeedbackSummary(m){
   s.innerHTML=`
     <div style="padding:0 0 60px">
       <div class="fade" style="text-align:center;margin:18px 0 20px">
-        <p style="font-family:var(--serif);font-size:24px;color:var(--ink)">${escapeHtml(dishName||'这一餐')}</p>
-        <p style="font-size:13px;color:var(--ink60);margin-top:4px">${[scene,m.type||'',tsDate].filter(Boolean).join(' · ')}</p>
+        <p style="font-family:var(--serif);font-size:24px;color:var(--ink)">这一餐记完了 ✓</p>
+        <p style="font-size:13px;color:var(--ink60);margin-top:4px">${m.type||''}${dishName?' · '+dishName:''}${tsDate?' · '+tsDate:''}</p>
       </div>
 
       ${nutritionCardHtml}
@@ -7492,27 +7396,16 @@ function showMealDetail(id){
   const a=normalizeMealAnalysis(m.analysis||{});
   const s=document.getElementById('s-history');
 
-  // 封面图（卡片 padding:0，图片直接贴边）
+  // 封面图
   const imgEl=m.wideImg
-    ?`<img src="${m.wideImg}" style="width:100%;height:200px;object-fit:cover;display:block">`
-    :`<div style="height:80px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:42px">${ava(a.risk)}</div>`;
+    ?`<img src="${m.wideImg}" style="width:calc(100% + 40px);margin:-20px -20px 0 -20px;height:200px;object-fit:cover;display:block;border-radius:14px 14px 0 0">`
+    :`<div style="width:calc(100% + 40px);margin:-20px -20px 0 -20px;height:80px;background:var(--cream);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;font-size:42px">${ava(a.risk)}</div>`;
 
-  // 记录页 = 单卡 + 分界线分区：基础信息 / 实际摄入 / 反应预测 / 饭前建议（折叠）
-  const scene=a.scene||m.scene||'';
-  // 实际摄入区（无外壳，嵌进统一卡，用分界线分隔）
-  const nutritionSection=m.fb?`<div style="border-top:1px solid var(--border);padding:16px 20px">${summaryNutritionInner(m).inner}</div>`:'';
-  // 本餐反应预测区
-  const reaction=m.fb?getMealReactionText(m):null;
-  const reactionSection=reaction?`<div style="border-top:1px solid var(--border);padding:16px 20px">
-      <p style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px">🔮 本餐反应预测</p>
-      <p style="font-size:14px;color:var(--ink);font-weight:600;line-height:1.5">${escapeHtml(reaction.main)}</p>
-      ${reaction.sub?`<p style="font-size:12px;color:var(--ink60);margin-top:4px">${escapeHtml(reaction.sub)}</p>`:''}
-    </div>`:'';
-  // 当时的饭前建议（折叠区）
-  const adviceSection=`<details style="border-top:1px solid var(--border)">
-      <summary style="cursor:pointer;font-size:13px;font-weight:700;color:var(--accent);list-style:none;padding:14px 20px">当时的饭前建议 ▾</summary>
-      <div style="padding:0 20px 16px">${renderAdviceCard(a,{showStage:false})}</div>
-    </details>`;
+  // AI 分析内容
+  const detail=(a.detail||[]).map(d=>`<li style="font-size:13px;color:var(--ink60);padding:4px 0;list-style:none;display:flex;gap:6px"><span style="color:var(--ink30);flex-shrink:0">—</span>${d}</li>`).join('');
+  const tags=(a.tags||[]).map(t=>`<span class="chip chip-amber" style="margin-right:4px">${t}</span>`).join('');
+
+  const addBlock='';
 
   // AI 修正记录
   const corrections=m.analysis?.corrections||{};
@@ -7542,23 +7435,34 @@ function showMealDetail(id){
   const leftoverEl=m.leftoverImg
     ?`<div style="margin-top:14px"><p style="font-size:11px;font-weight:700;color:var(--ink60);margin-bottom:6px">饭后照片</p><img src="${m.leftoverImg}" style="width:100%;height:130px;object-fit:cover;border-radius:var(--rs)"></div>`:'';
 
-  // 反馈：并入基础信息卡（饭后感受作为副标题下的一行，不再单独成卡）
+  // 反馈 block
   const noFb=!m.fb;
-  const feelLine=(!noFb && m.fb.comfort)
-    ? `<p style="font-size:14px;color:var(--ink);margin-top:8px;font-weight:600">${[`${fullnessEmoji(m.fb.fullness)} ${m.fb.fullness||'—'}`,`${feelEmoji(m.fb.comfort)} ${comfortText(m.fb.comfort)||'—'}`,`${moodEmoji(m.fb.mood)} ${m.fb.mood||'—'}`].join('　·　')}</p>`
-    : '';
-  const intakeText=(!noFb && m.fb.consumedItems?.length)
-    ? m.fb.consumedItems.map(c=>`${c.name} ${Math.round(c.consumedPct*100)}%`).join(' · ')
-    : (!noFb && m.fb.afterPhotoIntakeRatio) ? `约饭前估算的 ${Math.round(m.fb.afterPhotoIntakeRatio*100)}%` : '';
-  const intakeLine=intakeText
-    ? `<p style="font-size:12px;color:var(--ink60);margin-top:6px">实际吃了：<strong style="color:var(--ink)">${escapeHtml(intakeText)}</strong></p>`
-    : '';
-  const noFbBlock=noFb
-    ? `<div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--cream);border-radius:var(--rs);padding:10px 12px">
-        <div><p style="font-size:13px;font-weight:600;color:var(--ink60)">这餐没有打分记录</p><p style="font-size:12px;color:var(--ink30);margin-top:2px">${m.autoClosedAt?'30分钟内未完成，已自动存档':'手动返回未提交'}</p></div>
+  const fbGrid=noFb?`
+    <div class="card fade" style="animation-delay:.12s;border:2px dashed var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <p style="font-size:13px;font-weight:600;color:var(--ink60);margin-bottom:2px">这餐没有打分记录</p>
+          <p style="font-size:12px;color:var(--ink30)">${m.autoClosedAt?'30分钟内未完成，已自动存档':'手动返回未提交'}</p>
+        </div>
         <button onclick="backfillFeedback(${m.id})" style="flex-shrink:0;border:none;background:var(--accent);color:#fff;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer">补录反馈</button>
-      </div>`
-    : '';
+      </div>
+    </div>`:
+    m.fb.comfort?`
+    <div class="card fade" style="animation-delay:.12s">
+      <div class="label" style="margin-bottom:10px">饭后感受</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        ${[['饱腹',m.fb.fullness||'—'],['身体',comfortText(m.fb.comfort)||'—'],['价格',m.fb.price||'—']].map(([k,v])=>`
+          <div style="background:var(--cream);border-radius:var(--rs);padding:10px 12px;text-align:center">
+            <p style="font-size:10px;color:var(--ink60);margin-bottom:3px">${k}</p>
+            <p style="font-size:14px;font-weight:700">${v}</p>
+          </div>`).join('')}
+      </div>
+      ${m.fb.consumedItems?.length?`<div style="background:var(--accent-s);border-radius:var(--rs);padding:8px 12px">
+        <p style="font-size:12px;color:var(--accent)">逐项摄入：<strong>${m.fb.consumedItems.map(c=>`${c.name} ${Math.round(c.consumedPct*100)}%`).join(' · ')}</strong></p>
+      </div>`:m.fb.afterPhotoIntakeRatio?`<div style="background:var(--accent-s);border-radius:var(--rs);padding:8px 12px">
+        <p style="font-size:12px;color:var(--accent)">实际摄入：约饭前估算的 <strong>${Math.round(m.fb.afterPhotoIntakeRatio*100)}%</strong></p>
+      </div>`:''}
+    </div>`:'';
 
   // 时间信息
   const tsDate=m.ts?new Date(m.ts).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
@@ -7566,25 +7470,27 @@ function showMealDetail(id){
 
   s.innerHTML=`
     <button onclick="renderHistory()" style="background:none;border:none;color:var(--ink60);font-size:14px;cursor:pointer;margin-bottom:14px;padding:0;font-family:var(--sans)">← 返回记录本</button>
-    <div class="card fade" style="overflow:hidden;padding:0;${noFb?'border:2.5px solid var(--accent)':'border:2.5px solid var(--green)'}">
+    <div class="card fade" style="overflow:hidden;padding-top:0;${noFb?'border:2.5px solid var(--accent)':'border:2.5px solid var(--green)'}">
       ${imgEl}
-      <div style="padding:16px 20px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px">
-          <p style="font-family:var(--serif);font-size:22px;line-height:1.3">${escapeHtml(m.dish||a.dish||a.structure||'这一餐')}</p>
+      <div style="padding-top:16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div>
+            <p style="font-weight:700;font-size:16px">${m.type} · ${tsDate}${dur?' · 吃了'+dur:''}</p>
+          </div>
           ${riskChip(a.risk)}
         </div>
-        <p style="font-size:13px;color:var(--ink60)">${[scene,m.type,tsDate,dur?'吃了'+dur:''].filter(Boolean).join(' · ')}</p>
-        ${feelLine}
-        ${intakeLine}
-        ${noFbBlock}
+        <p style="font-family:var(--serif);font-size:20px;line-height:1.3;margin-bottom:8px">${m.dish||a.structure||'这一餐'}</p>
+        <div class="risk-bar risk-${a.risk}"></div>
+        ${detail?`<ul style="margin-top:10px">${detail}</ul>`:''}
+        ${a.advice?`<div class="advice-box" style="margin-top:10px"><p style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px">吃法建议</p><p class="advice-text">${a.advice}</p></div>`:''}
+        ${tags?`<div style="margin-top:10px">${tags}</div>`:''}
+        ${addBlock}
         ${corrBlock}
         ${fromCardBlock}
         ${leftoverEl}
       </div>
-      ${nutritionSection}
-      ${reactionSection}
-      ${adviceSection}
-    </div>`;
+    </div>
+    ${fbGrid}`;
 }
 
 // ── INSIGHT ───────────────────────────────────────────────────────────────────

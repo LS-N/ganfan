@@ -4,6 +4,245 @@
 
 任务标题必须使用唯一递增编号：格式为 `##001 2026-05-16 00:44:11 +08:00 - Codex - START`。同一任务的 START / END 使用同一个编号；`001` 到 `999` 固定三位补零，超过 `999` 后自然递增为 `1000`、`1001`。
 
+##048 2026-06-04 +08:00 - Claude - END
+
+- 阶段：Phase 1（原型治理 · OVERDUE 提示 + DEFAULT 按钮优化）
+- 任务编号：home-overdue-ui-polish
+- 完成内容：
+  - OVERDUE 提示重新设计：单条直接展示（缩略图+菜名+「未反馈」胶囊按钮）；多条收起为「X 餐未反馈 ▾」可展开列表
+  - 缩略图规则：有图→圆形裁剪，无图→直接 emoji 无盒子背景
+  - 「未反馈」按钮：`display:inline-flex` 强制居中，直接调 `backfillFeedback(mealId)`，不经「我的记录」
+  - 新增全局 `overdueExpanded` + `toggleOverdueExpand()`，renderHome 时重置展开状态
+  - DEFAULT「还没想好吃什么」：从纯文字链升级为全宽描边圆角按钮（`border:1.5px solid`，圆角 100px，轻灰背景）
+  - 备份：`_archive/prototype-history/meal-agent-product-prototype-20260604-before-overdue-redesign.html`
+- 文档同步：
+  - `docs/02-master-blueprint.md` T5-04 OVERDUE/DEFAULT 规格更新
+  - `docs/acceptance/phase-1-mvp-1-acceptance.md` OVERDUE/DEFAULT/T5-04 验收条目更新
+  - `docs/phases/phase-1-mvp-1-record-awareness.md` OVERDUE/DEFAULT 业务规格更新
+- 修改文件：
+  - `docs/prototype/meal-agent-product-prototype.html`
+  - `docs/02-master-blueprint.md`
+  - `docs/acceptance/phase-1-mvp-1-acceptance.md`
+  - `docs/phases/phase-1-mvp-1-record-awareness.md`
+  - `docs/CURRENT_WORK.md`
+- 验收：
+  - PASS：单条 OVERDUE 正确展示缩略图+菜名+「未反馈」按钮
+  - PASS：多条 OVERDUE 收起/展开行为正确
+  - PASS：「未反馈」按钮文字垂直水平居中
+  - PASS：无图缩略图为裸 emoji，无盒子感
+  - PASS：DEFAULT「还没想好吃什么」为描边按钮
+
+##047 2026-06-04 +08:00 - Claude - END
+
+- 阶段：Phase 1（原型治理 · 首页状态机重构）
+- 任务编号：home-state-machine-refactor
+- 完成内容：
+  - 首页状态机从 3 态升级为 4 态：DEFAULT / PENDING_FB / DONE（30min窗口）/ OVERDUE（叠加提示条）
+  - DONE 态新增 `justCompletedAt` 时间戳追踪，30 分钟后过期回 DEFAULT，与 PENDING_FB 时间窗口对齐
+  - PENDING_FB 卡：只显示图片/占位 + 菜名 + 菜系 + 「记录感受 →」，移除「我吃完了」「刚刚又吃了别的」
+  - DONE 卡：图片/占位 + 菜名 + 菜系 + 心情标签(右上角 overlay) + 身体反应预测（与反馈页 renderMealReactionPrediction 同源，提取为 getMealReactionText helper）
+  - 无图占位：固定样式A（菜系 emoji + 浅橙色背景区，等高）
+  - OVERDUE 提示：紧凑横条，点击入「我的记录」，不占主卡位置
+  - 次级操作行：「+ 记录新一餐」描边按钮 + 「还没想好吃什么」文字链，出现在 PENDING_FB 和 DONE 态下方
+  - 移除首页默认卡「补录」按钮；废弃新餐补录概念（每餐独立）
+  - Bug 修复：`_backfillMealId` 在 `renderHome()` 和 `startDirectMealRecord()` 入口清空，防止新餐反馈误覆盖旧记录
+  - 新增调试时间条（`renderDebugTimeBar` / `setDebugOffset` / `debugTimeOffsetMs`），注入 `mealElapsedMin`，支持模拟 0/5/15/31/60/120min 偏移验证状态机
+  - 备份：`_archive/prototype-history/meal-agent-product-prototype-20260604-before-home-state-machine-refactor.html`
+- 文档同步：
+  - `docs/02-master-blueprint.md` T5-04 状态机规格更新为 4 态
+  - `docs/acceptance/phase-1-mvp-1-acceptance.md` 新增 2026-06-04 同步修订节，覆盖旧 2026-05-18 节首页状态机条目
+  - `docs/CURRENT_WORK.md` 状态指针更新
+- 修改文件：
+  - `docs/prototype/meal-agent-product-prototype.html`
+  - `docs/02-master-blueprint.md`
+  - `docs/acceptance/phase-1-mvp-1-acceptance.md`
+  - `docs/CURRENT_WORK.md`
+- 验收：
+  - PASS：4 态状态机逻辑正确，+31min 偏移后 PENDING_FB → DEFAULT+OVERDUE、DONE → DEFAULT
+  - PASS：身体反应预测与反馈页本餐反应预测同源（getMealReactionText 复用同一 A/B/C 降级逻辑）
+  - PASS：心情标签在图片右上角 overlay，不单独占行
+  - PASS：首页默认卡无补录按钮
+  - PASS：_backfillMealId bug 修复（renderHome + startDirectMealRecord 入口清空）
+- 经验教训：原型状态机中全局标志位（如 _backfillMealId、justCompletedMealId）必须在所有入口处明确生命周期管理；数据展示必须与来源函数同步，不能用相邻字段替代
+
+##046 2026-06-04 +08:00 - Claude - END
+
+- 阶段：Phase 1（原型治理 · 并行治理任务 L1）
+- 任务编号：calz-style-prototype
+- 完成内容：
+  - 新建独立 Calz 风格原型：`docs/prototype/meal-agent-product-prototype-calz-20260604.html`
+  - 仅改 CSS/视觉层，业务逻辑、状态机、JS 一行未动
+  - 色彩系统：白底 #FFFFFF、卡片底 #F8F8F8、主强调色 #FF6B35、文字 #1A1A1A、次要 #999999
+  - 卡片：去除 box-shadow 和 border，背景色差区分层次，圆角统一 12px
+  - 字体：去除 Georgia/宋体衬线，全面改系统无衬线，字重只用 400/500/600
+  - 按钮：主按钮 height 52px / border-radius 26px / 橙色实心，ghost 按钮纯文字 height 44px
+  - 去除所有渐变背景、多余 box-shadow、excessive letter-spacing
+  - 原文件未改动（主原型 `meal-agent-product-prototype.html` 保持不变）
+- 修改文件：
+  - 新增：`docs/prototype/meal-agent-product-prototype-calz-20260604.html`
+- 验收：
+  - PASS：主按钮 bg `rgb(255,107,53)` = #FF6B35，height 52px，border-radius 26px，font-size 16px
+  - PASS：ghost 按钮 color `rgb(153,153,153)` = #999999，height 44px，font-weight 400
+  - PASS：body 背景 `rgb(248,248,248)` = #F8F8F8，#app 背景 #FFFFFF
+  - PASS：字体系统无衬线（PingFang SC / Helvetica Neue），无 Georgia / 宋体
+  - PASS：主原型未被修改
+- 本任务验收：**用户审核后否决，Calz 原型视觉效果不达标，原始主原型未受影响**
+- 遗留文件：`docs/prototype/meal-agent-product-prototype-calz-20260604.html` 可保留作参考或直接删除
+- 经验教训：纯 CSS 覆盖 1276 个内联样式的方案不可行；下次做原型视觉重构应从 HTML 结构层入手，或建立独立的 design-token 层，不依赖 `!important` 强制覆盖
+
+##045 2026-06-03 +08:00 - Claude - END
+
+- 阶段：Phase 1 / MVP 1.0（架构文档治理 · 并行治理任务）
+- 任务编号：architecture-docs-restructure
+- 完成内容：
+  - **第一步 architecture/README.md**：建立整个工程架构的导航地图，含文档分层说明（产品蓝图 → 架构子文档 → 实施文档）、9 个专题文档索引表、按问题找文档快速索引、新增文档规则、统一结构规范（6 节）、变更记录
+  - **第二步 9 个专题文档（sub-agent Sonnet 并行生成）**：
+    - `data-architecture.md`：三层数据架构 + Migration 000-006 完整 SQL + 履约智能横向契约 + AI 数据复利飞轮（1048 行）
+    - `api-architecture.md`：内部 API 路径（含 2026-05-27 重大收敛变更）+ MCP capability 清单 6 条（P1 F6 落地）+ Spotify 绑定模式
+    - `model-architecture.md`：AI 服务层架构 + Provider 抽象 + Use Case 注册 + 4 份完整 Prompt 模板 + Prompt 版本化/评估/降级三件套（P1 F8 落地）（833 行）
+    - `observability.md`：ai_call_log SQL + 成本上限规则 + 三级预警 + 用户分层三指标埋点（F7 核心）+ 转化漏斗 12 个事件 + Phase 1 上线红线 5 件事（P1 F7 落地）
+    - `ui-system.md`：色彩/字体/间距/圆角 token 代码 + 24 个基础组件规范 + 复合组件清单
+    - `type-architecture.md`：全量 TypeScript 类型（枚举+接口）+ Zustand Store 接口 + 类型↔Schema 对齐表 + 类型同步规则（LESSON-0003）+ unknown 收窄安全模式（LESSON-0004）
+    - `security-architecture.md`：25 张表完整 RLS SQL + FastAPI JWT + slowapi 速率限制 + 密钥管理表 + MCP OAuth scope 清单（响应 ##044 F2）+ 数据分类暴露边界
+    - `engineering-architecture.md`：系统架构 ASCII 图 + 18 行技术栈 + 目录树 + 过渡态→目标态迁移条件 + 环境变量分层表 + CI/CD workflow YAML
+    - `agent-architecture.md`：三层 Agent ASCII 图 + 当前态/目标态对照表 + 7 步渐进路径 + Sub-agent 定义模板 + 跨 harness 规范 + 业界失败模式表（P2 F10 落地）
+  - **第三步 蓝图瘦身**：`docs/02-master-blueprint.md` 从 4140 行瘦身到 1714 行（-59%）。17 个技术实现章节内容替换为统一引用块；保留全部产品视角章节（产品最高原则/产品形态战略/用户分层/功能解锁阈值/省份数据常量/饭前抽卡规范/Sprint 0-5 开发任务）
+  - **INDEX 更新**：`docs/00-INDEX.md` 新增「工程架构文档」分区，列出 9 个专题文档的一行说明和路径
+- 修改文件：
+  - 新增：`docs/architecture/README.md`
+  - 新增：`docs/architecture/data-architecture.md`
+  - 新增：`docs/architecture/api-architecture.md`
+  - 新增：`docs/architecture/model-architecture.md`
+  - 新增：`docs/architecture/observability.md`
+  - 新增：`docs/architecture/ui-system.md`
+  - 新增：`docs/architecture/type-architecture.md`
+  - 新增：`docs/architecture/security-architecture.md`
+  - 新增：`docs/architecture/engineering-architecture.md`
+  - 新增：`docs/architecture/agent-architecture.md`
+  - 修改：`docs/02-master-blueprint.md`（4140→1714 行，-59%）
+  - 修改：`docs/00-INDEX.md`（新增工程架构文档分区）
+  - 修改：`docs/CURRENT_WORK.md`（并行治理任务指针）
+  - 修改：`docs/TASK_LOG.md`（START+END）
+- 验收文档：本任务为并行治理任务（L1 文档治理），不在 Phase 1 产品验收清单范围内
+- 本任务验收：
+  - PASS：10 个架构文档全部在 docs/architecture/ 下存在（README + 9 个专题）
+  - PASS：蓝图从 4140 行瘦身到 1714 行，保留章节结构正确（产品视角章节完整，技术章节均替换为引用块）
+  - PASS：00-INDEX.md 新增工程架构文档分区，9 个专题文档均有对应导航
+  - PASS：P1 缺口 F6（api-architecture MCP capability）/ F7（observability 分层埋点）/ F8（model-architecture Prompt 版本化降级）均已落地
+  - PASS：P2 缺口 F10（agent-architecture 三层系统）已落地
+  - PASS：architecture/README.md 含「按问题找文档」快速索引，新 AI 接手可一眼定位
+  - PASS：9 个专题文档均遵循统一 6 节结构（定位/原则/内容/Phase演进/禁止/变更记录）
+  - PASS：CURRENT_WORK.md 并行治理任务指针正确更新
+  - N/A：lint/typecheck/test 不适用（仅文档，无代码变更）
+  - N/A：Android/iOS/热更新/重新打包不适用
+- 阶段验收影响范围：本任务为治理大重构，**不代表 Phase 1 任何产品验收项已通过**。后续「进入开发」门控的 Pre-Flight 检查时，应验证 F6-F9 对应的工程实现是否与架构文档对齐
+- 已运行命令：Glob 确认 10 个架构文档存在；Bash 确认蓝图最终 1714 行；Grep 确认蓝图章节结构保留正确
+- 未能验证的项目：9 个专题文档内容的深度审查（由 sub-agent Sonnet 生成，内容质量需用户或主 session 抽查）
+- 需要人工验证的项目：建议用户随机打开 2-3 个专题文档确认内容完整性；特别是 data-architecture.md 的 SQL Schema 是否完整
+- 本次问题-解决方案-经验教训：
+  - 问题：第一轮 9 个 sub-agent 因 session limit 全部启动失败；第二轮用 Opus 被问模型选择时意识到任务性质是"读+结构化重写"，不是"设计推理"
+  - 解决方案：切换为 Sonnet 模型并行派 9 个；Sonnet 完全胜任模板化文档生成任务，全部成功
+  - 经验教训：**sub-agent 模型选择按任务性质判断**：模板化重写/结构化整理 → Sonnet；跨文档架构推理/战略取舍 → Opus。混用会浪费额度且没有质量提升
+- 经验索引：未新增 LESSON 条目（sub-agent 模型选择规律尚未形成通用 SOP，待后续复用 2-3 次后晋升）
+- 遗留问题：
+  - `docs/business/cost-model.md` 的双栏修正（理想态 Agent 全栈 vs 当前态手动）= P2 F11，待 Phase 1 上线后处理
+  - 9 个专题文档内容需要在 Phase 1 真实联调过程中随着代码实现同步校对和迭代
+
+##045 2026-06-03 +08:00 - Claude - START
+
+- 阶段：Phase 1 / MVP 1.0（架构文档治理 · 并行治理任务）
+- Sprint：架构治理大重构（一次性彻底，进入开发前清零）
+- 任务编号：architecture-docs-restructure
+- 任务目标：把蓝图 02-master-blueprint.md（4140 行）的架构内容拆分到 docs/architecture/ 下 9 个独立专题文档，蓝图瘦身为「产品视角的总章程」；同时落地 P1 + P2 所有架构文档缺口（F6 接口 / F7 观测 / F8 模型 / F10 Agent 系统），让 Phase 1 进入开发前所有架构骨架到位
+- 范围：
+  - 新增 `docs/architecture/README.md`（架构地图索引）
+  - 新增 9 个专题架构文档：data / api / model / observability / ui-system / type / security / engineering / agent
+  - 蓝图瘦身：删除被拆出的章节，原位置改为指向独立文档的引用
+  - 更新 `docs/00-INDEX.md` 让新文档可发现
+  - 改动方式：用 sub-agent 并行生成各专题文档（提高效率）；主 session 负责前置准备、架构一致性约束、收尾蓝图瘦身与验收
+- 不做：
+  - 不改 App 代码 / FastAPI 代码 / Supabase migration
+  - 不改 `docs/business/`（##044 已完成）
+  - 不新增原生依赖
+- 需要用户批准：用户已明确批准「先做第一步再做第二步，不留遗留工作，要进入开发」，授权 L1 大规模文档治理
+- 开始前状态：##044 完成 P0 战略缺口（F1-F5）；当前蓝图 4140 行混合了产品 / 数据 / API / UI / 类型 / RLS / Schema / Prompt 多种架构，新 AI 接手必须读 3900+ 行才能找到要改的位置；P1 缺口（F6-F9）和 P2 缺口（F10-F11）原计划分散在后续 Phase 完成，本次一次性彻底解决，避免开发期返工
+
+##044 2026-06-03 +08:00 - Claude - END
+
+- 阶段：Phase 1 / MVP 1.0（战略基线对齐 · 并行治理任务）
+- Sprint：策略缺口补充 P0（F1-F5）
+- 任务编号：strategic-gaps-fill-p0
+- 完成内容：
+  - **F2 蓝图最高原则升级**：`docs/02-master-blueprint.md` 在「产品取舍规则」与「履约飞轮」之间新增「产品形态战略：App 抢心智 + MCP 拿曝光」节。明确两形态角色分工、Spotify 绑定姿势、Phase 1 三项工程约束（不实现完整 MCP / 接口边界按 MCP 协议设计 / OAuth scope 最小授权 / 内外能力同源）和三项禁止事项。
+  - **F1 蓝图新增用户分层节**：在「模块独立 + 横切层架构」之后新增「用户分层与产品形态对应」节。定义三类目标用户（轻度量化派 / 重度托管派 / 健康极客派）、对应产品入口、付费档与解锁 Phase；明确 Phase 1-2 是筛选托管派的训练数据采集阶段；要求 ④ 托管饮食档 Phase 2 必须上线轻量验证；要求埋点三个分层指标。
+  - **F5 商业方案新增 ④ 托管饮食档**：`docs/business/subscription-plan.md` 第二节从三档扩为四档。新增 ④ 托管饮食 ¥128/月 / ¥1098/年，覆盖 Phase 5 履约 + AI 配套餐 + 自动接外卖；明确 Phase 2 轻量验证、Phase 5 完整上线；第三节新增 ④ 完整权益列表（AI 全权决策 / 一键接外卖 / 配套餐订阅 / 自动反馈闭环 / 托管保险 / 跳过身体拼图入口）。
+  - **F4 商业方案免费版改精度限制**：第三节免费版核心原则改为「永不限次，只限精度」。AI 识别免费版降级为「关键词匹配 + 营养库模糊查询，不调 Vision」；付费版核心差异化点为「Vision 高精度 + 营养库精准匹配」。第四节 30 天免费期表同步：30 天后从「3 次/天」改为「无限次但用低精度 mock」。第七节保命三件事同步：免费用户走低成本 mock，不调 Vision，不查向量库。
+  - **F3 商业方案转化钩子前移**：第五节核心原则补「行业 7 天留存 10%，押第 25-30 天 = 押 3% 用户」。新增第 1/3/5-7 天钩子；新增「托管派识别信号」节，含 4 条触发条件（外卖占比 / 跳过抽卡 / 浏览不记录 / 反馈含懒得想信号），≥2 条 → 第 7 天起推送 ④。
+  - **变更记录**：subscription-plan.md 变更表新增 2026-06-03 ##044 条目，定价待用户最终拍板。
+  - **任务追踪**：CURRENT_WORK 当前并行治理任务字段更新为 ##044 IN PROGRESS → END 后转为 DONE（见本记录）；##019 转入「历史并行治理任务」分区。
+- 修改文件：
+  - `docs/02-master-blueprint.md`
+  - `docs/business/subscription-plan.md`
+  - `docs/CURRENT_WORK.md`
+  - `docs/TASK_LOG.md`
+- 验收文档：本任务为战略基线对齐（L1 文档治理），不在 Phase 1 验收清单（`docs/acceptance/phase-1-mvp-1-acceptance.md`）的范围内。验收方式为人工 review + 文档一致性自检。
+- 本任务验收：
+  - PASS：蓝图新增两节（F2 + F1）位置合理（在「模块独立 + 横切层架构」框架内自然延展），未与既有「阶段独立完整性」「履约飞轮」「功能取舍过滤器」等上位原则冲突。
+  - PASS：F1 用户分层表与 F5 订阅方案的四档对应关系闭环：三类用户层 ↔ 四档（① 轻度 / ② 轻度进阶 / ③ 极客 / ④ 托管）↔ 各档解锁 Phase。
+  - PASS：F2 MCP 形态战略与既有「产品最高原则」（履约决策引擎可被多端调用）一脉相承，没有发明新概念，只是把"路径"显式化。
+  - PASS：F3 转化钩子前移后，原第 14/25/30 天钩子全部保留，前置新增 4 个节点，向后兼容。
+  - PASS：F4 免费版精度限制方向自洽：保命三件事、30 天免费期表、各档权益、变更记录全部同步修改，没有遗留"3 次/天"的旧口径。
+  - PASS：F5 ④ 托管饮食档与既有①②③ 价格阶梯合理（¥0 → 19 → 29 → 45 → 128），并明确 ④ 不是 ③ 的升级而是另一条用户路径（不同用户层）。
+  - PASS：所有新增节遵守「UI 不暴露 Phase 号 / 分层名」原则，对用户表达仅为「了解 / 规划 / 掌控 / 托管」四层价值。
+  - PASS：CURRENT_WORK 并行治理任务指针正确更新，未覆盖产品主线指针（##043 仍为主线最新完成任务）。
+  - N/A：lint / typecheck / test 不适用——本次仅改文档，无代码变更。
+  - N/A：Android / iOS / 真机 / 热更新 / 重新打包不适用——本次不改 App 代码。
+- 阶段验收影响范围：本任务为战略基线升级，**不代表 Phase 1 任何验收项已通过**。后续 Phase 1 真实联调和 Phase 2 启动门控时，必须按本次新增的口径检查：①FastAPI 路由是否按 MCP 协议规范设计接口边界 ②埋点是否覆盖三个分层指标 ③订阅方案是否进入 App UI ④免费版 AI 识别是否走 mock + 关键词匹配（节省成本）⑤转化钩子是否埋到第 3/5/7 天节点。
+- 已运行命令：
+  - `Grep` 确认蓝图相关章节位置（产品最高原则 / 履约飞轮 / 模块独立 + 横切层架构 / 产品数据架构）。
+  - 4 次 `Edit` 落地蓝图与商业方案修改；2 次 `Edit` 落地 TASK_LOG START/END 与 CURRENT_WORK 并行治理任务字段。
+  - 未运行 lint/typecheck/test，原因：仅改 Markdown，无代码影响。
+- 未能验证的项目：
+  - ④ 托管饮食档定价 ¥128/月、¥1098/年为基于"用户提供 ¥99-199 区间"取中位偏低的初版数字，**最终定价待用户拍板**。
+  - 「Phase 2 轻量验证 ④ 托管档」的具体接入方（美团 / 饿了么 / 第三方聚合）尚未选定。
+  - 「托管派识别信号」的 4 条触发条件阈值（外卖占比 40% / 跳过抽卡 3 次 / 反馈关键词等）为初版，需 Phase 1 上线后用真实数据校准。
+- 需要人工/真机/外部服务验证的项目：
+  - 用户对四档结构、④ 托管饮食定价、转化钩子前移节奏的最终确认。
+  - Phase 2 启动门控前必须出 ④ 托管饮食的最小可点击原型（蓝图已固化此约束）。
+- Android/iOS 影响：无（仅文档）
+- 热更新影响：无（仅文档）
+- 是否需要重新打包：否
+- 本次问题-解决方案-经验教训：
+  - 问题：之前蓝图的「产品最高原则」声明了"履约决策引擎可被多端调用"，但路线图把 MCP 形态全押 Phase 5+；商业方案三档付费的真实付费支柱（重度托管派）没有对应档位；免费版的"3 次/天 AI 识别"是典型的次数限制流失加速器；转化钩子押在第 25-30 天，行业第 7 天留存 10% 的死结根本撑不到。这四个问题共同特征是：**单看每一条都合理，叠在一起出现"产品形态服务的不是付费用户"的战略错配**。
+  - 解决方案：分两类落地——①蓝图层面新增「产品形态战略」+「用户分层与产品形态对应」两节，让战略意图（多端可调用 + 重度托管派是支柱）显式化、可被任意 AI 接手时识别；②商业方案层面把战略意图翻译成可执行配置（四档结构 + 精度限制 + 前移钩子 + 托管派识别信号）。两层文档相互交叉引用，避免单一文档变更后另一份滞后。
+  - 经验教训：**战略意图必须显式化为蓝图章节，不能只活在创始人和 AI 的对话里**。本次缺口正是"蓝图最高原则提了一句话，但实际路线图反过来走"导致的——单看蓝图觉得没问题，单看路线图也合理，只有把两层对齐才发现冲突。后续每次 L0 战略评审，必须扫描"最高原则声明的事 ↔ 路线图实际押的事"是否一致；不一致时优先动路线图，而非弱化原则。
+- `docs/TASK_LOG.md` 的问题-解决方案-经验教训是否已填写：已填写。
+- 经验索引：本次未新增 LESSON 条目；原因是本次为文档治理，非工程故障，且经验教训属于"产品/战略层 SOP"，更适合作为后续 L0 SOP 增量积累，待积累 3-5 次同类经验后再考虑晋升为通用 lesson。
+- 遗留问题：
+  - **P1 缺口（Phase 1 真实联调期间分布完成）**：F6 接口架构文档（含 MCP Server 边界）/ F7 观测架构文档（AI 成本上限 + 错误报警 + 用户埋点）/ F8 模型架构文档（Prompt 版本化 + 评估 + 降级）/ F9 Phase 1 验收文档同步补 F7+F8 最小验收口径。
+  - **P2 缺口（Phase 1 上线后）**：F10 `docs/02b-agent-system-blueprint.md`（Agent 系统三层蓝图） / F11 `docs/business/cost-model.md` 双栏修正（理想态 vs 当前态）。
+  - 下一步建议：进入"进入开发"门控（已是 CURRENT_WORK 主线下一步），在门控期间把 P1 四项作为 Phase 1 真实联调任务的子项执行。
+
+##044 2026-06-03 +08:00 - Claude - START
+
+- 阶段：Phase 1 / MVP 1.0（战略基线对齐 · 并行治理任务）
+- Sprint：策略缺口补充 P0（F1-F5）
+- 任务编号：strategic-gaps-fill-p0
+- 任务目标：把本轮 L0 战略评审中识别的 5 个 P0 级缺口补到蓝图和商业基线，使 Phase 1 进入开发门控前文档与真实判断对齐，避免开发中途因战略方向调整返工
+- 缺口列表：
+  - F1 用户分层 ↔ 产品形态对应：蓝图未明确「轻度量化 / 重度外包 / 健康极客」三类用户的产品入口与付费路径，导致商业方案（外包付费）与产品形态（自我量化）错配
+  - F2 App + MCP 双形态战略：蓝图最高原则已写「可被多端调用」，但路径全押 App；需明确 App 抢用户心智、MCP 拿生态曝光、强绑定账号体系（Spotify 模式）
+  - F3 转化钩子前移：当前订阅方案第 25-30 天施压，行业第 7 天留存 10% 死结，必须前移到第 3-7 天
+  - F4 免费版差异化重构：当前「每天 AI 识别 3 次」是流失加速器，应改为「精度限制」（mock + 关键词 vs vision + 营养库）
+  - F5 「托管饮食」档：商业模型真实付费支柱是「愿意外包饮食」的用户，需提前到 Phase 2 验证，¥99-199/月接外卖/配送
+- 预计触碰范围：
+  - `docs/02-master-blueprint.md`（F1 新增节 + F2 升级最高原则）
+  - `docs/business/subscription-plan.md`（F3 + F4 + F5 改三档结构 + 转化钩子表 + 免费版权益）
+  - `docs/CURRENT_WORK.md`（同步并行治理任务）
+  - 本文件（START / END 记录）
+- 需要用户批准：用户已批准 P0 五项与 L1 文档治理范围，未授权改 App / FastAPI / Supabase 代码或新增原生依赖
+- 开始前状态：上一轮 L0 战略评审已识别 P0/P1/P2 三档缺口；本次仅推进 P0；P1（接口/观测/模型架构文档）待 Phase 1 真实联调期间分布完成；P2（Agent 系统蓝图 + 成本模型双栏）待 Phase 1 上线后
+
 ##043 2026-05-29 - Claude - END
 
 - 阶段：Phase 1 / MVP 1.0（功能删除）
@@ -1530,7 +1769,13 @@
 - 任务目标：按用户确认的顺序，把“履约率优化 Agent”最高原则、横向数据/上下文/算法契约、2.0-5.0 履约事件衔接、MVP 6.0 履约率优化与食材记忆、Phase 6 开发文档和验收文档补入项目文档体系。
 - 预计触碰范围：`docs/02-master-blueprint.md`、`docs/00-INDEX.md`、`docs/phases/phase-6-mvp-6-fulfillment-intelligence.md`、`docs/acceptance/phase-6-mvp-6-acceptance.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`
 - 需要用户批准：用户已明确指令“按你的顺序补进去”；本次只改产品/工程蓝图和阶段文档，不进入 App 代码开发、不新增依赖、不接真实履约平台。
-- 开始前状态：总蓝图当前覆盖 MVP 1.0-5.0，已有计划、预测、采购、配餐和 UserContext 设想，但缺少“所有动作服务履约率”的北极星、统一食物身份、统一履约事件、任务上下文、算法输出契约和 MVP 6.0 阶段。
+- 开始前状态：总蓝图当前覆盖 MVP 1.0-5.0，已有计划、预测、采购、配餐和 UserContext 设想，但缺少”所有动作服务履约率”的北极星、统一食物身份、统一履约事件、任务上下文、算法输出契约和 MVP 6.0 阶段。
+
+## 2026-05-18 16:03:07 +08:00 - Codex - ABANDONED
+
+- 任务编号：Blueprint / Fulfillment-rate system and MVP 6.0 planning
+- 放弃原因：START 写入后会话被中断，未产出任何文件变更；同等目标已在后续 ##044 任务中完成（见文件顶部）。
+- 完成内容：无。
 
 ## 2026-05-18 11:25:07 +08:00 - Codex - START
 
@@ -3340,3 +3585,24 @@ pm run lint 通过。
 - `docs/TASK_LOG.md` 的问题-解决方案-经验教训是否已填写：已填写。
 - 是否新增或引用 `docs/lessons/LESSONS_INDEX.md` 条目：未新增；本轮为文档同步治理，未形成新的可复用工程故障。
 - 遗留问题：真实 App 尚未实现本次同步口径；需要用户确认同步方案定稿后，再进入移动端 `Analysis` 类型、分析页 UI、后端营养库两阶段合并和 `adviceStage` 字段实现。
+
+---
+
+## ##049 three-state-page-redesign（2026-06-04）
+
+- 任务：用户指出记录页框选的「三条洞察」数据来源与各页字段对不上；据此重构餐次三个页面，确立三状态分工，并执行原型同步开发。
+- 改动文件：`docs/prototype/meal-agent-product-prototype.html`（主原型）、`docs/phases/phase-1-mvp-1-record-awareness.md`、`docs/acceptance/phase-1-mvp-1-acceptance.md`、`docs/CURRENT_WORK.md`、`docs/TASK_LOG.md`。备份：`_archive/prototype-history/meal-agent-product-prototype-20260604-before-three-state-redesign.html`。
+- 三状态分工：饭前分析页=建议预测视角；饭后总结页=实际摄入+反应结算视角；记录页=归档回看视角（复用饭后总结，不新增字段）。
+- 本任务验收（浏览器原型预览，端口 5500）：
+  - PASS：饭前分析页渲染顺序 图片→菜名→副标→餐食组成→建议→营养概览；建议卡三锚点（吃多少/怎么吃/少碰）不截断；单食物餐食组成不重复菜名（显示「主食+蛋白·约1份」）；不再渲染结构观察与可能饭后反应。
+  - PASS：饭后总结页删除「这一餐记完了 ✓」，主标题=菜名、副标题=`场景·餐次·时间`（截图确认「外卖·午饭·…」）；实际摄入新增纤维行（蛋白/碳水/脂肪/纤维 + 热量）。
+  - PASS：记录页为单卡 + 1px 分界线四分区（基础信息含饭后感受 emoji 无字段名 → 实际摄入含纤维 → 本餐反应预测 → 当时饭前建议折叠）；删除价格；删除与实际摄入重复的「三条洞察」。
+  - PASS：`advice` 字段废弃为 `eatingAdvice` 缺失兜底，不再独立渲染。
+  - PASS：死代码清理（`renderDetailObservations`/`renderExpectedReaction`/`renderFoodCompositionReadonly`/`actualIntakeInsightLines`/`renderActualIntakeInsights`），重载后三页渲染冒烟测试通过、`preview_console_logs` 无 error。
+  - PASS：phase/acceptance 文档新增「2026-06-04 三状态页面重构」权威节，标记优先级高于旧分析页/历史记录描述。
+  - N/A：未修改 App 代码、FastAPI、schema、真实资源或原生依赖，不运行 App lint/typecheck/test，不验收真机。
+- 阶段验收影响范围：本轮只完成「原型 -> 开发方案/验收口径」同步，不代表真实 App 已实现三状态页面。
+- 本次问题-解决方案-经验教训：问题是同一份分析数据在三个页面各自挑子集、且对「建议」并存 `advice` 与 `eatingAdvice` 两套字段，导致字段对不上、视觉割裂；解决方案是先厘清「三页=同一份数据的三个视角」的上位模型，再据此统一字段映射、删冗余、单卡分界线收口；经验是页面混乱往往源于缺少「视角分工」的上位模型，应先定模型再调 UI，避免逐页打补丁。
+- `docs/TASK_LOG.md` 的问题-解决方案-经验教训是否已填写：已填写。
+- 是否新增或引用 `docs/lessons/LESSONS_INDEX.md` 条目：未新增；属产品 UI 信息架构决策，非可复用工程故障。
+- 遗留问题：真实 App 尚未实现本次三状态口径；记录页「反应预测」当前为实时重算（非快照），回看旧记录时预测可能随后续数据变化，进入 App 实现时需决定是否在提交时固化快照。

@@ -213,7 +213,7 @@ supabase/
 
 - L0 只读评审 / 问答：读取与问题直接相关的入口文档和代码；不改文件时不新增 `TASK_LOG`，但最终回复必须说明未新增记录的原因。
 - L1 文档治理 / 原型小改：读取 `00-INDEX`、`CURRENT_WORK`、`TASK_LOG`、`LESSONS_INDEX` 和目标文件；若不涉及真实资源，可不读完整 `RESOURCE_REGISTRY`；必须写 START / END。
-- L2 App 业务代码 / 数据层：执行默认完整流程，读取蓝图、阶段文档、验收文档和相关代码；至少运行对应 lint/typecheck/test 或说明不能运行的原因。
+- L2 App 业务代码 / 数据层：执行默认完整流程，读取蓝图、阶段文档、验收文档和相关代码；至少运行对应 lint/typecheck/test 或说明不能运行的原因。**改动前必须识别本次涉及的架构域，并读取对应专题文档**——查表入口：`docs/architecture/README.md`「三、按问题找文档」。改接口读 `api-architecture.md`；改数据/Schema 读 `data-architecture.md`；改 AI/Prompt 读 `model-architecture.md`；改 UI 读 `ui-system.md`；改类型读 `type-architecture.md`；改安全/RLS 读 `security-architecture.md`；改工程/CI 读 `engineering-architecture.md`。**不得跳过对应架构文档直接写代码**。
 - L3 原生依赖 / 数据库 / AI provider / 真实联调 / 部署：执行默认完整流程，并强制读取 `RESOURCE_REGISTRY`、确认用户授权、记录真实资源验收口径；不得回显真实密钥。
 - 并行流程治理任务不得覆盖 `docs/CURRENT_WORK.md` 的当前产品任务指针；应写入“当前并行治理任务”或交接摘要，完成后恢复为无并行治理任务。
 

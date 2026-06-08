@@ -4,7 +4,27 @@
 
 ## 总蓝图
 
-- `docs/02-master-blueprint.md`：唯一长期产品与工程蓝图，覆盖 Sprint 0 到 MVP 5.0。
+- `docs/02-master-blueprint.md`：唯一长期**产品**蓝图（产品视角：做什么 / 为谁做 / 为什么）。覆盖 Sprint 0 到 MVP 5.0。技术实现细节已拆分到 `docs/architecture/` 下专题文档。
+
+## 工程架构文档
+
+> **AI 接手开发任务时**：先查 `docs/architecture/README.md`「三、按问题找文档」，按改动类型定位必读的专题文档，**不得跳过直接写代码**。架构地图是 L2+ 任务的强制前置步骤。
+
+- `docs/architecture/data-architecture.md`：三层数据架构 + 完整 Schema + 履约智能横向契约 + AI 数据复利飞轮
+- `docs/architecture/api-architecture.md`：内部 API 规范 + MCP Server 对外能力边界（capability 清单 + OAuth scope）
+- `docs/architecture/model-architecture.md`：AI 服务层 + Provider 抽象 + Prompt 版本化 + 评估 + 降级策略
+- `docs/architecture/observability.md`：AI 成本控制 + 错误报警 + 用户行为埋点（Phase 1 上线红线）
+- `docs/architecture/ui-system.md`：色彩/字体/间距 token + 基础组件规范 + 复合组件清单
+- `docs/architecture/type-architecture.md`：TypeScript 类型契约 + Zustand Store 接口 + 类型同步规则
+- `docs/architecture/security-architecture.md`：Supabase Auth + 完整 RLS + FastAPI 安全 + 密钥管理 + MCP OAuth scope
+- `docs/architecture/engineering-architecture.md`：系统架构图 + 技术栈 + 仓库结构 + CI/CD + 开发规范
+- `docs/architecture/agent-architecture.md`：三层 Agent 系统（对外能力层/用户面/后端群）+ 渐进路径
+
+## 商业基线
+
+- `docs/business/subscription-plan.md`：付费订阅方案——30 天免费 + 三档订阅、转化钩子、拉新续费。
+- `docs/business/cost-model.md`：六阶段开发+运营成本模型（人力=¥0 前提）、滚动供养模型。
+- `docs/business/break-even-monitoring.md`：盈亏平衡监测——单位经济、四指标、心跳仪表盘、Agent 自动响应与三级预警。
 
 ## AI 工作手册
 
