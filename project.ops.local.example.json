@@ -1,0 +1,9 @@
+{
+  "projectOpsRoot": "V:\\Dev\\tools\\project-ops",
+  "toolCommands": {
+    "npm": "npm"
+  },
+  "secretPatterns": [
+    "PRIVATE_MACHINE_ONLY_PATTERN_EXAMPLE"
+  ]
+}

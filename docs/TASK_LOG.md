@@ -4,6 +4,82 @@
 
 任务标题必须使用唯一递增编号：格式为 `##001 2026-05-16 00:44:11 +08:00 - Codex - START`。同一任务的 START / END 使用同一个编号；`001` 到 `999` 固定三位补零，超过 `999` 后自然递增为 `1000`、`1001`。
 
+##049 2026-06-11 19:59:26 +08:00 - Codex - START
+
+- 阶段：Phase 1 / MVP 1.0（并行工程治理任务）
+- Sprint：ops-governance
+- 任务编号：shared-project-ops
+- 目标：接入跨电脑可复用的公共项目操作脚本机制，新增项目级 preflight / commit / release 入口，消除仓库规则里的单机项目路径硬编码。
+- 预计触碰范围：
+  - `AGENTS.md`
+  - `.gitignore`
+  - `project.ops.json`
+  - `project.ops.local.example.json`
+  - `scripts/preflight.ps1`
+  - `scripts/commit-push.ps1`
+  - `scripts/release.ps1`
+  - `docs/OPERATIONS.md`
+  - `docs/RELEASE.md`
+  - `docs/CURRENT_WORK.md`
+  - `docs/TASK_LOG.md`
+- 用户批准事项：用户已明确要求实施共享项目操作脚本机制；不改业务代码、不新增原生依赖、不执行真实资源变更。
+- Git 安全：当前工作区存在既有未提交业务改动，本任务只暂存 ops 接入相关文件和追踪文档。
+
+##049 2026-06-11 20:09:16 +08:00 - Codex - END
+
+- 阶段：Phase 1 / MVP 1.0（并行工程治理任务）
+- Sprint：ops-governance
+- 任务编号：shared-project-ops
+- 完成内容：
+  - 新增 `project.ops.json` 与 `project.ops.local.example.json`，建立跨电脑公共脚本解析配置。
+  - 新增 `scripts/preflight.ps1`、`scripts/commit-push.ps1`、`scripts/release.ps1` 项目级入口。
+  - `preflight` 复用公共 `git-check.ps1` 与 `secret-scan.ps1`，但只扫描 Git 可见文件，避免误扫 `.env`、`node_modules`、构建产物和本机 local config。
+  - `commit-push` 默认只暂存 ops 相关 pathspec，防止带入当前既有业务改动。
+  - 将 `AGENTS.md` 的唯一工作区规则从单机绝对路径修正为“当前项目 Git 仓库根目录”，并保留旧/新电脑路径作为实例说明。
+  - 新增 `docs/OPERATIONS.md` 与 `docs/RELEASE.md`。
+- 修改文件：
+  - `.gitignore`
+  - `AGENTS.md`
+  - `project.ops.json`
+  - `project.ops.local.example.json`
+  - `scripts/preflight.ps1`
+  - `scripts/commit-push.ps1`
+  - `scripts/release.ps1`
+  - `docs/OPERATIONS.md`
+  - `docs/RELEASE.md`
+  - `docs/CURRENT_WORK.md`
+  - `docs/TASK_LOG.md`
+- 验收文档：`docs/acceptance/phase-1-mvp-1-acceptance.md`
+- 本任务验收：
+  - PASS：公共脚本根目录从 `V:\Dev\tools\project-ops` 成功解析。
+  - PASS：`project.ops.local.json` 已加入 `.gitignore`。
+  - PASS：`.\scripts\preflight.ps1` 已跑通。
+  - PASS：secret scan 已执行，且扫描范围限定为 Git 可见文件；本机私有配置和忽略文件不进入扫描/提交范围。
+  - PASS：未修改 App 业务代码、数据库、原生依赖或真实资源。
+- 阶段验收影响范围：
+  - N/A：本任务是并行工程治理，不改变 Phase 1 产品功能、原型状态机、数据结构、AI 接口或 App 页面行为。
+- 验收结果：
+  - PASS：ops 入口可用。
+  - PARTIAL：无。
+  - FAIL：无。
+  - N/A：Phase 1 产品验收项均不适用。
+- 已运行命令：
+  - `.\scripts\preflight.ps1`
+- 验证结果：
+  - `npm run lint` 通过。
+  - `npm run typecheck` 通过。
+  - `npm test -- --watchAll=false --passWithNoTests` 通过，10 个 test suites / 21 tests 全部通过。
+- Android/iOS 影响：无业务影响；未新增原生依赖；不需要重新打包。
+- 热更新影响：无。
+- 是否需要重新打包：否。
+- 本次问题-解决方案-经验教训：
+  - 问题：公共 secret scan 直接扫仓库会误扫 `.env`、`node_modules` 或模板占位符；PowerShell 使用 `$args` 作为变量名会导致命令参数丢失。
+  - 解决方案：项目入口构造 Git 可见文件临时扫描目录后调用公共 secret scan；对 Supabase 模板配置显式加入项目级排除；命令参数变量改为 `$commandArgs`。
+  - 经验教训：共享 ops 脚本接入移动端仓库时，扫描范围应以 Git 可见文件为边界，机器私有与构建产物必须在入口层隔离。
+- 经验索引：无新增；本次经验已记录在本任务 END，若后续多项目复用稳定可再沉淀为 lesson。
+- 遗留问题：
+  - 当前仓库仍有本任务之外的既有业务改动，提交时必须只暂存 ops pathspec。
+
 ##048 2026-06-04 +08:00 - Claude - END
 
 - 阶段：Phase 1（原型治理 · OVERDUE 提示 + DEFAULT 按钮优化）

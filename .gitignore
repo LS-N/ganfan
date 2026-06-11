@@ -5,6 +5,7 @@ build/
 .env
 .env.local
 .env.*.local
+project.ops.local.json
 .DS_Store
 coverage/
 *.log

@@ -21,14 +21,15 @@
 | 字段 | 内容 |
 |---|---|
 | 更新时间 | 2026-06-03 |
-| 负责人 | Claude |
-| 任务编号 | ##045 architecture-docs-restructure |
-| 状态 | DONE：架构文档治理大重构完成。蓝图从 4140 行瘦身到 1714 行（-59%）；新增 docs/architecture/ 下 10 个文档（README + 9 个专题）；P1 F6-F9 + P2 F10 全部落地；docs/00-INDEX.md 新增工程架构文档分区。遗留 P2 F11（cost-model 双栏）待 Phase 1 上线后处理 |
+| 负责人 | Codex |
+| 任务编号 | ##049 shared-project-ops |
+| 状态 | DONE：并行工程治理任务完成。已接入共享项目操作脚本机制，新增项目级 preflight / commit / release 入口；消除单机绝对项目路径硬编码；`.\scripts\preflight.ps1` 已通过；不覆盖当前产品主线任务指针。 |
 
 ## 历史并行治理任务
 
 | 任务编号 | 状态摘要 |
 |---|---|
+| ##045 architecture-docs-restructure | DONE：架构文档治理大重构完成。蓝图从 4140 行瘦身到 1714 行（-59%）；新增 docs/architecture/ 下 10 个文档（README + 9 个专题）；P1 F6-F9 + P2 F10 全部落地；docs/00-INDEX.md 新增工程架构文档分区。遗留 P2 F11（cost-model 双栏）待 Phase 1 上线后处理 |
 | ##044 strategic-gaps-fill-p0 | DONE：P0 五项落地——蓝图新增「产品形态战略 App+MCP」+「用户分层与产品形态对应」；商业方案扩四档（新增 ④ 托管饮食 ¥128/月 Phase 2 验证）+ 免费版改精度限制 + 转化钩子前移到第 1/3/5-7 天 + 托管派识别信号 |
 | ##019 blueprint-stage-independence-and-cross-cutting-insight | DONE：已在蓝图固化「阶段独立完整性」+「模块独立 + 横切层架构」两条上位原则，并要求 UI 不暴露 Phase 号 / Schema 不预留未来字段 / 身体洞察唯一对外表达是 4 块身体拼图 |
 

@@ -10,17 +10,23 @@
 
 ## 唯一工作区
 
-正式开发只在：
+正式开发只允许在**当前项目 Git 仓库根目录**执行。仓库规则必须跨电脑通用，不得把某一台机器的绝对路径写成唯一真理。
+
+当前已知本机实例路径示例：
 
 ```text
-F:\ganfan
+旧电脑：F:\ganfan
+新电脑：V:\Dev\projects\ganfan
 ```
+
+这些路径只用于帮助识别本机环境；实际执行时必须用脚本或 `git rev-parse --show-toplevel` 定位当前仓库根目录。
 
 不要在以下路径写正式代码：
 
 ```text
-F:\ganfan\.claude\worktrees\*
-C:\Users\a\.codex\worktrees\*
+<repo>\.claude\worktrees\*
+<repo>\.codex\worktrees\*
+<user-home>\.codex\worktrees\*
 ```
 
 这些路径只允许作为历史参考或临时工具工作树。
@@ -28,7 +34,7 @@ C:\Users\a\.codex\worktrees\*
 ## 原型治理规则
 
 - `docs/prototype/meal-agent-product-prototype.html` 是《干饭》当前的开发对标母版原型，所有原型对齐都以它为准。
-- 修改主原型前，必须先把现有原型历史备份到 `F:\ganfan\_archive\prototype-history\`，再更新主原型。
+- 修改主原型前，必须先把现有原型历史备份到当前仓库根目录下的 `_archive\prototype-history\`，再更新主原型。
 - 任何修改原型的工作，都必须先遵守“备份 -> 修改主原型 -> 再同步对齐稿”的顺序，不能直接在对齐稿上补丁式推进。
 - `docs/prototype/meal-agent-product-prototype-home-multi-meal-20260515.html` 只用于首页多餐状态机对齐确认，不能替代主原型成为开发母版。
 - 当用户说出触发词”原型同步开发”时，必须自动启动原型到工程同步 SOP：读取主原型变更，抽取页面流转、状态机、数据字段、可复用资产和验收口径，**先检查并更新 `docs/02-master-blueprint.md`**（凡涉及 DDL 字段、TS 类型、常量、接口的必须同步蓝图），再依次同步当前阶段开发文档、任务表、阶段验收文档、`docs/CURRENT_WORK.md` 和 `docs/TASK_LOG.md`；同步完成并经用户确认前，禁止进入 App 代码实现。详细执行规范见 `docs/01-ai-working-manual.md`「触发词：原型同步开发」章节。

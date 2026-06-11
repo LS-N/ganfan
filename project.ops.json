@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "name": "ganfan",
+  "defaultBranch": "main",
+  "description": "Expo / React Native / TypeScript app with a Python FastAPI service surface.",
+  "projectOpsRootCandidates": [
+    "V:\\Dev\\tools\\project-ops",
+    "F:\\Dev\\tools\\project-ops",
+    "D:\\Dev\\tools\\project-ops"
+  ],
+  "preflight": [],
+  "secretPatterns": [],
+  "secretScanExcludePaths": [
+    "supabase/config.toml"
+  ],
+  "checks": [
+    {
+      "type": "command",
+      "name": "npm lint",
+      "workingDirectory": ".",
+      "command": "npm",
+      "args": ["run", "lint"]
+    },
+    {
+      "type": "command",
+      "name": "npm typecheck",
+      "workingDirectory": ".",
+      "command": "npm",
+      "args": ["run", "typecheck"]
+    },
+    {
+      "type": "command",
+      "name": "npm test",
+      "workingDirectory": ".",
+      "command": "npm",
+      "args": ["test", "--", "--watchAll=false", "--passWithNoTests"]
+    },
+    {
+      "type": "path-exists",
+      "name": "Python service requirements present",
+      "path": "services/ai/requirements.txt"
+    }
+  ],
+  "defaultCommitMessage": "chore: add shared project operations workflow",
+  "defaultCommitPathspecs": [
+    "AGENTS.md",
+    ".gitignore",
+    "project.ops.json",
+    "project.ops.local.example.json",
+    "scripts/preflight.ps1",
+    "scripts/commit-push.ps1",
+    "scripts/release.ps1",
+    "docs/OPERATIONS.md",
+    "docs/RELEASE.md",
+    "docs/CURRENT_WORK.md",
+    "docs/TASK_LOG.md"
+  ],
+  "release": {
+    "tagPattern": "^v\\d+\\.\\d+\\.\\d+$",
+    "artifactPrefix": "ganfan"
+  }
+}
